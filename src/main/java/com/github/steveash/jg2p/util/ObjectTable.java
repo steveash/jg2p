@@ -14,48 +14,50 @@
  * limitations under the License.
  */
 
-package com.github.steveash.jg2p;
+package com.github.steveash.jg2p.util;
 
 import java.util.Arrays;
 
 /**
- * a 2d array of double primitives instead of double the java array of array's thing
+ * A 2d table (row x value) that is implemented as a single array which can be better depending on access patterns
+ *
  * @author Steve Ash
  */
-public class DoubleTable {
-  private final double[] table;
-  private int xSize = -1;
-  private int ySize = -1;
+public class ObjectTable<T> {
 
-  public DoubleTable(int maxX, int maxY) {
-    this.table = new double[maxX * maxY];
-    init(maxX, maxY);
+  private final Object[] table;
+  private int xSize;
+  private int ySize;
+
+  public ObjectTable(int maxX, int maxY) {
+    this.table = new Object[maxX * maxY];
+    initAndNullOut(maxX, maxY);
   }
 
-  public void init(int xSize, int ySize) {
-    this.xSize = xSize;
-    this.ySize = ySize;
+  private void initAndNullOut(int xSize, int ySize) {
+    setNewSize(xSize, ySize);
     int size = xSize * ySize;
     if (size > table.length) {
-      throw new IllegalArgumentException("DoubleTable doesnt have enough buffer space");
+      throw new IllegalArgumentException("ObjectTable doesnt have enough buffer space");
     }
 
-    Arrays.fill(table, 0, size, 0);
+    Arrays.fill(table, 0, size, null);
   }
 
-  public double get(int x, int y) {
+  public void setNewSize(int xSize, int ySize) {
+    this.xSize = xSize;
+    this.ySize = ySize;
+  }
+
+  @SuppressWarnings("unchecked")
+  public T get(int x, int y) {
     int slot = index(x, y);
-    return table[slot];
+    return (T) table[slot];
   }
 
-  public void put(int x, int y, double value) {
+  public void put(int x, int y, T value) {
     int slot = index(x, y);
     table[slot] = value;
-  }
-
-  public void add(int x, int y, double deltaToAdd) {
-    int slot = index(x, y);
-    table[slot] += deltaToAdd;
   }
 
   private int index(int x, int y) {

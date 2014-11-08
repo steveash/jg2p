@@ -18,8 +18,8 @@ package com.github.steveash.jg2p;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 
+import com.github.steveash.jg2p.align.GramOptions;
 import com.github.steveash.jg2p.util.NestedLoopPairIterable;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -50,17 +50,17 @@ public class Grams {
 
   public static Iterable<Pair<String, String>> gramProduct(Word xWord, Word yWord, GramOptions opts) {
 
-    Iterable<String> xGrams = xWord.gramsSizes(opts.minXGram, opts.maxXGram);
-    Iterable<String> yGrams = yWord.gramsSizes(opts.minYGram, opts.maxYGram);
+    Iterable<String> xGrams = xWord.gramsSizes(opts.getMinXGram(), opts.getMaxXGram());
+    Iterable<String> yGrams = yWord.gramsSizes(opts.getMinYGram(), opts.getMaxYGram());
     NestedLoopPairIterable<String, String> pairs = NestedLoopPairIterable.of(xGrams, yGrams);
 
     Iterable<Pair<String, String>> xEps = ImmutableList.of();
     Iterable<Pair<String, String>> epsY = ImmutableList.of();
 
-    if (opts.includeXEpsilons) {
+    if (opts.isIncludeXEpsilons()) {
       xEps = gramEpsilons(xGrams);
     }
-    if (opts.includeEpsilonYs) {
+    if (opts.isIncludeEpsilonYs()) {
       epsY = epsilonGrams(yGrams);
     }
 

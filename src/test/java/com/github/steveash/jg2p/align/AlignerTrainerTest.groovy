@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package com.github.steveash.jg2p
+package com.github.steveash.jg2p.align
 
+import com.github.steveash.jg2p.Word
 import org.junit.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -29,10 +30,13 @@ class AlignerTrainerTest {
 
   @Test
   public void shouldSmokeTestEm() throws Exception {
-    def records = new InputReader().readFromClasspath("sample.txt")
+    def records = InputReader.makeDefaultFormatReader().readFromClasspath("sample.txt")
     log.info("Read ${records.size()} records to train...")
-    def a = new AlignerTrainer(new GramOptions())
-    def p = a.train(records)
+
+    def opts = new TrainOptions()
+    def a = new AlignerTrainer(opts)
+    def model = a.train(records)
+    def p = model.getTransitions()
 
     log.info("Prob table has " + p.entryCount() + " entries")
     int i = 0;
@@ -41,7 +45,16 @@ class AlignerTrainerTest {
 
       log.info(" $i : ${pp.rowKey} -> ${pp.columnKey} = ${pp.value}")
       i += 1;
-      if (i > 100) return;
+      if (i > 100) break;
     }
+
+    printExample(model, "fresh", "F R EH SH")
+    printExample(model, "wrinkling", "R IH NG K L IH NG")
+  }
+
+  private printExample(G2PModel v, String left, String right) {
+    def results = v.align(Word.fromNormalString(left), Word.fromSpaceSeparated(right), 3)
+    println "$left to $right got ${results.size()}"
+    results.each { println it }
   }
 }

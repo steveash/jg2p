@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.github.steveash.jg2p;
+package com.github.steveash.jg2p.align;
 
 import com.google.common.collect.Table;
 

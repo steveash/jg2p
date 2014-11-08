@@ -14,27 +14,28 @@
  * limitations under the License.
  */
 
-package com.github.steveash.jg2p;
+package com.github.steveash.jg2p.align;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
 import com.carrotsearch.hppc.ObjectDoubleMap;
 import com.carrotsearch.hppc.ObjectDoubleOpenHashMap;
-import com.carrotsearch.hppc.cursors.ObjectDoubleCursor;
-import com.github.steveash.jg2p.util.Assert;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Iterator;
 
 import static com.github.steveash.jg2p.util.Assert.assertProb;
-import static com.google.common.base.Preconditions.checkState;
 
 /**
  * Table of probabilities from Xi to Yi
  *
  * @author Steve Ash
  */
-public class ProbTable implements Iterable<Table.Cell<String,String,Double>> {
+public class ProbTable implements Iterable<Table.Cell<String,String,Double>>, Externalizable {
 
   @Override
   public Iterator<Table.Cell<String, String, Double>> iterator() {
@@ -73,7 +74,10 @@ public class ProbTable implements Iterable<Table.Cell<String,String,Double>> {
     }
   }
 
-  private final Table<String, String, Double> xyProb = HashBasedTable.create();
+  private /*final*/ Table<String, String, Double> xyProb = HashBasedTable.create();
+
+  public ProbTable() {
+  }
 
   public double prob(String x, String y) {
     Double maybe = xyProb.get(x, y);
@@ -109,4 +113,13 @@ public class ProbTable implements Iterable<Table.Cell<String,String,Double>> {
     return new Marginals(x, y, sum);
   }
 
+  @Override
+   public void writeExternal(ObjectOutput out) throws IOException {
+     out.writeObject(this.xyProb);
+   }
+
+   @Override
+   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+    this.xyProb = (Table<String, String, Double>) in.readObject();
+   }
 }

@@ -16,6 +16,7 @@
 
 package com.github.steveash.jg2p
 
+import com.github.steveash.jg2p.align.GramOptions
 import org.junit.Test
 
 /**

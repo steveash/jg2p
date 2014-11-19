@@ -63,7 +63,14 @@ public class Word {
   }
 
   public String gram(int index, int size) {
-    return joiner.join(value.subList(index, index + size));
+    StringBuilder sb = new StringBuilder(size * 4);
+    for (int i = index; i < index + size; i++) {
+      sb.append(value.get(i));
+      if (i + 1 < index + size) {
+        sb.append(' ');
+      }
+    }
+    return sb.toString();
   }
 
   public Iterable<String> gramsSize(final int size) {
@@ -92,5 +99,9 @@ public class Word {
       grams.add(gramsSize(i));
     }
     return Iterables.concat(grams);
+  }
+
+  public List<String> getValue() {
+    return value;
   }
 }

@@ -28,6 +28,7 @@ import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -244,24 +245,28 @@ public class AlignerTrainer {
 
   public static void main(String[] args) {
     try {
-      TrainOptions opts = parseArgs(args);
-      AlignerTrainer trainer = new AlignerTrainer(opts);
-
-      log.info("Reading input training records...");
-      InputReader reader = opts.makeReader();
-      List<InputRecord> inputRecords = reader.readFromFile(opts.trainingFile);
-
-      log.info("Training the probabilistic model...");
-      G2PModel model = trainer.train(inputRecords);
-
-      log.info("Writing model to " + opts.outputFile + "...");
-      ModelInputOutput.writeTo(model, opts.outputFile);
-
-      log.info("Training complete!");
-
+      trainAndSave(args);
     } catch (Exception e) {
       log.error("Problem training ", e);
     }
+  }
+
+  public static G2PModel trainAndSave(String[] args) throws CmdLineException, IOException {
+    TrainOptions opts = parseArgs(args);
+    AlignerTrainer trainer = new AlignerTrainer(opts);
+
+    log.info("Reading input training records...");
+    InputReader reader = opts.makeReader();
+    List<InputRecord> inputRecords = reader.readFromFile(opts.trainingFile);
+
+    log.info("Training the probabilistic model...");
+    G2PModel model = trainer.train(inputRecords);
+
+    log.info("Writing model to " + opts.outputFile + "...");
+    ModelInputOutput.writeTo(model, opts.outputFile);
+
+    log.info("Training complete!");
+    return model;
   }
 
   private static TrainOptions parseArgs(String[] args) throws CmdLineException {

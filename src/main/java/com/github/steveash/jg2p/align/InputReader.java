@@ -47,8 +47,6 @@ public class InputReader {
 
     /**
      * Return the input record or null if this line shouldnt be included
-     * @param line
-     * @return
      */
     InputRecord parse(String line);
   }
@@ -92,7 +90,10 @@ public class InputReader {
           return true;
         }
 
-        recs.add(reader.parse(line));
+        InputRecord maybe = reader.parse(line);
+        if (maybe != null) {
+          recs.add(maybe);
+        }
         return true;
       }
 
@@ -117,7 +118,7 @@ public class InputReader {
     }
   };
 
-  private static final Pattern xChars = Pattern.compile("([A-Z']+)(?:\\(\\d+\\))?", Pattern.CASE_INSENSITIVE);
+  private static final Pattern xChars = Pattern.compile("([A-Z][A-Z']+)(?:\\(\\d+\\))?", Pattern.CASE_INSENSITIVE);
   private static LineReader cmuReader = new LineReader() {
     @Override
     public InputRecord parse(String line) {

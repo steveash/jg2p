@@ -37,6 +37,8 @@ import static com.github.steveash.jg2p.util.Assert.assertProb;
  */
 public class ProbTable implements Iterable<Table.Cell<String,String,Double>>, Externalizable {
 
+  public static final double minLogProb = -1e12;
+
   @Override
   public Iterator<Table.Cell<String, String, Double>> iterator() {
     return xyProb.cellSet().iterator();

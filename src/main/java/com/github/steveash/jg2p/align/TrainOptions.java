@@ -42,7 +42,7 @@ public class TrainOptions {
   public int maxYGram = 1;
 
   @Option(name = "--includeYEps")
-  public boolean includeXEpsilons = true;
+  public boolean includeXEpsilons = false;
 
   @Option(name = "--includeEpsX")
   public boolean includeEpsilonYs = false;

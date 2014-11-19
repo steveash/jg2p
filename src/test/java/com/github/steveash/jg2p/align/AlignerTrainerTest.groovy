@@ -53,8 +53,12 @@ class AlignerTrainerTest {
   }
 
   private printExample(G2PModel v, String left, String right) {
-    def results = v.align(Word.fromNormalString(left), Word.fromSpaceSeparated(right), 3)
+    def x = Word.fromNormalString(left)
+    def results = v.align(x, Word.fromSpaceSeparated(right), 3)
+    def inferBest = v.inferAlignments(x, 3)
     println "$left to $right got ${results.size()}"
     results.each { println it }
+    println "Inferred best"
+    inferBest.each { println it }
   }
 }

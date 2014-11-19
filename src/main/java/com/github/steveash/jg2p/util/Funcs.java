@@ -22,6 +22,10 @@ import com.google.common.base.Predicate;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nullable;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 /**
  * @author Steve Ash
  */
@@ -60,5 +64,18 @@ public class Funcs {
 
   public static Predicate<String> onlyNonBlank() {
     return onlyNonBlank;
+  }
+
+  public static Function<String, String> transformBlanks(final String blanksBecome) {
+    return new Function<String, String>() {
+      @Nullable
+      @Override
+      public String apply(String input) {
+        if (isBlank(input)) {
+          return blanksBecome;
+        }
+        return input;
+      }
+    };
   }
 }

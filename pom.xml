@@ -44,7 +44,7 @@
     <maven-source-version>2.1.2</maven-source-version>
     <groovy-all-version>2.3.7</groovy-all-version>
     <!--groovy-eclipse-batch needs to match groovy-all-->
-    <groovy-eclipse-batch-version>2.3.7-01</groovy-eclipse-batch-version>
+    <groovy-eclipse-batch-version>2.3.4-01</groovy-eclipse-batch-version>
     <groovy-eclipse-compiler-version>2.9.0-01</groovy-eclipse-compiler-version>
   </properties>
 
@@ -114,7 +114,7 @@
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
+      <artifactId>slf4j-log4j12</artifactId>
       <version>${slf4j-version}</version>
       <scope>test</scope>
     </dependency>
@@ -125,6 +125,16 @@
       <optional>true</optional>
       <!--<scope>test</scope>-->
     </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+      <version>2.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.steveash.mallet</groupId>
+      <artifactId>mallet</artifactId>
+      <version>2.0.8-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -132,6 +142,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.9.1</version>
         <executions>
           <execution>
             <id>add-groovy-source</id>
@@ -177,12 +188,12 @@
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-eclipse-compiler</artifactId>
-            <!--<version>${groovy-eclipse-compiler-version}</version>-->
+            <version>${groovy-eclipse-compiler-version}</version>
           </dependency>
           <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-eclipse-batch</artifactId>
-            <!--<version>${groovy-eclipse-batch-version}</version>-->
+            <version>${groovy-eclipse-batch-version}</version>
           </dependency>
         </dependencies>
       </plugin>

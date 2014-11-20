@@ -16,8 +16,11 @@
 
 package com.github.steveash.jg2p.seq;
 
+import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 import com.github.steveash.jg2p.align.Alignment;
 
@@ -56,10 +59,22 @@ public class PhonemeCrfTrainer {
 
   private static final Logger log = LoggerFactory.getLogger(PhonemeCrfTrainer.class);
 
-  public void train(List<SeqInputReader.AlignGroup> inputs) throws IOException {
+  public void trainAndSave(List<SeqInputReader.AlignGroup> inputs) throws IOException {
+    InstanceList examples = makeExamples(inputs);
+    trainExamples(examples);
+  }
 
-    Pipe pipe = makePipe();
-    InstanceList examples = makeExamples(inputs, pipe);
+  public PhonemeCrfModel train(List<Alignment> inputs) {
+    InstanceList examples = makeExamplesFromAligns(inputs);
+    Pipe pipe = examples.getPipe();
+
+    log.info("Training on whole data...");
+    TransducerTrainer trainer = trainOnce(pipe, examples);
+    return new PhonemeCrfModel((CRF) trainer.getTransducer());
+  }
+
+  private void trainExamples(InstanceList examples) throws IOException {
+    Pipe pipe = examples.getPipe();
 
     log.info("Training on whole data...");
     TransducerTrainer trainer = trainOnce(pipe, examples);
@@ -94,10 +109,10 @@ public class PhonemeCrfTrainer {
 
   private double evaluateOnce(int round, InstanceList trainData, InstanceList testData, TransducerTrainer trainer) {
     log.info("Starting evaluation for round {}...", round);
-    TokenAccuracyEvaluator teval = new TokenAccuracyEvaluator(trainData, "train", testData, "test");
+    TokenAccuracyEvaluator teval = new TokenAccuracyEvaluator(trainData, "trainAndSave", testData, "test");
     teval.evaluate(trainer);
     double testAccuracy = teval.getAccuracy("test");
-    log.info("For round {} train {} and test {}", round, teval.getAccuracy("train"), testAccuracy);
+    log.info("For round {} trainAndSave {} and test {}", round, teval.getAccuracy("trainAndSave"), testAccuracy);
     return testAccuracy;
   }
 
@@ -111,23 +126,28 @@ public class PhonemeCrfTrainer {
     crf.setWeightsDimensionAsIn(trainData, false);
 
     log.info("Starting training...");
-    CRFTrainerByThreadedLabelLikelihood trainer1 = new CRFTrainerByThreadedLabelLikelihood(crf, 8);
-    trainer1.setGaussianPriorVariance(2);
-    trainer1.train(trainData);
-    trainer1.shutdown();
-    CRFTrainerByThreadedLabelLikelihood trainer = trainer1;
+    CRFTrainerByThreadedLabelLikelihood trainer = new CRFTrainerByThreadedLabelLikelihood(crf, 8);
+    trainer.setGaussianPriorVariance(2);
+    trainer.train(trainData);
+    trainer.shutdown();
     watch.stop();
 
-    log.info("Training took " + watch.toString());
+    log.info("CRF Training took " + watch.toString());
     return trainer;
   }
 
-  private InstanceList makeExamples(List<SeqInputReader.AlignGroup> inputs, Pipe pipe) {
+  private InstanceList makeExamples(List<SeqInputReader.AlignGroup> inputs) {
+    Iterable<Alignment> alignsToTrain = getAlignsFromGroup(inputs);
+    return makeExamplesFromAligns(alignsToTrain);
+  }
+
+  private InstanceList makeExamplesFromAligns(Iterable<Alignment> alignsToTrain) {
+    Pipe pipe = makePipe();
     int count = 0;
     InstanceList instances = new InstanceList(pipe);
-    for (SeqInputReader.AlignGroup input : inputs) {
+    for (Alignment align : alignsToTrain) {
+
       // let's just take the first one for now
-      Alignment align = input.alignments.get(0);
       List<String> phones = align.getAllYTokensAsList();
       updateEpsilons(phones);
       Instance ii = new Instance(align.getAllXTokensAsList(), phones, null, null);
@@ -140,6 +160,16 @@ public class PhonemeCrfTrainer {
     }
     log.info("Read {} instances of training data", count);
     return instances;
+  }
+
+  private Iterable<Alignment> getAlignsFromGroup(List<SeqInputReader.AlignGroup> inputs) {
+    return FluentIterable.from(inputs).transformAndConcat(
+        new Function<SeqInputReader.AlignGroup, Iterable<Alignment>>() {
+          @Override
+          public Iterable<Alignment> apply(SeqInputReader.AlignGroup input) {
+            return input.alignments;
+          }
+        });
   }
 
   private void updateEpsilons(List<String> phones) {

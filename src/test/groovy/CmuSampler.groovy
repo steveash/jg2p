@@ -24,10 +24,10 @@ import com.google.common.collect.Lists
  */
 def cmuFile = "cmudict.0.7a"
 def training = InputReader.makeCmuReader().readFromClasspath(cmuFile)
-def out = new File("../resources/cmudict.5kC.txt")
+def out = new File("../resources/cmudict.1kB.txt")
 Collections.shuffle(training)
 out.withPrintWriter { pw ->
-  training.take(5000).each {
+  training.take(1000).each {
     pw.println(it.left.asSpaceString + "\t" + it.right.asSpaceString)
   }
 }

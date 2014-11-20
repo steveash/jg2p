@@ -31,7 +31,7 @@ class AlignerTrainerTest {
   @Test
   public void shouldSmokeTestEm() throws Exception {
     def records = InputReader.makeDefaultFormatReader().readFromClasspath("sample.txt")
-    log.info("Read ${records.size()} records to train...")
+    log.info("Read ${records.size()} records to trainAndSave...")
 
     def opts = new TrainOptions()
     def a = new AlignerTrainer(opts)

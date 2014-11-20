@@ -26,7 +26,7 @@ class PhonemeCrfTrainerMain {
 
   public static void main(String[] args) {
     def input = new SeqInputReader().
-        readInput(Resources.asCharSource(Resources.getResource("cmu2.align.txt"), Charsets.UTF_8))
-    new PhonemeCrfTrainer().train(input)
+        readInput(Resources.asCharSource(Resources.getResource("cmu3.align.txt"), Charsets.UTF_8))
+    new PhonemeCrfTrainer().trainAndSave(input)
   }
 }

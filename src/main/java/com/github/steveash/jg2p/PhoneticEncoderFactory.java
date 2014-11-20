@@ -31,11 +31,16 @@ public class PhoneticEncoderFactory {
   private static final double ALIGN_MIN_SCORE = -60;
 //  private static final double TAG_MIN_SCORE = -1.6094;
   private static final double TAG_MIN_SCORE = -1.894;
+  private static final int BEST_ALIGNMENTS = 5;
 
   public static PhoneticEncoder makeDefault() throws IOException, ClassNotFoundException {
     G2PModel alignModel = ModelInputOutput.readFromClasspath("cmu2.model.dat");
     PhonemeCrfModel phoneModel = PhonemeCrfInputOutput.readFromClasspath("g2p_crf.dat");
 
-    return new PhoneticEncoder(alignModel, phoneModel, 5, ALIGN_MIN_SCORE, TAG_MIN_SCORE);
+    return new PhoneticEncoder(alignModel, phoneModel, BEST_ALIGNMENTS, ALIGN_MIN_SCORE, TAG_MIN_SCORE);
+  }
+
+  public static PhoneticEncoder make(G2PModel alignModel, PhonemeCrfModel crfModel) {
+    return new PhoneticEncoder(alignModel, crfModel, BEST_ALIGNMENTS, ALIGN_MIN_SCORE, TAG_MIN_SCORE);
   }
 }

@@ -43,7 +43,7 @@ public class NeighborTokenFeature extends Pipe {
         int nidx = i + j;
         if (nidx >= 0 && nidx < ts.size()) {
           Token neighbor = ts.get(nidx);
-          String feature = neighbor.getText() + "@" + nidx;
+          String feature = neighbor.getText() + "@" + j;
           if (includeCurrent) {
             feature += "@" + t.getText();
           }

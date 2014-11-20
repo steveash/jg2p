@@ -23,9 +23,9 @@ import groovy.transform.Field
 Script the builds the CMU alignment model and generates some stats
  */
 def cmuFile = "cmudict.0.7a"
-def model = ModelInputOutput.readFromClasspath("cmu2.model.dat")
+def model = ModelInputOutput.readFromClasspath("cmu3.model.dat")
 def training = InputReader.makeCmuReader().readFromClasspath(cmuFile)
-def out = new File("../../../target/cmu2.align.txt")
+def out = new File("../../../target/cmu3.align.txt")
 
 @Field def top1Histo = new Histogram(-200, 0, 25)
 @Field def top2Histo = new Histogram(-200, 0, 25)
@@ -37,12 +37,12 @@ out.withPrintWriter { pw ->
   int count = 0
   int noPaths = 0
   training.each {
-    def results = model.align(it.left, it.right, 4)
+    def results = model.align(it.left, it.right, 5)
     updateStats(results)
 
     boolean wroteOne = false
     results.each { res ->
-      if (res.score < -70) return;
+      if (res.score < -130) return;
       pw.printf("%d^%.4f^%s^%s\n", count, res.score, res.getXAsPipeString(), res.getYAsPipeString())
       wroteOne = true
     }

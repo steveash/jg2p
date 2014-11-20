@@ -75,7 +75,7 @@ public class PhonemeCrfModel {
     return phones;
   }
 
-  CRF getCrf() {
+  public CRF getCrf() {
     return crf;
   }
 }

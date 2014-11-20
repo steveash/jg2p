@@ -60,7 +60,7 @@ public class ProbTable implements Iterable<Table.Cell<String,String,Double>>, Ex
     }
 
     public double probX(String x) {
-      return assertProb(xMarginals.getOrDefault(x, -1));
+      return assertProb(xMarginals.getOrDefault(x, 0));
     }
 
     public int countY() {

@@ -23,7 +23,8 @@ println "I am " + (new File(".")).canonicalPath
 def cmuFile = "cmudict.0.7a"
 String[] args = [
     "--infile", "../resources/$cmuFile",
-    "--outfile", "../../../target/cmu2.model.dat",
+    "--outfile", "../../../target/cmu3.model.dat",
+    "--maxX", "3",
     "--format", "CMU"
 ] as String[]
 def model = AlignerTrainer.trainAndSave(args)

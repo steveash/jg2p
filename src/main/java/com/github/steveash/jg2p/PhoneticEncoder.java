@@ -78,7 +78,6 @@ public class PhoneticEncoder {
     this.tagMinScore = tagMinScore;
   }
 
-
   public List<Encoding> encode(String word) {
     Word input = Word.fromNormalString(word);
     return encode(input);
@@ -88,14 +87,14 @@ public class PhoneticEncoder {
     List<Alignment> alignments = aligner.inferAlignments(input, bestAlignments);
     ArrayList<Encoding> results = Lists.newArrayListWithCapacity(alignments.size());
     for (Alignment alignment : alignments) {
-      if (alignment.getScore() < alignMinScore) {
+      if (!results.isEmpty() && alignment.getScore() < alignMinScore) {
         continue;
       }
 
       List<String> graphemes = alignment.getAllXTokensAsList();
       List<PhonemeCrfModel.TagResult> tagResults = phoneTagger.tag(graphemes, bestAlignments);
       for (PhonemeCrfModel.TagResult tagResult : tagResults) {
-        if (tagResult.logScore < tagMinScore) {
+        if (!results.isEmpty() && tagResult.logScore < tagMinScore) {
           continue;
         }
         results.add(new Encoding(graphemes, tagResult.phones, alignment.getScore(), tagResult.logScore));

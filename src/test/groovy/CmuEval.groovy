@@ -1,11 +1,8 @@
-import com.github.steveash.jg2p.EncoderEval
+import com.github.steveash.jg2p.seq.PhonemeCrfInputOutput
+import com.github.steveash.jg2p.seq.PhonemeCrfModel
+import com.github.steveash.jg2p.train.EncoderEval
 import com.github.steveash.jg2p.PhoneticEncoderFactory
 import com.github.steveash.jg2p.align.InputReader
-import com.github.steveash.jg2p.align.ModelInputOutput
-import com.github.steveash.jg2p.util.ListEditDistance
-import com.github.steveash.jg2p.util.Percent
-import com.google.common.base.Stopwatch
-import org.apache.commons.lang3.time.StopWatch
 
 /*
  * Copyright 2014 Steve Ash
@@ -25,7 +22,14 @@ import org.apache.commons.lang3.time.StopWatch
 
 
 def cmuFile = "cmudict.0.7a"
-def encoder = PhoneticEncoderFactory.makeDefault()
-def training = InputReader.makeCmuReader().readFromClasspath(cmuFile)
+//def encoder = PhoneticEncoderFactory.makeDefault()
+//def training = InputReader.makeCmuReader().readFromClasspath(cmuFile)
+//
+//new EncoderEval(encoder).evalAndPrint(training)
+PhonemeCrfModel phoneModel = PhonemeCrfInputOutput.readFromClasspath("g2p_crf.dat");
+def crf = phoneModel.crf
+new File("model.txt").withPrintWriter { pw ->
 
-new EncoderEval(encoder).evalAndPrint(training)
+  crf.print(pw)
+}
+println "done!"

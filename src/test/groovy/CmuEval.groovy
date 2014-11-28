@@ -22,14 +22,14 @@ import com.github.steveash.jg2p.align.InputReader
 
 
 def cmuFile = "cmudict.0.7a"
-//def encoder = PhoneticEncoderFactory.makeDefault()
-//def training = InputReader.makeCmuReader().readFromClasspath(cmuFile)
-//
-//new EncoderEval(encoder).evalAndPrint(training)
-PhonemeCrfModel phoneModel = PhonemeCrfInputOutput.readFromClasspath("g2p_crf.dat");
-def crf = phoneModel.crf
-new File("model.txt").withPrintWriter { pw ->
+def encoder = PhoneticEncoderFactory.makeFrom("cmu3.model.dat", "g2p_crf3.dat")
+def training = InputReader.makeCmuReader().readFromClasspath(cmuFile)
 
-  crf.print(pw)
-}
+new EncoderEval(encoder).evalAndPrint(training)
+//PhonemeCrfModel phoneModel = PhonemeCrfInputOutput.readFromClasspath("g2p_crf.dat");
+//def crf = phoneModel.crf
+//new File("model.txt").withPrintWriter { pw ->
+//
+//  crf.print(pw)
+//}
 println "done!"

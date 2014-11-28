@@ -34,8 +34,12 @@ public class PhoneticEncoderFactory {
   private static final int BEST_ALIGNMENTS = 5;
 
   public static PhoneticEncoder makeDefault() throws IOException, ClassNotFoundException {
-    G2PModel alignModel = ModelInputOutput.readFromClasspath("cmu2.model.dat");
-    PhonemeCrfModel phoneModel = PhonemeCrfInputOutput.readFromClasspath("g2p_crf.dat");
+    return makeFrom("cmu3.model.dat", "g2p_crf3.dat");
+  }
+
+  public static PhoneticEncoder makeFrom(String alignModelFile, String crfModelFile) throws IOException, ClassNotFoundException {
+    G2PModel alignModel = ModelInputOutput.readFromClasspath(alignModelFile);
+    PhonemeCrfModel phoneModel = PhonemeCrfInputOutput.readFromClasspath(crfModelFile);
 
     return new PhoneticEncoder(alignModel, phoneModel, BEST_ALIGNMENTS, ALIGN_MIN_SCORE, TAG_MIN_SCORE);
   }

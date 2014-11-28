@@ -35,6 +35,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * @author Steve Ash
@@ -118,7 +119,7 @@ public class InputReader {
     }
   };
 
-  private static final Pattern xChars = Pattern.compile("([A-Z][A-Z']+)(?:\\(\\d+\\))?", Pattern.CASE_INSENSITIVE);
+  private static final Pattern xChars = Pattern.compile("([A-Z][A-Z']+)(\\(\\d+\\))?", Pattern.CASE_INSENSITIVE);
   private static LineReader cmuReader = new LineReader() {
     @Override
     public InputRecord parse(String line) {
@@ -129,6 +130,9 @@ public class InputReader {
       String x = line.substring(0, split);
       Matcher xGood = xChars.matcher(x);
       if (!xGood.matches()) {
+        return null;
+      }
+      if (isNotBlank(xGood.group(2))) {
         return null;
       }
       x = xGood.group(1);

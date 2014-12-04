@@ -97,7 +97,7 @@ public class AlignerViterbi {
   private Alignment decodePathFrom(Word x, Word y, PathXYTable t, PathXYTable.Entry entry) {
     int xx = x.unigramCount();
     int yy = y.unigramCount();
-    Alignment a = new Alignment(entry.score);
+    Alignment a = new Alignment(x, entry.score);
 
     while (xx > 0 || yy > 0) {
       String xGram = x.gram(xx - entry.xBackRef, entry.xBackRef);

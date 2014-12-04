@@ -18,6 +18,7 @@ package com.github.steveash.jg2p.seq;
 
 import com.google.common.collect.Lists;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +29,7 @@ import cc.mallet.types.Sequence;
 /**
  * @author Steve Ash
  */
-public class PhonemeCrfModel {
+public class PhonemeCrfModel implements Serializable {
 
   public static class TagResult {
     public final List<String> phones;

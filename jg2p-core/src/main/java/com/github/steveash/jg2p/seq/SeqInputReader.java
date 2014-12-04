@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import com.google.common.io.CharSource;
 import com.google.common.io.LineProcessor;
 
+import com.github.steveash.jg2p.Word;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.util.Zipper;
 
@@ -63,10 +64,11 @@ public class SeqInputReader {
           aligns.clear();
         }
         Double score = Double.parseDouble(fields.get(1));
-        Iterable<String> graphs = pipeSplit.split(fields.get(2));
-        Iterable<String> phones = pipeSplit.split(fields.get(3));
+        Word input = Word.fromSpaceSeparated(fields.get(2));
+        Iterable<String> graphs = pipeSplit.split(fields.get(3));
+        Iterable<String> phones = pipeSplit.split(fields.get(4));
 
-        aligns.add(new Alignment(Zipper.up(graphs, phones), score));
+        aligns.add(new Alignment(input, Zipper.up(graphs, phones), score));
         return true;
       }
 

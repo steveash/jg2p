@@ -18,8 +18,11 @@ package com.github.steveash.jg2p.align;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
+import com.github.steveash.jg2p.Word;
 import com.github.steveash.jg2p.util.Funcs;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -31,37 +34,45 @@ import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 
 /**
- * Represents one alignment from X to Y.  In the case of running alignment between X to Y the x represents the
- * grapheme and the y represents the phoneme from the training example.  In the inference case, only the X side
- * will be populated and the Y side will be null
-* @author Steve Ash
-*/
-public class Alignment implements Iterable<Pair<String,String>>, Comparable<Alignment> {
+ * Represents one alignment from X to Y.  In the case of running alignment between X to Y the x represents the grapheme
+ * and the y represents the phoneme from the training example.  In the inference case, only the X side will be populated
+ * and the Y side will be null
+ *
+ * @author Steve Ash
+ */
+public class Alignment implements Iterable<Pair<String, String>>, Comparable<Alignment> {
+
   private static final Joiner pipeJoiner = Joiner.on('|');
+  private static final Splitter spaceSplit = Splitter.on(' ');
   private static final Function<Pair<String, String>, String> SELECT_LEFT = Funcs.selectLeft();
   private static final Function<Pair<String, String>, String> SELECT_RIGHT = Funcs.selectRight();
 
   private final List<Pair<String, String>> graphones; // the pair of grapheme + phoneme
   private final double score;
+  private final Word input;
 
-  public Alignment(double score) {
+  public Alignment(Word input, double score) {
+    this.input = input;
     this.graphones = Lists.newArrayList();
     this.score = score;
   }
 
-  public Alignment(List<Pair<String, String>> finalList, double score) {
+  public Alignment(Word input, List<Pair<String, String>> finalList, double score) {
+    this.input = input;
     this.graphones = finalList;
     this.score = score;
   }
 
-  public List<Pair<String,String>> getGraphones() { return graphones; }
+  public List<Pair<String, String>> getGraphones() {
+    return graphones;
+  }
 
   void append(String xGram, String yGram) {
     graphones.add(Pair.of(xGram, yGram));
   }
 
   Alignment finish() {
-    return new Alignment(Lists.reverse(this.graphones), score);
+    return new Alignment(input, Lists.reverse(this.graphones), score);
   }
 
   @Override
@@ -106,6 +117,59 @@ public class Alignment implements Iterable<Pair<String,String>>, Comparable<Alig
 
   public String getXAsPipeString() {
     return pipeJoiner.join(transform(graphones, SELECT_LEFT));
+  }
+
+  public String getWordAsSpaceString() {
+    return input.getAsSpaceString();
+  }
+
+  public List<String> getWordUnigrams() {
+    return input.getValue();
+  }
+
+  /**
+   * @return a list of flags that indicate the _last_ letter in the grapheme group for the X word; this doesn't work if
+   * you allow epsilons on the X side
+   */
+  public List<Boolean> getXBoundaryMarks() {
+    Preconditions.checkArgument(graphones.size() > 0);
+    Iterator<Pair<String, String>> xIter = this.graphones.iterator();
+    List<String> xEntry = getNextX(xIter);
+    int xChar = 0;
+
+    List<Boolean> marks = Lists.newArrayListWithCapacity(input.unigramCount());
+    for (int i = 0; i < input.unigramCount(); i++) {
+
+      // have we exhasuted the graphone entry we're on
+      if (xChar >= xEntry.size()) {
+        xChar = 0;
+        xEntry = getNextX(xIter);
+      }
+
+      String wordGram = input.getValue().get(i);
+      String graphoneGram = xEntry.get(xChar);
+      Preconditions.checkState(wordGram.equals(graphoneGram), "Should be equal %s and %s", wordGram, graphoneGram);
+
+      boolean isLast = xChar == xEntry.size() - 1;
+      marks.add(isLast);
+      xChar += 1;
+    }
+    Preconditions.checkState(!xIter.hasNext());
+    return marks;
+  }
+
+  public String getXBoundaryMarksAsString() {
+    List<Boolean> marks = getXBoundaryMarks();
+    StringBuilder sb = new StringBuilder(marks.size());
+    for (Boolean mark : marks) {
+      sb.append(mark ? "1" : "0");
+    }
+    return sb.toString();
+  }
+
+  private List<String> getNextX(Iterator<Pair<String, String>> iter) {
+    Pair<String, String> graphone = iter.next();
+    return spaceSplit.splitToList(graphone.getLeft());
   }
 
   @Override

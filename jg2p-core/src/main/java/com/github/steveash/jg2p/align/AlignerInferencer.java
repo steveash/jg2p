@@ -77,7 +77,7 @@ public class AlignerInferencer {
 
   private Alignment decodePathFrom(Word x, PathXTable t, PathXTable.Entry entry) {
     int xx = x.unigramCount();
-    Alignment a = new Alignment(entry.score);
+    Alignment a = new Alignment(x, entry.score);
 
     while (xx > 0) {
       String xGram = x.gram(xx - entry.xBackRef, entry.xBackRef);

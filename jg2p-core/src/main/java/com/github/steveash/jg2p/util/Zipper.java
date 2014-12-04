@@ -44,4 +44,19 @@ public class Zipper {
     return result;
   }
 
+  public static <A,B> List<Pair<A, B>> upTo(Iterable<A> a, B b) {
+    ArrayList<Pair<A,B>> result = Lists.newArrayList();
+    for (A aa : a) {
+      result.add(Pair.of(aa, b));
+    }
+    return result;
+  }
+
+  public static <A,B> List<Pair<A, B>> upTo(A a, Iterable<B> b) {
+    ArrayList<Pair<A,B>> result = Lists.newArrayList();
+    for (B bb : b) {
+      result.add(Pair.of(a, bb));
+    }
+    return result;
+  }
 }

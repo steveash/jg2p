@@ -45,7 +45,7 @@ out.withPrintWriter { pw ->
     boolean wroteOne = false
     results.each { res ->
       if (res.score < -130) return;
-      pw.printf("%d^%.4f^%s^%s\n", count, res.score, res.getXAsPipeString(), res.getYAsPipeString())
+      pw.printf("%d^%.4f^%s^%s^%s\n", count, res.score, res.wordAsSpaceString, res.getXAsPipeString(), res.getYAsPipeString())
       wroteOne = true
     }
     if (!wroteOne) {

@@ -17,9 +17,7 @@
 package com.github.steveash.jg2p.align
 
 import com.github.steveash.jg2p.Word
-import com.github.steveash.jg2p.align.AlignerTrainer
-import com.github.steveash.jg2p.align.G2PModel
-import com.github.steveash.jg2p.align.ModelInputOutput
+import com.github.steveash.jg2p.util.ReadWrite
 import org.junit.Test
 
 /**
@@ -42,12 +40,12 @@ class AlignerTrainerMainTest {
 
     def outFile = new File(outFile)
     outFile.deleteOnExit()
-    def model = ModelInputOutput.readFromFile(outFile)
+    def model = ReadWrite.readFromFile(outFile)
     printExample(model, "fresh", "F R EH SH")
     printExample(model, "wrinkling", "R IH NG K L IH NG")
   }
 
-  private printExample(G2PModel v, String left, String right) {
+  private printExample(AlignModel v, String left, String right) {
     def results = v.align(Word.fromNormalString(left), Word.fromSpaceSeparated(right), 3)
     println "$left to $right got ${results.size()}"
     results.each { println it }

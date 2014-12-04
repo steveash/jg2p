@@ -1,6 +1,4 @@
 import com.github.steveash.jg2p.align.InputReader
-import com.github.steveash.jg2p.align.ModelInputOutput
-import com.google.common.collect.Lists
 
 /*
  * Copyright 2014 Steve Ash

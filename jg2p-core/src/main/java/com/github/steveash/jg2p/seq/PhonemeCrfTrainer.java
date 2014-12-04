@@ -20,9 +20,9 @@ import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
 import com.github.steveash.jg2p.align.Alignment;
+import com.github.steveash.jg2p.util.ReadWrite;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.slf4j.Logger;
@@ -103,7 +103,7 @@ public class PhonemeCrfTrainer {
   private void writeModel(TransducerTrainer trainer) throws IOException {
     File file = new File("g2p_crf.dat");
     CRF crf = (CRF) trainer.getTransducer();
-    new PhonemeCrfInputOutput().writeModelToFile(new PhonemeCrfModel(crf), file);
+    ReadWrite.writeTo(new PhonemeCrfModel(crf), file);
     log.info("Wrote for whole data");
   }
 

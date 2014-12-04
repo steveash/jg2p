@@ -16,10 +16,9 @@
 
 package com.github.steveash.jg2p;
 
-import com.github.steveash.jg2p.align.G2PModel;
-import com.github.steveash.jg2p.align.ModelInputOutput;
-import com.github.steveash.jg2p.seq.PhonemeCrfInputOutput;
+import com.github.steveash.jg2p.align.AlignModel;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
+import com.github.steveash.jg2p.util.ReadWrite;
 
 import java.io.IOException;
 
@@ -38,13 +37,13 @@ public class PhoneticEncoderFactory {
   }
 
   public static PhoneticEncoder makeFrom(String alignModelFile, String crfModelFile) throws IOException, ClassNotFoundException {
-    G2PModel alignModel = ModelInputOutput.readFromClasspath(alignModelFile);
-    PhonemeCrfModel phoneModel = PhonemeCrfInputOutput.readFromClasspath(crfModelFile);
+    AlignModel alignModel = ReadWrite.readFromClasspath(AlignModel.class, alignModelFile);
+    PhonemeCrfModel phoneModel = ReadWrite.readFromClasspath(PhonemeCrfModel.class, crfModelFile);
 
     return new PhoneticEncoder(alignModel, phoneModel, BEST_ALIGNMENTS, ALIGN_MIN_SCORE, TAG_MIN_SCORE);
   }
 
-  public static PhoneticEncoder make(G2PModel alignModel, PhonemeCrfModel crfModel) {
+  public static PhoneticEncoder make(AlignModel alignModel, PhonemeCrfModel crfModel) {
     return new PhoneticEncoder(alignModel, crfModel, BEST_ALIGNMENTS, ALIGN_MIN_SCORE, TAG_MIN_SCORE);
   }
 }

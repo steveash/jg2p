@@ -27,14 +27,14 @@ import java.util.List;
 /**
  * @author Steve Ash
  */
-public class G2PModel implements Externalizable {
+public class AlignModel implements Externalizable {
 
   private /*final*/ GramOptions opts;
   private /*final*/ ProbTable t;
   private /*final*/ AlignerViterbi viterbi;
   private /*final*/ AlignerInferencer inferencer;
 
-  public G2PModel(GramOptions opts, ProbTable t) {
+  public AlignModel(GramOptions opts, ProbTable t) {
     this.opts = opts;
     this.t = t;
     viterbi = new AlignerViterbi(opts, t);
@@ -42,7 +42,7 @@ public class G2PModel implements Externalizable {
   }
 
   // for serialization
-  public G2PModel() {
+  public AlignModel() {
   }
 
   public List<Alignment> align(Word x, Word y, int nBest) {

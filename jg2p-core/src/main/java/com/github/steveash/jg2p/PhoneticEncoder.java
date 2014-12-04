@@ -21,10 +21,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 
 import com.github.steveash.jg2p.align.Alignment;
-import com.github.steveash.jg2p.align.G2PModel;
+import com.github.steveash.jg2p.align.AlignModel;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
-
-import groovy.util.OrderBy;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,7 +33,7 @@ import java.util.List;
  */
 public class PhoneticEncoder {
 
-  private final G2PModel aligner;
+  private final AlignModel aligner;
   private final PhonemeCrfModel phoneTagger;
   private final int bestAlignments;
   private final double alignMinScore;
@@ -69,7 +67,7 @@ public class PhoneticEncoder {
     }
   }
 
-  public PhoneticEncoder(G2PModel aligner, PhonemeCrfModel phoneTagger, int bestAlignments, double alignMinScore,
+  public PhoneticEncoder(AlignModel aligner, PhonemeCrfModel phoneTagger, int bestAlignments, double alignMinScore,
                          double tagMinScore) {
     this.aligner = aligner;
     this.phoneTagger = phoneTagger;

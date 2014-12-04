@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import com.github.steveash.jg2p.align.AlignModel
 import com.github.steveash.jg2p.align.Alignment
 import com.github.steveash.jg2p.align.InputReader
-import com.github.steveash.jg2p.align.ModelInputOutput
+import com.github.steveash.jg2p.util.ReadWrite
 import com.github.steveash.jg2p.util.Histogram
 import groovy.transform.Field
 
@@ -23,7 +25,7 @@ import groovy.transform.Field
 Script the builds the CMU alignment model and generates some stats
  */
 def cmuFile = "cmudict.0.7a"
-def model = ModelInputOutput.readFromClasspath("cmu3.model.dat")
+def model = ReadWrite.readFromClasspath(AlignModel, "cmu3.model.dat")
 def training = InputReader.makeCmuReader().readFromClasspath(cmuFile)
 def out = new File("../../../target/cmua_32eps.align.txt")
 

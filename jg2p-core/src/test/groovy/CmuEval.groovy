@@ -1,5 +1,3 @@
-import com.github.steveash.jg2p.seq.PhonemeCrfInputOutput
-import com.github.steveash.jg2p.seq.PhonemeCrfModel
 import com.github.steveash.jg2p.train.EncoderEval
 import com.github.steveash.jg2p.PhoneticEncoderFactory
 import com.github.steveash.jg2p.align.InputReader

@@ -22,13 +22,12 @@ import com.github.steveash.jg2p.PhoneticEncoder;
 import com.github.steveash.jg2p.PhoneticEncoderFactory;
 import com.github.steveash.jg2p.align.AlignerTrainer;
 import com.github.steveash.jg2p.align.Alignment;
-import com.github.steveash.jg2p.align.G2PModel;
+import com.github.steveash.jg2p.align.AlignModel;
 import com.github.steveash.jg2p.align.InputRecord;
 import com.github.steveash.jg2p.align.TrainOptions;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 import com.github.steveash.jg2p.seq.PhonemeCrfTrainer;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,14 +57,14 @@ public class EncoderTrainer {
     AlignerTrainer alignTrainer = new AlignerTrainer(opts);
     PhonemeCrfTrainer crfTrainer = new PhonemeCrfTrainer();
 
-    G2PModel model = alignTrainer.train(inputs);
+    AlignModel model = alignTrainer.train(inputs);
     List<Alignment> crfExamples = makeCrfExamples(inputs, model);
     PhonemeCrfModel crfModel = crfTrainer.train(crfExamples);
     PhoneticEncoder encoder = PhoneticEncoderFactory.make(model, crfModel);
     return encoder;
   }
 
-  private List<Alignment> makeCrfExamples(List<InputRecord> inputs, G2PModel model) {
+  private List<Alignment> makeCrfExamples(List<InputRecord> inputs, AlignModel model) {
     List<Alignment> examples = Lists.newArrayListWithCapacity(inputs.size());
     for (InputRecord input : inputs) {
       List<Alignment> best = model.align(input.xWord, input.yWord, 5);

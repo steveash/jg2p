@@ -52,7 +52,7 @@ class AlignerTrainerTest {
     printExample(model, "wrinkling", "R IH NG K L IH NG")
   }
 
-  private printExample(G2PModel v, String left, String right) {
+  private printExample(AlignModel v, String left, String right) {
     def x = Word.fromNormalString(left)
     def results = v.align(x, Word.fromSpaceSeparated(right), 3)
     def inferBest = v.inferAlignments(x, 3)

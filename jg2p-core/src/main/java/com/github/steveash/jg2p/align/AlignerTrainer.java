@@ -21,6 +21,7 @@ import com.google.common.collect.Table;
 import com.github.steveash.jg2p.Grams;
 import com.github.steveash.jg2p.Word;
 import com.github.steveash.jg2p.util.DoubleTable;
+import com.github.steveash.jg2p.util.ReadWrite;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.kohsuke.args4j.CmdLineException;
@@ -48,7 +49,7 @@ public class AlignerTrainer {
     this.gramOpts = trainOpts.makeGramOptions();
   }
 
-  public G2PModel train(List<InputRecord> records) {
+  public AlignModel train(List<InputRecord> records) {
     initCounts(records);
     maximization(); // this just initializes the probabilities for the first time
 
@@ -65,7 +66,7 @@ public class AlignerTrainer {
       log.info("Completed EM round " + iteration + " mass delta " + String.format("%.15f", thisChange));
     }
     log.info("Training complete in " + iteration + " rounds!");
-    return new G2PModel(gramOpts, probs);
+    return new AlignModel(gramOpts, probs);
   }
 
   private boolean hasConverged(double thisChange, int iteration) {
@@ -251,7 +252,7 @@ public class AlignerTrainer {
     }
   }
 
-  public static G2PModel trainAndSave(String[] args) throws CmdLineException, IOException {
+  public static AlignModel trainAndSave(String[] args) throws CmdLineException, IOException {
     TrainOptions opts = parseArgs(args);
     AlignerTrainer trainer = new AlignerTrainer(opts);
 
@@ -260,10 +261,10 @@ public class AlignerTrainer {
     List<InputRecord> inputRecords = reader.readFromFile(opts.trainingFile);
 
     log.info("Training the probabilistic model...");
-    G2PModel model = trainer.train(inputRecords);
+    AlignModel model = trainer.train(inputRecords);
 
     log.info("Writing model to " + opts.outputFile + "...");
-    ModelInputOutput.writeTo(model, opts.outputFile);
+    ReadWrite.writeTo(model, opts.outputFile);
 
     log.info("Training complete!");
     return model;

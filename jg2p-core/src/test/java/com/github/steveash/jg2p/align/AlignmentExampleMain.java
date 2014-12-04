@@ -17,6 +17,7 @@
 package com.github.steveash.jg2p.align;
 
 import com.github.steveash.jg2p.Word;
+import com.github.steveash.jg2p.util.ReadWrite;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,7 @@ public class AlignmentExampleMain {
   private static final Logger log = LoggerFactory.getLogger(AlignmentExampleMain.class);
 
   public static void main(String[] args) throws IOException, ClassNotFoundException {
-    G2PModel model = ModelInputOutput.readFromClasspath("cmu2eps.model.dat");
+    AlignModel model = ReadWrite.readFromClasspath(AlignModel.class, "cmu2eps.model.dat");
     Word x = Word.fromNormalString("AMAZING");
     Word y = Word.fromSpaceSeparated("AH M EY Z IH NG");
     List<Alignment> results = model.align(x, y, 5);

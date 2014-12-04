@@ -24,8 +24,8 @@ import com.github.steveash.jg2p.train.EncoderTrainer
  * overall performance by measuring the actual error rates for the overall process
  * @author Steve Ash
  */
-def trainFile = "cmudict.1kA.txt"
-def testFile = "cmudict.1kB.txt"
+def trainFile = "cmudict.5kA.txt"
+def testFile = "cmudict.5kB.txt"
 def train = InputReader.makeDefaultFormatReader().readFromClasspath(trainFile)
 def test = InputReader.makeDefaultFormatReader().readFromClasspath(testFile)
 def opts = new TrainOptions()

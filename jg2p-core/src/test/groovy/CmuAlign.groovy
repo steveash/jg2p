@@ -25,7 +25,7 @@ Script the builds the CMU alignment model and generates some stats
 def cmuFile = "cmudict.0.7a"
 def model = ModelInputOutput.readFromClasspath("cmu3.model.dat")
 def training = InputReader.makeCmuReader().readFromClasspath(cmuFile)
-def out = new File("../../../target/cmu3.align.txt")
+def out = new File("../../../target/cmua_32eps.align.txt")
 
 @Field def top1Histo = new Histogram(-200, 0, 25)
 @Field def top2Histo = new Histogram(-200, 0, 25)

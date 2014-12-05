@@ -23,9 +23,9 @@ println "I am " + (new File(".")).canonicalPath
 def cmuFile = "cmudict.0.7a"
 String[] args = [
     "--infile", "../resources/$cmuFile",
-    "--outfile", "../../../target/cmua_22eps.model.dat",
+    "--outfile", "../../../target/cmua_2eps.model.dat",
     "--maxX", "2",
-    "--maxY", "2",
+    "--maxY", "1",
     "--includeYEps",
     "--format", "CMU"
 ] as String[]

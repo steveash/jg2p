@@ -17,11 +17,13 @@
 package com.github.steveash.jg2p.aligntag;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
+import com.github.steveash.jg2p.Word;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.seq.NeighborTokenFeature;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
@@ -84,9 +86,7 @@ public class AlignTagTrainer {
   private void trainExamples(InstanceList examples) throws IOException {
     Pipe pipe = examples.getPipe();
 
-    log.info("Training on whole data...");
-    TransducerTrainer trainer = trainOnce(pipe, examples);
-    writeModel(trainer);
+    TransducerTrainer trainer;
 
     int round = 0;
     CrossValidationIterator trials = new CrossValidationIterator(examples, 4, new Random(123321123));
@@ -105,11 +105,15 @@ public class AlignTagTrainer {
       round += 1;
     }
 
+    log.info("Training on whole data...");
+    trainer = trainOnce(pipe, examples);
+    writeModel(trainer);
+
     log.info("Done! overall " + overall.getMean() + " stddev " + overall.getStandardDeviation());
   }
 
   private void writeModel(TransducerTrainer trainer) throws IOException {
-    File file = new File("g2p_crf.dat");
+    File file = new File("alignTag_crf.dat");
     CRF crf = (CRF) trainer.getTransducer();
     ReadWrite.writeTo(new PhonemeCrfModel(crf), file);
     log.info("Wrote for whole data");
@@ -155,15 +159,19 @@ public class AlignTagTrainer {
     InstanceList instances = new InstanceList(pipe);
     for (Alignment align : alignsToTrain) {
 
-      List<String> phones = align.getAllYTokensAsList();
-      updateEpsilons(phones);
-      Instance ii = new Instance(align.getAllXTokensAsList(), phones, null, null);
+//      List<String> phones = align.getAllYTokensAsList();
+//      updateEpsilons(phones);
+      Word orig = Word.fromSpaceSeparated(align.getWordAsSpaceString());
+      Word marks = Word.fromNormalString(align.getXBoundaryMarksAsString());
+      Preconditions.checkState(orig.unigramCount() == marks.unigramCount());
+
+      Instance ii = new Instance(orig.getValue(), marks.getValue(), null, null);
       instances.addThruPipe(ii);
       count += 1;
 
-//      if (count > 1000) {
-//        break;
-//      }
+      if (count > 5000) {
+        break;
+      }
     }
     log.info("Read {} instances of training data", count);
     return instances;
@@ -185,22 +193,6 @@ public class AlignTagTrainer {
 //        });
   }
 
-  private void updateEpsilons(List<String> phones) {
-    String last = "<EPS>";
-    int blankCount = 0;
-    for (int i = 0; i < phones.size(); i++) {
-      String p = phones.get(i);
-      if (isBlank(p)) {
-//        phones.set(i, last + "_" + blankCount);
-        phones.set(i, "<EPS>");
-        blankCount += 1;
-      } else {
-        last = p;
-        blankCount = 0;
-      }
-    }
-  }
-
   private Pipe makePipe() {
     Alphabet alpha = new Alphabet();
     Target2LabelSequence labelPipe = new Target2LabelSequence();
@@ -209,10 +201,21 @@ public class AlignTagTrainer {
     return new SerialPipes(ImmutableList.of(
         new StringListToTokenSequence(alpha, labelAlpha),   // convert to token sequence
         new TokenSequenceLowercase(),                       // make all lowercase
-        new NeighborTokenFeature(true, -2, -1, +1),         // grab neighboring graphemes
+        new NeighborTokenFeature(true, makeNeighbors()),         // grab neighboring graphemes
         new TokenSequenceToFeature(),                       // convert the strings in the text to features
         new TokenSequence2FeatureVectorSequence(alpha, true, true),
         labelPipe
     ));
+  }
+
+  private List<NeighborTokenFeature.NeighborWindow> makeNeighbors() {
+    return ImmutableList.of(
+      new NeighborTokenFeature.NeighborWindow(1, 1),
+//      new NeighborTokenFeature.NeighborWindow(1, 2),
+//      new NeighborTokenFeature.NeighborWindow(1, 3),
+      new NeighborTokenFeature.NeighborWindow(-1, 1),
+      new NeighborTokenFeature.NeighborWindow(-2, 2),
+      new NeighborTokenFeature.NeighborWindow(-3, 3)
+    );
   }
 }

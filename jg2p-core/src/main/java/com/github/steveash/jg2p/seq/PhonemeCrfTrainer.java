@@ -196,10 +196,21 @@ public class PhonemeCrfTrainer {
     return new SerialPipes(ImmutableList.of(
         new StringListToTokenSequence(alpha, labelAlpha),   // convert to token sequence
         new TokenSequenceLowercase(),                       // make all lowercase
-        new NeighborTokenFeature(true, -2, -1, +1),         // grab neighboring graphemes
+        new NeighborTokenFeature(true, makeNeighbors()),         // grab neighboring graphemes
         new TokenSequenceToFeature(),                       // convert the strings in the text to features
         new TokenSequence2FeatureVectorSequence(alpha, true, true),
         labelPipe
     ));
+  }
+
+  private List<NeighborTokenFeature.NeighborWindow> makeNeighbors() {
+    return ImmutableList.of(
+        new NeighborTokenFeature.NeighborWindow(1, 1),
+              new NeighborTokenFeature.NeighborWindow(1, 2),
+//              new NeighborTokenFeature.NeighborWindow(1, 3),
+        new NeighborTokenFeature.NeighborWindow(-1, 1),
+        new NeighborTokenFeature.NeighborWindow(-2, 2),
+        new NeighborTokenFeature.NeighborWindow(-3, 3)
+    );
   }
 }

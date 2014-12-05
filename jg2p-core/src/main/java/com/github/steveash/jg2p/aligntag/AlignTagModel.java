@@ -16,10 +16,28 @@
 
 package com.github.steveash.jg2p.aligntag;
 
+import com.github.steveash.jg2p.Word;
+import com.github.steveash.jg2p.align.Aligner;
+import com.github.steveash.jg2p.align.Alignment;
+
+import java.util.List;
+
+import cc.mallet.fst.CRF;
+
 /**
  * Learns how to separate letters in to likely graphemes
  * @author Steve Ash
  */
-public class AlignTagModel {
+public class AlignTagModel implements Aligner {
 
+  private final CRF crf;
+
+  public AlignTagModel(CRF crf) {
+    this.crf = crf;
+  }
+
+  @Override
+  public List<Alignment> inferAlignments(Word x, int nBest) {
+    return null; // TODO call the CRF and return
+  }
 }

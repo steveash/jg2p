@@ -25,9 +25,10 @@ import java.io.ObjectOutput;
 import java.util.List;
 
 /**
+ * Uses the EM-based graphone model + viterbi inference
  * @author Steve Ash
  */
-public class AlignModel implements Externalizable {
+public class AlignModel implements Externalizable, Aligner {
 
   private /*final*/ GramOptions opts;
   private /*final*/ ProbTable t;
@@ -49,6 +50,7 @@ public class AlignModel implements Externalizable {
     return viterbi.align(x, y, nBest);
   }
 
+  @Override
   public List<Alignment> inferAlignments(Word x, int nBest) {
     return inferencer.bestGraphemes(x, nBest);
   }

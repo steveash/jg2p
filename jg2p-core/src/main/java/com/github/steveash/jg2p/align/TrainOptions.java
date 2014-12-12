@@ -41,10 +41,10 @@ public class TrainOptions {
   @Option(name = "--maxY")
   public int maxYGram = 1;
 
-  @Option(name = "--includeYEps")
+  @Option(name = "--includeXEps")
   public boolean includeXEpsilons = false;
 
-  @Option(name = "--includeEpsX")
+  @Option(name = "--includeEpsY")
   public boolean includeEpsilonYs = false;
 
   @Option(name = "--maximizer")

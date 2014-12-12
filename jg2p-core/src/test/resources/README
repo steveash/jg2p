@@ -1,0 +1,2 @@
+cmu_crfPT_2eps_32112 - this has the windows for -3, -2, -1, +1, +2 (with the width = to offset).  Using 2+eps alignments
+cmu_crfAT_2eps - this is a crf model for predicting boundaries trained on whole CMU dict

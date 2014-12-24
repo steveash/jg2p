@@ -56,6 +56,9 @@ public class TrainOptions {
   @Option(name = "--trainingConvergence")
   public double probDeltaConvergenceThreshold = 1.0e-5;
 
+  @Option(name = "--semiSupervisedFactor")
+  public double semiSupervisedFactor = 0.6;
+
   @Option(name = "--infile", required = true)
   public File trainingFile;
 

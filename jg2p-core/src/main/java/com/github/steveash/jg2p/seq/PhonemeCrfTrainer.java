@@ -24,26 +24,21 @@ import com.google.common.collect.ImmutableList;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.util.ReadWrite;
 
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Random;
 
 import cc.mallet.fst.CRF;
 import cc.mallet.fst.CRFTrainerByThreadedLabelLikelihood;
-import cc.mallet.fst.TokenAccuracyEvaluator;
-import cc.mallet.fst.TransducerTrainer;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.SerialPipes;
 import cc.mallet.pipe.Target2LabelSequence;
 import cc.mallet.pipe.TokenSequence2FeatureVectorSequence;
 import cc.mallet.pipe.TokenSequenceLowercase;
 import cc.mallet.types.Alphabet;
-import cc.mallet.types.CrossValidationIterator;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
@@ -55,99 +50,80 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  *
  * @author Steve Ash
  */
-public class PhonemeCrfTrainer {
+public class PhonemeCrfTrainer implements AutoCloseable {
 
   private static final Logger log = LoggerFactory.getLogger(PhonemeCrfTrainer.class);
 
-  public void trainAndSave(List<SeqInputReader.AlignGroup> inputs) throws IOException {
-    InstanceList examples = makeExamples(inputs);
-    trainExamples(examples);
+  public static PhonemeCrfTrainer openAndTrain(List<Alignment> examples) {
+    Pipe pipe = makePipe();
+    InstanceList instances = makeExamplesFromAligns(examples, pipe);
+
+    CRF crf = makeNewCrf(instances, pipe);
+    CRFTrainerByThreadedLabelLikelihood trainer = makeNewTrainer(crf);
+
+    PhonemeCrfTrainer pct = new PhonemeCrfTrainer(pipe, trainer);
+    pct.trainForInstances(instances);
+    return pct;
   }
 
-  public PhonemeCrfModel train(List<Alignment> inputs) {
-    InstanceList examples = makeExamplesFromAligns(inputs);
-    Pipe pipe = examples.getPipe();
+  private final Pipe pipe;
+  private final CRFTrainerByThreadedLabelLikelihood trainer;
 
-    log.info("Training on whole data...");
-    TransducerTrainer trainer = trainOnce(pipe, examples);
-    return new PhonemeCrfModel((CRF) trainer.getTransducer());
+  private PhonemeCrfTrainer(Pipe pipe, CRFTrainerByThreadedLabelLikelihood trainer) {
+    this.pipe = pipe;
+    this.trainer = trainer;
   }
 
-  private void trainExamples(InstanceList examples) throws IOException {
-    Pipe pipe = examples.getPipe();
-
-    log.info("Training on whole data...");
-    TransducerTrainer trainer = trainOnce(pipe, examples);
-    writeModel(trainer);
-
-    int round = 0;
-    CrossValidationIterator trials = new CrossValidationIterator(examples, 4, new Random(123321123));
-    SummaryStatistics overall = new SummaryStatistics();
-
-    while (trials.hasNext()) {
-      log.info("Starting training round {}...", round);
-      InstanceList[] split = trials.next();
-      InstanceList trainData = split[0];
-      InstanceList testData = split[1];
-
-      trainer = trainOnce(pipe, trainData);
-      double thisAccuracy = evaluateOnce(round, trainData, testData, trainer);
-      overall.addValue(thisAccuracy);
-
-      round += 1;
-    }
-
-    log.info("Done! overall " + overall.getMean() + " stddev " + overall.getStandardDeviation());
+  public void trainFor(List<Alignment> inputs) {
+    InstanceList examples = makeExamplesFromAligns(inputs, pipe);
+    trainForInstances(examples);
   }
 
-  private void writeModel(TransducerTrainer trainer) throws IOException {
-    File file = new File("g2p_crf.dat");
-    CRF crf = (CRF) trainer.getTransducer();
-    ReadWrite.writeTo(new PhonemeCrfModel(crf), file);
-    log.info("Wrote for whole data");
-  }
-
-  private double evaluateOnce(int round, InstanceList trainData, InstanceList testData, TransducerTrainer trainer) {
-    log.info("Starting evaluation for round {}...", round);
-    TokenAccuracyEvaluator teval = new TokenAccuracyEvaluator(trainData, "trainAndSave", testData, "test");
-    teval.evaluate(trainer);
-    double testAccuracy = teval.getAccuracy("test");
-    log.info("For round {} trainAndSave {} and test {}", round, teval.getAccuracy("trainAndSave"), testAccuracy);
-    return testAccuracy;
-  }
-
-  private TransducerTrainer trainOnce(Pipe pipe, InstanceList trainData) {
+  public void trainForInstances(InstanceList examples) {
     Stopwatch watch = Stopwatch.createStarted();
-
-    CRF crf = new CRF(pipe, null);
-    crf.addOrderNStates(trainData, new int[]{1}, null, null, null, null, false);
-    crf.addStartState();
-//      crf.addFullyConnectedStatesForLabels();
-    crf.setWeightsDimensionAsIn(trainData, false);
-
-    log.info("Starting training...");
-    CRFTrainerByThreadedLabelLikelihood trainer = new CRFTrainerByThreadedLabelLikelihood(crf, 8);
-    trainer.setGaussianPriorVariance(2);
-    trainer.train(trainData);
-    trainer.shutdown();
+    trainer.train(examples);
     watch.stop();
+    log.info("Training took " + watch);
+  }
 
-    log.info("CRF Training took " + watch.toString());
+
+  public PhonemeCrfModel buildModel() {
+    return new PhonemeCrfModel(trainer.getCRF());
+  }
+
+  private static CRFTrainerByThreadedLabelLikelihood makeNewTrainer(CRF crf) {
+    CRFTrainerByThreadedLabelLikelihood trainer = new CRFTrainerByThreadedLabelLikelihood(crf, getCpuCount());
+    trainer.setGaussianPriorVariance(2);
     return trainer;
   }
 
-  private InstanceList makeExamples(List<SeqInputReader.AlignGroup> inputs) {
-    Iterable<Alignment> alignsToTrain = getAlignsFromGroup(inputs);
-    return makeExamplesFromAligns(alignsToTrain);
+  private static CRF makeNewCrf(InstanceList examples, Pipe pipe) {
+    CRF crf = new CRF(pipe, null);
+    crf.addOrderNStates(examples, new int[]{1}, null, null, null, null, false);
+    crf.addStartState();
+    crf.setWeightsDimensionAsIn(examples, false);
+    return crf;
   }
 
-  private InstanceList makeExamplesFromAligns(Iterable<Alignment> alignsToTrain) {
-    Pipe pipe = makePipe();
+  private static int getCpuCount() {
+    return Runtime.getRuntime().availableProcessors();
+  }
+
+
+  public void writeModel() throws IOException {
+    writeModel(new File("g2p_crf.dat"));
+  }
+
+  public void writeModel(File target) throws IOException {
+    CRF crf = (CRF) trainer.getTransducer();
+    ReadWrite.writeTo(new PhonemeCrfModel(crf), target);
+    log.info("Wrote for whole data");
+  }
+
+  private static InstanceList makeExamplesFromAligns(Iterable<Alignment> alignsToTrain, Pipe pipe) {
     int count = 0;
     InstanceList instances = new InstanceList(pipe);
     for (Alignment align : alignsToTrain) {
-
-      // let's just take the first one for now
       List<String> phones = align.getAllYTokensAsList();
       updateEpsilons(phones);
       Instance ii = new Instance(align.getAllXTokensAsList(), phones, null, null);
@@ -172,7 +148,7 @@ public class PhonemeCrfTrainer {
         });
   }
 
-  private void updateEpsilons(List<String> phones) {
+  private static void updateEpsilons(List<String> phones) {
     String last = "<EPS>";
     int blankCount = 0;
     for (int i = 0; i < phones.size(); i++) {
@@ -188,7 +164,7 @@ public class PhonemeCrfTrainer {
     }
   }
 
-  private Pipe makePipe() {
+  private static Pipe makePipe() {
     Alphabet alpha = new Alphabet();
     Target2LabelSequence labelPipe = new Target2LabelSequence();
     LabelAlphabet labelAlpha = (LabelAlphabet) labelPipe.getTargetAlphabet();
@@ -203,14 +179,23 @@ public class PhonemeCrfTrainer {
     ));
   }
 
-  private List<NeighborTokenFeature.NeighborWindow> makeNeighbors() {
+  private static List<NeighborTokenFeature.NeighborWindow> makeNeighbors() {
     return ImmutableList.of(
         new NeighborTokenFeature.NeighborWindow(1, 1),
-              new NeighborTokenFeature.NeighborWindow(1, 2),
+        new NeighborTokenFeature.NeighborWindow(2, 1),
+        new NeighborTokenFeature.NeighborWindow(3, 1),
+//        new NeighborTokenFeature.NeighborWindow(1, 2),
 //              new NeighborTokenFeature.NeighborWindow(1, 3),
         new NeighborTokenFeature.NeighborWindow(-1, 1),
-        new NeighborTokenFeature.NeighborWindow(-2, 2),
-        new NeighborTokenFeature.NeighborWindow(-3, 3)
+        new NeighborTokenFeature.NeighborWindow(-2, 1),
+        new NeighborTokenFeature.NeighborWindow(-3, 1),
+        new NeighborTokenFeature.NeighborWindow(-2, 2)
+//        new NeighborTokenFeature.NeighborWindow(-3, 3)
     );
+  }
+
+  @Override
+  public void close() {
+    trainer.shutdown();
   }
 }

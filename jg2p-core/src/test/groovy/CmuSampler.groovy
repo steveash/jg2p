@@ -22,10 +22,10 @@ import com.github.steveash.jg2p.align.InputReader
  */
 def cmuFile = "cmudict.0.7a"
 def training = InputReader.makeCmuReader().readFromClasspath(cmuFile)
-def out = new File("../resources/cmudict.5kB.txt")
+def out = new File("../resources/cmudict.2kB.txt")
 Collections.shuffle(training)
 out.withPrintWriter { pw ->
-  training.take(5000).each {
+  training.take(2000).each {
     pw.println(it.left.asSpaceString + "\t" + it.right.asSpaceString)
   }
 }

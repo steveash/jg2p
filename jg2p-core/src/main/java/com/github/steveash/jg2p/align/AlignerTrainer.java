@@ -16,7 +16,9 @@
 
 package com.github.steveash.jg2p.align;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Table;
+import com.google.common.collect.Tables;
 
 import com.github.steveash.jg2p.Grams;
 import com.github.steveash.jg2p.Word;
@@ -32,6 +34,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 
+import static com.github.steveash.jg2p.util.Assert.assertProb;
+import static com.google.common.collect.Tables.immutableCell;
+
 /**
  * Owns the training algorithms for an Aligner
  * @author Steve Ash
@@ -43,6 +48,7 @@ public class AlignerTrainer {
   private final ProbTable probs = new ProbTable();
   private final TrainOptions trainOpts;
   private final GramOptions gramOpts;
+  private ProbTable labelledProbs;
 
   public AlignerTrainer(TrainOptions trainOpts) {
     this.trainOpts = trainOpts;
@@ -50,6 +56,11 @@ public class AlignerTrainer {
   }
 
   public AlignModel train(List<InputRecord> records) {
+    return train(records, new ProbTable());
+  }
+
+  public AlignModel train(List<InputRecord> records, ProbTable labelledExamples) {
+    this.labelledProbs = labelledExamples.makeNormalizedCopy();
     initCounts(records);
     maximization(); // this just initializes the probabilities for the first time
 
@@ -226,11 +237,21 @@ public class AlignerTrainer {
   private double maximization() {
     ProbTable.Marginals marginals = counts.calculateMarginals();
     double totalChange = 0;
+    double unsuperFactor = (1.0 - trainOpts.semiSupervisedFactor);
+    double superFactor = trainOpts.semiSupervisedFactor;
 
-    for (Table.Cell<String, String, Double> cell : counts) {
-      double update = trainOpts.maximizer.maximize(cell, marginals);
-      totalChange += Math.abs(probs.prob(cell.getRowKey(), cell.getColumnKey()) - update);
-      probs.setProb(cell.getRowKey(), cell.getColumnKey(), update);
+    for (Pair<String,String> xy : ProbTable.unionOfAllCells(counts, labelledProbs)) {
+      String x = xy.getLeft();
+      String y = xy.getRight();
+      double countExp = counts.prob(x, y);
+      double unsupervised = trainOpts.maximizer.maximize(immutableCell(x, y, countExp), marginals);
+      double supervised = labelledProbs.prob(x, y);
+      double update = (unsuperFactor * unsupervised) + (superFactor * supervised);
+      assertProb(update);
+
+      double current = probs.prob(x, y);
+      totalChange += Math.abs(current - update);
+      probs.setProb(x, y, update);
     }
 
     counts.clear();
@@ -240,7 +261,7 @@ public class AlignerTrainer {
   private void initCounts(List<InputRecord> records) {
     for (Pair<String, String> gram : Grams.wordPairsToAllGrams(records, gramOpts)) {
       // TODO(SA) why wouldn't I increment here?
-      counts.setProb(gram.getLeft(), gram.getRight(), 1);
+      counts.addProb(gram.getLeft(), gram.getRight(), 1);
     }
   }
 

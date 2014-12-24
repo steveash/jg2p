@@ -17,10 +17,14 @@
 package com.github.steveash.jg2p;
 
 import com.github.steveash.jg2p.align.AlignModel;
+import com.github.steveash.jg2p.align.Aligner;
+import com.github.steveash.jg2p.aligntag.AlignTagModel;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 import com.github.steveash.jg2p.util.ReadWrite;
 
 import java.io.IOException;
+
+import static com.github.steveash.jg2p.util.ReadWrite.readFromClasspath;
 
 /**
  * @author Steve Ash
@@ -37,13 +41,13 @@ public class PhoneticEncoderFactory {
   }
 
   public static PhoneticEncoder makeFrom(String alignModelFile, String crfModelFile) throws IOException, ClassNotFoundException {
-    AlignModel alignModel = ReadWrite.readFromClasspath(AlignModel.class, alignModelFile);
-    PhonemeCrfModel phoneModel = ReadWrite.readFromClasspath(PhonemeCrfModel.class, crfModelFile);
+    AlignTagModel alignModel = readFromClasspath(AlignTagModel.class, alignModelFile);
+    PhonemeCrfModel phoneModel = readFromClasspath(PhonemeCrfModel.class, crfModelFile);
 
     return new PhoneticEncoder(alignModel, phoneModel, BEST_ALIGNMENTS, ALIGN_MIN_SCORE, TAG_MIN_SCORE);
   }
 
-  public static PhoneticEncoder make(AlignModel alignModel, PhonemeCrfModel crfModel) {
+  public static PhoneticEncoder make(Aligner alignModel, PhonemeCrfModel crfModel) {
     return new PhoneticEncoder(alignModel, crfModel, BEST_ALIGNMENTS, ALIGN_MIN_SCORE, TAG_MIN_SCORE);
   }
 }

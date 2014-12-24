@@ -71,16 +71,27 @@ public class AlignTagTrainer {
 
   public void trainAndSave(List<SeqInputReader.AlignGroup> inputs) throws IOException {
     InstanceList examples = makeExamples(inputs);
-    trainExamples(examples);
+//    trainExamples(examples);
+    log.info("Training on whole data...");
+    TransducerTrainer trainer = trainOnce(examples.getPipe(), examples);
+    writeModel(trainer);
   }
 
-  public PhonemeCrfModel train(List<Alignment> inputs) {
+  public AlignTagModel train(List<Alignment> inputs) {
+    return train(inputs, false);
+  }
+
+  public AlignTagModel train(List<Alignment> inputs, boolean eval) {
     InstanceList examples = makeExamplesFromAligns(inputs);
     Pipe pipe = examples.getPipe();
 
     log.info("Training on whole data...");
     TransducerTrainer trainer = trainOnce(pipe, examples);
-    return new PhonemeCrfModel((CRF) trainer.getTransducer());
+    if (eval) {
+      evaluateOnce(0, examples, new InstanceList(pipe), trainer);
+    }
+
+    return new AlignTagModel((CRF) trainer.getTransducer());
   }
 
   private void trainExamples(InstanceList examples) throws IOException {
@@ -115,12 +126,12 @@ public class AlignTagTrainer {
   private void writeModel(TransducerTrainer trainer) throws IOException {
     File file = new File("alignTag_crf.dat");
     CRF crf = (CRF) trainer.getTransducer();
-    ReadWrite.writeTo(new PhonemeCrfModel(crf), file);
+    ReadWrite.writeTo(new AlignTagModel(crf), file);
     log.info("Wrote for whole data");
   }
 
   private double evaluateOnce(int round, InstanceList trainData, InstanceList testData, TransducerTrainer trainer) {
-    log.info("Starting evaluation for round {}...", round);
+    log.info("AlignTagTrainer evaluation for round {}...", round);
     TokenAccuracyEvaluator teval = new TokenAccuracyEvaluator(trainData, "trainAndSave", testData, "test");
     teval.evaluate(trainer);
     double testAccuracy = teval.getAccuracy("test");

@@ -16,14 +16,17 @@
 
 package com.github.steveash.jg2p;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 
+import com.github.steveash.jg2p.align.Aligner;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.align.AlignModel;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,9 +34,13 @@ import java.util.List;
 /**
  * @author Steve Ash
  */
-public class PhoneticEncoder {
+public class PhoneticEncoder implements Serializable {
+  private static final long serialVersionUID = 5996956897894317622L;
 
-  private final AlignModel aligner;
+  public static final Joiner pipeJoiner = Joiner.on('|');
+  public static final Joiner spaceJoiner = Joiner.on(' ');
+
+  private final Aligner aligner;
   private final PhonemeCrfModel phoneTagger;
   private final int bestAlignments;
   private final double alignMinScore;
@@ -58,16 +65,11 @@ public class PhoneticEncoder {
 
     @Override
     public String toString() {
-      return "Encoding{" +
-             "phones=" + phones +
-             ", tagScore=" + tagScore +
-             ", alignment=" + alignment +
-             ", alignScore=" + alignScore +
-             '}';
+      return pipeJoiner.join(alignment) + " -> " + spaceJoiner.join(phones);
     }
   }
 
-  public PhoneticEncoder(AlignModel aligner, PhonemeCrfModel phoneTagger, int bestAlignments, double alignMinScore,
+  public PhoneticEncoder(Aligner aligner, PhonemeCrfModel phoneTagger, int bestAlignments, double alignMinScore,
                          double tagMinScore) {
     this.aligner = aligner;
     this.phoneTagger = phoneTagger;
@@ -103,6 +105,18 @@ public class PhoneticEncoder {
       return results.subList(0, bestAlignments);
     }
     return results;
+  }
+
+  public PhoneticEncoder withAligner(Aligner aligner) {
+    return new PhoneticEncoder(aligner, this.phoneTagger, this.bestAlignments, this.alignMinScore, this.tagMinScore);
+  }
+
+  public Aligner getAligner() {
+    return aligner;
+  }
+
+  public PhonemeCrfModel getPhoneTagger() {
+    return phoneTagger;
   }
 
   private static final Ordering<Encoding> OrderByTagScore = new Ordering<Encoding>() {

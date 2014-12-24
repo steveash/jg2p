@@ -1,7 +1,9 @@
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.Maximizer
 import com.github.steveash.jg2p.align.TrainOptions
-import com.github.steveash.jg2p.train.EncoderTrainer
+import com.github.steveash.jg2p.train.JointEncoderTrainer
+import com.github.steveash.jg2p.train.SimpleEncoderTrainer
+import com.github.steveash.jg2p.util.ReadWrite
 
 /*
  * Copyright 2014 Steve Ash
@@ -24,14 +26,17 @@ import com.github.steveash.jg2p.train.EncoderTrainer
  * overall performance by measuring the actual error rates for the overall process
  * @author Steve Ash
  */
-def trainFile = "cmudict.5kA.txt"
-def testFile = "cmudict.5kB.txt"
+def trainFile = "cmudict.2kA.txt"
+def testFile = "cmudict.2kB.txt"
 def train = InputReader.makeDefaultFormatReader().readFromClasspath(trainFile)
 def test = InputReader.makeDefaultFormatReader().readFromClasspath(testFile)
 def opts = new TrainOptions()
-opts.maxXGram = 3
+opts.maxXGram = 2
 opts.includeXEpsilons = false
 opts.maximizer = Maximizer.JOINT
 
-def t = new EncoderTrainer()
-t.trainAndEval(train, test, opts)
+//def t = new SimpleEncoderTrainer()
+def t = new JointEncoderTrainer()
+def model = t.trainAndEval(train, test, opts)
+ReadWrite.writeTo(model, new File("../resources/encoder.dat"))
+println "Wrote model"

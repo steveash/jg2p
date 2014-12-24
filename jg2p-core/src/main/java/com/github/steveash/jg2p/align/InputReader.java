@@ -56,6 +56,10 @@ public class InputReader {
     return new InputReader(defaultLineReader);
   }
 
+  public static InputReader makePSaurusReader() {
+    return new InputReader(psaurusLineReader);
+  }
+
   public static InputReader makeCmuReader() {
     return new InputReader(cmuReader);
   }
@@ -114,6 +118,16 @@ public class InputReader {
     public InputRecord parse(String line) {
       Iterator<String> iter = tabSplit.split(line).iterator();
       Word x = Word.fromSpaceSeparated(iter.next());
+      Word y = Word.fromSpaceSeparated(iter.next());
+      return new InputRecord(x, y);
+    }
+  };
+
+  private static LineReader psaurusLineReader = new LineReader() {
+    @Override
+    public InputRecord parse(String line) {
+      Iterator<String> iter = tabSplit.split(line).iterator();
+      Word x = Word.fromNormalString(iter.next());
       Word y = Word.fromSpaceSeparated(iter.next());
       return new InputRecord(x, y);
     }

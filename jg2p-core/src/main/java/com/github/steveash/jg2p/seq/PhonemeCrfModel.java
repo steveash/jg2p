@@ -20,6 +20,7 @@ import com.google.common.collect.Lists;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import cc.mallet.fst.CRF;
@@ -42,6 +43,17 @@ public class PhonemeCrfModel implements Serializable {
 
     public double sequenceProbability() {
       return Math.exp(logScore);
+    }
+
+    public boolean isEqualTo(Iterable<String> expected) {
+      Iterator<String> iter = expected.iterator();
+      for (int i = 0; i < phones.size(); i++) {
+        if (!iter.hasNext()) return false;
+        String next = iter.next();
+        if (!phones.get(i).equals(next)) return false;
+      }
+      // got through all of the phones, make sure that the iterator is empty too
+      return !iter.hasNext();
     }
   }
 

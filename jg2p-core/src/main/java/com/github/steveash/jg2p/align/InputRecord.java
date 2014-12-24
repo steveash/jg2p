@@ -48,4 +48,6 @@ public class InputRecord extends Pair<Word, Word> {
   public Word setValue(Word value) {
     throw new IllegalStateException("Word pairs are immutable");
   }
+
+
 }

@@ -17,16 +17,22 @@
 package com.github.steveash.jg2p.align;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 
 import com.carrotsearch.hppc.ObjectDoubleMap;
 import com.carrotsearch.hppc.ObjectDoubleOpenHashMap;
+import com.github.steveash.jg2p.seq.StringListToTokenSequence;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import static com.github.steveash.jg2p.util.Assert.assertProb;
 
@@ -36,8 +42,29 @@ import static com.github.steveash.jg2p.util.Assert.assertProb;
  * @author Steve Ash
  */
 public class ProbTable implements Iterable<Table.Cell<String,String,Double>>, Externalizable {
-
+  private static final long serialVersionUID = -8001165446102770332L;
   public static final double minLogProb = -1e12;
+
+  /**
+   * Returns a set of all non-empty x,y pairs from a unioned with all non-empty x,y pairs from b
+   * @param a
+   * @param b
+   * @return
+   */
+  public static Set<Pair<String, String>> unionOfAllCells(ProbTable a, ProbTable b) {
+    Set<Pair<String, String>> xys = Sets.newHashSetWithExpectedSize(Math.max(a.xyProb.size(), b.xyProb.size()));
+    addAllPresent(a, xys);
+    addAllPresent(b, xys);
+    return xys;
+  }
+
+  private static void addAllPresent(ProbTable tbl, Set<Pair<String, String>> output) {
+    for (Table.Cell<String, String, Double> aa : tbl) {
+      if (aa.getValue() != null && aa.getValue() > 0) {
+        output.add(Pair.of(aa.getRowKey(), aa.getColumnKey()));
+      }
+    }
+  }
 
   @Override
   public Iterator<Table.Cell<String, String, Double>> iterator() {
@@ -113,6 +140,17 @@ public class ProbTable implements Iterable<Table.Cell<String,String,Double>>, Ex
       sum += cell.getValue();
     }
     return new Marginals(x, y, sum);
+  }
+
+  public ProbTable makeNormalizedCopy() {
+    ProbTable result = new ProbTable();
+    Marginals marginals = this.calculateMarginals();
+    double sum = marginals.sumOfAllJointProbabilities();
+    for (Table.Cell<String, String, Double> cell : this) {
+      double normalValue = cell.getValue() / sum;
+      result.setProb(cell.getRowKey(), cell.getColumnKey(), normalValue);
+    }
+    return result;
   }
 
   @Override

@@ -20,7 +20,6 @@ import com.google.common.collect.Lists;
 
 import com.github.steveash.jg2p.PhoneticEncoder;
 import com.github.steveash.jg2p.align.AlignModel;
-import com.github.steveash.jg2p.align.Aligner;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.align.InputRecord;
 import com.github.steveash.jg2p.align.TrainOptions;
@@ -37,18 +36,25 @@ public abstract class AbstractEncoderTrainer {
 
   private static final Logger log = LoggerFactory.getLogger(SimpleEncoderTrainer.class);
 
+  private List<InputRecord> train;
+  private List<InputRecord> test;
+
   public PhoneticEncoder trainAndEval(List<InputRecord> train, List<InputRecord> test, TrainOptions opts) {
+    this.train = train;
+    this.test = test;
+
     PhoneticEncoder encoder = train(train, opts);
-    eval(train, test, encoder);
+    eval(encoder, "FINAL", EncoderEval.PrintOpts.ALL);
     return encoder;
   }
 
-  private void eval(List<InputRecord> train, List<InputRecord> test, PhoneticEncoder encoder) {
+  protected void eval(PhoneticEncoder encoder, String phaseLabel, EncoderEval.PrintOpts opts) {
     EncoderEval eval = new EncoderEval(encoder);
-    log.info("--------------------- Eval on training data ------------------------");
-    eval.evalAndPrint(train);
-    log.info("--------------------- Eval on testing data ------------------------");
-    eval.evalAndPrint(test);
+    log.info("--------------------- " + phaseLabel + " Eval on training data ------------------------");
+    eval.evalAndPrint(train, opts);
+    log.info("--------------------- " + phaseLabel + " Eval on testing data ------------------------");
+    EncoderEval eval2 = new EncoderEval(encoder);
+    eval2.evalAndPrint(test, opts);
   }
 
   protected abstract PhoneticEncoder train(List<InputRecord> inputs, TrainOptions opts);

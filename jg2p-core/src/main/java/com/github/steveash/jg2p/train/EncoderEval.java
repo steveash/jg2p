@@ -18,16 +18,12 @@ package com.github.steveash.jg2p.train;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.Multisets;
+import com.google.common.primitives.Ints;
 
 import com.github.steveash.jg2p.PhoneticEncoder;
-import com.github.steveash.jg2p.Word;
 import com.github.steveash.jg2p.align.InputRecord;
 import com.github.steveash.jg2p.util.ListEditDistance;
 import com.github.steveash.jg2p.util.Percent;
@@ -36,14 +32,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
 import static com.google.common.collect.Iterables.limit;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Multisets.copyHighestCountFirst;
 
 /**
@@ -56,6 +48,8 @@ public class EncoderEval {
 
   private static final int EXAMPLE_COUNT = 100;
   private static final int MAX_EXAMPLE_TO_PRINT = 15;
+
+  public enum PrintOpts { ALL, SIMPLE }
 
   private final PhoneticEncoder encoder;
   private final boolean collectExamples;
@@ -78,7 +72,7 @@ public class EncoderEval {
     this.collectExamples = collectExamples;
   }
 
-  public void evalAndPrint(List<InputRecord> inputs) {
+  public void evalAndPrint(List<InputRecord> inputs, PrintOpts opts) {
 
     totalPhones = 0;
     totalRightPhones = 0;
@@ -119,42 +113,48 @@ public class EncoderEval {
           }
         }
       }
-      if (collectExamples && phonesDiff > 0 && totalWords % 16 == 0) {
+      if (collectExamples && phonesDiff > 0) {
         Pair<InputRecord, List<PhoneticEncoder.Encoding>> example = Pair.of(input, encodings);
         List<Pair<InputRecord,List<PhoneticEncoder.Encoding>>> examples = this.examples.get(phonesDiff);
         if (examples.size() < EXAMPLE_COUNT) {
           examples.add(example);
         } else {
-          examples.set(rand.nextInt(examples.size()), example);
+          int victim = rand.nextInt(Ints.saturatedCast(totalWords));
+          if (victim < EXAMPLE_COUNT) {
+            examples.set(victim, example);
+          }
         }
       }
 
-      if (totalWords % 500 == 0) {
+      if (totalWords % 500 == 0 && opts != PrintOpts.SIMPLE) {
         log.info("Processed " + totalWords + " ...");
         if (totalWords % 10_000 == 0) {
-          printStats();
+          printStats(opts);
         }
       }
     }
-    printStats();
+    printStats(opts);
   }
 
-  private void printStats() {
-    if (collectExamples) {
-      printExamples();
-    }
-    log.info("Phone edit distance histo: ");
-    int total = 0;
-    for (Multiset.Entry<Integer> entry : phoneEditHisto.entrySet()) {
-      total += entry.getCount();
-      log.info("  " + entry.getElement() + " = " + entry.getCount() + " - " + Percent.print(total, totalWords));
-    }
-    log.info("No phones words that were skipped " + noCodes);
-    log.info("Answer found in top-k answer?");
-    total = 0;
-    for (Multiset.Entry<Integer> entry : copyHighestCountFirst(rightAnswerInTop).entrySet()) {
-      total += entry.getCount();
-      log.info("  In top " + entry.getElement() + " - " + entry.getCount() + " - " + Percent.print(total, totalWords));
+  private void printStats(PrintOpts opts) {
+    if (opts != PrintOpts.SIMPLE) {
+      if (collectExamples) {
+        printExamples();
+      }
+      log.info("Phone edit distance histo: ");
+      int total = 0;
+      for (Multiset.Entry<Integer> entry : phoneEditHisto.entrySet()) {
+        total += entry.getCount();
+        log.info("  " + entry.getElement() + " = " + entry.getCount() + " - " + Percent.print(total, totalWords));
+      }
+      log.info("No phones words that were skipped " + noCodes);
+      log.info("Answer found in top-k answer?");
+      total = 0;
+      for (Multiset.Entry<Integer> entry : copyHighestCountFirst(rightAnswerInTop).entrySet()) {
+        total += entry.getCount();
+        log.info(
+            "  In top " + entry.getElement() + " - " + entry.getCount() + " - " + Percent.print(total, totalWords));
+      }
     }
 
     log.info("Total words " + totalWords + ", total right " + totalRightWords + " - " + Percent

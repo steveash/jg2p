@@ -19,6 +19,7 @@ package com.github.steveash.jg2p;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -36,6 +37,10 @@ public class Word {
 
   public static Word fromSpaceSeparated(String spaceSeparated) {
     return new Word(splitter.splitToList(spaceSeparated));
+  }
+
+  public static Word fromGrams(Iterable<String> grams) {
+    return new Word(ImmutableList.copyOf(grams));
   }
 
   public static Word fromNormalString(String normalString) {
@@ -103,5 +108,28 @@ public class Word {
 
   public List<String> getValue() {
     return value;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    Word word = (Word) o;
+
+    if (!value.equals(word.value)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    return value.hashCode();
   }
 }

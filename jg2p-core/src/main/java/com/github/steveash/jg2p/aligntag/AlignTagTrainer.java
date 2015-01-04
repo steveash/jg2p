@@ -19,14 +19,12 @@ package com.github.steveash.jg2p.aligntag;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 import com.github.steveash.jg2p.Word;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.seq.NeighborTokenFeature;
-import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 import com.github.steveash.jg2p.seq.SeqInputReader;
 import com.github.steveash.jg2p.seq.StringListToTokenSequence;
 import com.github.steveash.jg2p.seq.TokenSequenceToFeature;
@@ -38,10 +36,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
-
-import javax.annotation.Nullable;
 
 import cc.mallet.fst.CRF;
 import cc.mallet.fst.CRFTrainerByThreadedLabelLikelihood;
@@ -58,8 +55,6 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
 /**
  * Trains a CRF to use the alignment model
  *
@@ -69,7 +64,7 @@ public class AlignTagTrainer {
 
   private static final Logger log = LoggerFactory.getLogger(AlignTagTrainer.class);
 
-  public void trainAndSave(List<SeqInputReader.AlignGroup> inputs) throws IOException {
+  public void trainAndSave(Collection<SeqInputReader.AlignGroup> inputs) throws IOException {
     InstanceList examples = makeExamples(inputs);
 //    trainExamples(examples);
     log.info("Training on whole data...");
@@ -77,11 +72,11 @@ public class AlignTagTrainer {
     writeModel(trainer);
   }
 
-  public AlignTagModel train(List<Alignment> inputs) {
+  public AlignTagModel train(Collection<Alignment> inputs) {
     return train(inputs, false);
   }
 
-  public AlignTagModel train(List<Alignment> inputs, boolean eval) {
+  public AlignTagModel train(Collection<Alignment> inputs, boolean eval) {
     InstanceList examples = makeExamplesFromAligns(inputs);
     Pipe pipe = examples.getPipe();
 
@@ -159,7 +154,7 @@ public class AlignTagTrainer {
     return trainer;
   }
 
-  private InstanceList makeExamples(List<SeqInputReader.AlignGroup> inputs) {
+  private InstanceList makeExamples(Collection<SeqInputReader.AlignGroup> inputs) {
     Iterable<Alignment> alignsToTrain = getAlignsFromGroup(inputs);
     return makeExamplesFromAligns(alignsToTrain);
   }
@@ -188,7 +183,7 @@ public class AlignTagTrainer {
     return instances;
   }
 
-  private Iterable<Alignment> getAlignsFromGroup(List<SeqInputReader.AlignGroup> inputs) {
+  private Iterable<Alignment> getAlignsFromGroup(Collection<SeqInputReader.AlignGroup> inputs) {
     return Iterables.transform(inputs, new Function<SeqInputReader.AlignGroup, Alignment>() {
       @Override
       public Alignment apply(SeqInputReader.AlignGroup input) {
@@ -222,8 +217,8 @@ public class AlignTagTrainer {
   private List<NeighborTokenFeature.NeighborWindow> makeNeighbors() {
     return ImmutableList.of(
       new NeighborTokenFeature.NeighborWindow(1, 1),
-//      new NeighborTokenFeature.NeighborWindow(1, 2),
-//      new NeighborTokenFeature.NeighborWindow(1, 3),
+      new NeighborTokenFeature.NeighborWindow(1, 2),
+      new NeighborTokenFeature.NeighborWindow(1, 3),
       new NeighborTokenFeature.NeighborWindow(-1, 1),
       new NeighborTokenFeature.NeighborWindow(-2, 2),
       new NeighborTokenFeature.NeighborWindow(-3, 3)

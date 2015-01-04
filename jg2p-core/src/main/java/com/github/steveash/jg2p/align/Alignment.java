@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 
 import com.github.steveash.jg2p.Word;
 import com.github.steveash.jg2p.util.Funcs;
+import com.github.steveash.jg2p.util.Zipper;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -73,6 +74,10 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
 
   Alignment finish() {
     return new Alignment(input, Lists.reverse(this.graphones), score);
+  }
+
+  public Alignment withReplacedYs(Iterable<String> newYs) {
+    return new Alignment(input, Zipper.replaceRight(this.graphones, newYs), score);
   }
 
   @Override
@@ -127,6 +132,10 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
     return input.getValue();
   }
 
+  public Pair<Word,Word> xyWordPair() {
+    return Pair.of(input, Word.fromGrams(getYTokens()));
+  }
+
   /**
    * @return a list of flags that indicate the _last_ letter in the grapheme group for the X word; this doesn't work if
    * you allow epsilons on the X side
@@ -170,6 +179,29 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
   private List<String> getNextX(Iterator<Pair<String, String>> iter) {
     Pair<String, String> graphone = iter.next();
     return spaceSplit.splitToList(graphone.getLeft());
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    Alignment pairs = (Alignment) o;
+
+    if (!graphones.equals(pairs.graphones)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    return graphones.hashCode();
   }
 
   @Override

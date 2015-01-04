@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 import cc.mallet.fst.CRF;
@@ -54,7 +55,7 @@ public class PhonemeCrfTrainer implements AutoCloseable {
 
   private static final Logger log = LoggerFactory.getLogger(PhonemeCrfTrainer.class);
 
-  public static PhonemeCrfTrainer openAndTrain(List<Alignment> examples) {
+  public static PhonemeCrfTrainer openAndTrain(Collection<Alignment> examples) {
     Pipe pipe = makePipe();
     InstanceList instances = makeExamplesFromAligns(examples, pipe);
 
@@ -74,7 +75,7 @@ public class PhonemeCrfTrainer implements AutoCloseable {
     this.trainer = trainer;
   }
 
-  public void trainFor(List<Alignment> inputs) {
+  public void trainFor(Collection<Alignment> inputs) {
     InstanceList examples = makeExamplesFromAligns(inputs, pipe);
     trainForInstances(examples);
   }
@@ -82,6 +83,7 @@ public class PhonemeCrfTrainer implements AutoCloseable {
   public void trainForInstances(InstanceList examples) {
     Stopwatch watch = Stopwatch.createStarted();
     trainer.train(examples);
+    trainer.shutdown(); // just closes the pool; next call to train will create a new one
     watch.stop();
     log.info("Training took " + watch);
   }
@@ -196,6 +198,6 @@ public class PhonemeCrfTrainer implements AutoCloseable {
 
   @Override
   public void close() {
-    trainer.shutdown();
+    // we shut down the pool after training iterations so we don't leak pools (le sigh mallet)
   }
 }

@@ -34,6 +34,10 @@ public class InputRecord extends Pair<Word, Word> {
     this.yWord = yWord;
   }
 
+  public Pair<Word,Word> xyWordPair() {
+    return Pair.of(xWord, yWord);
+  }
+
   @Override
   public Word getLeft() {
     return xWord;

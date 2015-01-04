@@ -32,7 +32,7 @@ def test = InputReader.makeDefaultFormatReader().readFromClasspath(testFile)
 def enc = ReadWrite.readFromClasspath(PhoneticEncoder.class, "encoder.dat")
 
 def eval = new EncoderEval(enc, true)
-eval.evalAndPrint(train)
+eval.evalAndPrint(train, com.github.steveash.jg2p.train.EncoderEval.PrintOpts.ALL)
 println "Examples"
 eval.examples.asMap().entrySet().each { entry ->
   println " --- Examples at edit " + entry.key + " --- "

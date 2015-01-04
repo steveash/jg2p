@@ -23,7 +23,7 @@ def cmuFile = "cmudict.0.7a"
 def encoder = PhoneticEncoderFactory.makeFrom("cmu_crfAT_2eps.dat", "cmu_crfPT_2eps_32112.dat")
 def training = InputReader.makeCmuReader().readFromClasspath(cmuFile)
 
-new EncoderEval(encoder, true).evalAndPrint(training)
+new EncoderEval(encoder, true).evalAndPrint(training, com.github.steveash.jg2p.train.EncoderEval.PrintOpts.ALL)
 //PhonemeCrfModel phoneModel = PhonemeCrfInputOutput.readFromClasspath("g2p_crf.dat");
 //def crf = phoneModel.crf
 //new File("model.txt").withPrintWriter { pw ->

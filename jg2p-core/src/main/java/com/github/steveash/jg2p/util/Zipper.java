@@ -59,4 +59,15 @@ public class Zipper {
     }
     return result;
   }
+
+  public static <A,B> List<Pair<A,B>> replaceRight(List<Pair<A,B>> original, Iterable<B> newRight) {
+    ArrayList<Pair<A, B>> result = Lists.newArrayListWithCapacity(original.size());
+    Iterator<B> iter = newRight.iterator();
+    for (Pair<A, B> pair : original) {
+      Preconditions.checkArgument(iter.hasNext(), "newRight is smaller than original");
+      result.add(Pair.of(pair.getLeft(), iter.next()));
+    }
+    Preconditions.checkArgument(!iter.hasNext(), "newRight is bigger than original");
+    return result;
+  }
 }

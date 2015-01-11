@@ -16,6 +16,7 @@
 
 package com.github.steveash.jg2p;
 
+import com.github.steveash.jg2p.util.Zipper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Lists;
@@ -85,7 +86,8 @@ public class PhoneticEncoder implements Serializable {
 
   public List<Encoding> encode(Word input) {
     List<Alignment> alignments = aligner.inferAlignments(input, bestAlignments);
-    ArrayList<Encoding> results = Lists.newArrayListWithCapacity(alignments.size());
+    alignments.add(makeOneToOne(input));
+    ArrayList<Encoding> results = Lists.newArrayListWithCapacity(alignments.size() + 1);
     for (Alignment alignment : alignments) {
       if (!results.isEmpty() && alignment.getScore() < alignMinScore) {
         continue;
@@ -105,6 +107,10 @@ public class PhoneticEncoder implements Serializable {
       return results.subList(0, bestAlignments);
     }
     return results;
+  }
+
+  private Alignment makeOneToOne(Word input) {
+    return new Alignment(input, Zipper.upTo(input.getValue(), ""), 0);
   }
 
   public PhoneticEncoder withAligner(Aligner aligner) {

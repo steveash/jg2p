@@ -132,4 +132,9 @@ public class Word {
   public int hashCode() {
     return value.hashCode();
   }
+
+  @Override
+  public String toString() {
+    return getAsSpaceString();
+  }
 }

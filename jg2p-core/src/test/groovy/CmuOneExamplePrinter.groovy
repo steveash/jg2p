@@ -21,8 +21,8 @@ import com.github.steveash.jg2p.util.ReadWrite
 /**
  * @author Steve Ash
  */
-def enc = ReadWrite.readFromClasspath(PhoneticEncoder.class, "encoder.dat")
-def encodes = enc.encode(Word.fromNormalString("CLAMS"))
+def enc = ReadWrite.readFromClasspath(PhoneticEncoder.class, "cmu_all_jt_2eps_winB.model.dat")
+def encodes = enc.encode(Word.fromNormalString("ABADI"))
 encodes.each {
   println it.phones.join(" ") + "  align: " + it.alignment.join("|")
 }

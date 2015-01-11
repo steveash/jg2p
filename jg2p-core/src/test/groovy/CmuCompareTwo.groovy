@@ -33,13 +33,17 @@ import groovy.transform.Field
   println "-----------------------------"
 }
 
-def trainFile = "cmudict.5kA.txt"
-def testFile = "cmudict.5kB.txt"
-def train = InputReader.makeDefaultFormatReader().readFromClasspath(trainFile)
-def test = InputReader.makeDefaultFormatReader().readFromClasspath(testFile)
-def enc = ReadWrite.readFromClasspath(PhoneticEncoder.class, "encoder_with_old_align.dat")
-def alignTag = ReadWrite.readFromClasspath(AlignTagModel, "aligntag.dat")
-def enc2 = enc.withAligner(alignTag)
+//def trainFile = "cmudict.5kA.txt"
+//def testFile = "cmudict.5kB.txt"
+def trainFile = "g014b2b.train"
+def testFile = "g014b2b.test"
+//def train = InputReader.makeDefaultFormatReader().readFromClasspath(trainFile)
+//def test = InputReader.makeDefaultFormatReader().readFromClasspath(testFile)
+def train = InputReader.makePSaurusReader().readFromClasspath(trainFile)
+def test = InputReader.makePSaurusReader().readFromClasspath(testFile)
+def enc = ReadWrite.readFromClasspath(PhoneticEncoder.class, "cmu_all_jt_2eps_winB.model.dat")
+//def alignTag = ReadWrite.readFromClasspath(AlignTagModel, "aligntag.dat")
+//def enc2 = enc.withAligner(alignTag)
 
 def newWins = []
 def oldWins = []
@@ -47,10 +51,10 @@ def bothLost = []
 int bothWin = 0;
 int total = 0;
 
-for (InputRecord input : train) {
+for (InputRecord input : test) {
 
   List<PhoneticEncoder.Encoding> ans = enc.encode(input.xWord);
-  List<PhoneticEncoder.Encoding> ans2 = enc2.encode(input.xWord);
+  List<PhoneticEncoder.Encoding> ans2 = ans // enc2.encode(input.xWord);
 
   total += 1;
   def exp = input.yWord.value
@@ -69,7 +73,10 @@ for (InputRecord input : train) {
     newWins << [old, neww, input]
   } else {
     bothLost << [old, neww, input];
+    println "old " + old + " from " + input
   }
+
+  if (bothLost.size() > 15) break;
 }
 
 println " ---- Old Wins ---- "

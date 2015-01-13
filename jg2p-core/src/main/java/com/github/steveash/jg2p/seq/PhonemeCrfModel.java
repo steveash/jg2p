@@ -16,6 +16,7 @@
 
 package com.github.steveash.jg2p.seq;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
 import java.io.Serializable;
@@ -31,6 +32,7 @@ import cc.mallet.types.Sequence;
  * @author Steve Ash
  */
 public class PhonemeCrfModel implements Serializable {
+  private static final Splitter split =com.google.common.base.Splitter.on(' ');
 
   public static class TagResult {
     public final List<String> phones;
@@ -83,7 +85,15 @@ public class PhonemeCrfModel implements Serializable {
   private List<String> makePhones(Sequence<?> labels) {
     ArrayList<String> phones = Lists.newArrayListWithCapacity(labels.size());
     for (int i = 0; i < labels.size(); i++) {
-      phones.add(labels.get(i).toString());
+      // if our CRF can predict two phonemes at once then we need to unpack them here
+      String predicted = labels.get(i).toString();
+      if (predicted.contains(" ")) {
+        for (String singlePhone : split.split(predicted)) {
+          phones.add(singlePhone);
+        }
+      } else {
+        phones.add(predicted);
+      }
     }
     return phones;
   }

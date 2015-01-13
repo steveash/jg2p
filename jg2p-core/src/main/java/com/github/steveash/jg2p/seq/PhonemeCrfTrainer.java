@@ -103,7 +103,9 @@ public class PhonemeCrfTrainer implements AutoCloseable {
     CRF crf = new CRF(pipe, null);
     crf.addOrderNStates(examples, new int[]{1}, null, null, null, null, false);
     crf.addStartState();
-    crf.setWeightsDimensionAsIn(examples, false);
+//    crf.setWeightsDimensionAsIn(examples, false);
+//    crf.addFullyConnectedStatesForBiLabels();
+//    crf.addStartState();
     return crf;
   }
 
@@ -175,24 +177,41 @@ public class PhonemeCrfTrainer implements AutoCloseable {
         new StringListToTokenSequence(alpha, labelAlpha),   // convert to token sequence
         new TokenSequenceLowercase(),                       // make all lowercase
         new NeighborTokenFeature(true, makeNeighbors()),         // grab neighboring graphemes
+        new NeighborShapeFeature(true, makeShapeNeighs()),
         new TokenSequenceToFeature(),                       // convert the strings in the text to features
         new TokenSequence2FeatureVectorSequence(alpha, true, true),
         labelPipe
     ));
   }
 
-  private static List<NeighborTokenFeature.NeighborWindow> makeNeighbors() {
+  private static List<TokenWindow> makeShapeNeighs() {
     return ImmutableList.of(
-        new NeighborTokenFeature.NeighborWindow(1, 1),
-        new NeighborTokenFeature.NeighborWindow(2, 1),
-        new NeighborTokenFeature.NeighborWindow(3, 1),
-//        new NeighborTokenFeature.NeighborWindow(1, 2),
-//              new NeighborTokenFeature.NeighborWindow(1, 3),
-        new NeighborTokenFeature.NeighborWindow(-1, 1),
-        new NeighborTokenFeature.NeighborWindow(-2, 1),
-        new NeighborTokenFeature.NeighborWindow(-3, 1),
-        new NeighborTokenFeature.NeighborWindow(-2, 2)
-//        new NeighborTokenFeature.NeighborWindow(-3, 3)
+            new TokenWindow(-5, 5),
+            new TokenWindow(-4, 4),
+            new TokenWindow(-3, 3),
+            new TokenWindow(-2, 2),
+            new TokenWindow(-1, 1),
+            new TokenWindow(1, 1),
+            new TokenWindow(1, 2),
+            new TokenWindow(1, 3),
+            new TokenWindow(1, 4),
+            new TokenWindow(1, 5)
+        );
+  }
+
+  private static List<TokenWindow> makeNeighbors() {
+    return ImmutableList.of(
+        new TokenWindow(1, 1),
+        new TokenWindow(2, 1),
+        new TokenWindow(3, 1),
+//        new TokenWindow(1, 2),
+//              new TokenWindow(1, 3),
+        new TokenWindow(-1, 1),
+        new TokenWindow(-2, 1),
+        new TokenWindow(-3, 1),
+        new TokenWindow(-2, 2)
+//        new TokenWindow(-3, 3)
+//        new TokenWindow(-4, 4),
     );
   }
 

@@ -51,7 +51,11 @@ public class AlignerTrainer {
   public AlignerTrainer(TrainOptions trainOpts) {
     this.trainOpts = trainOpts;
     this.gramOpts = trainOpts.makeGramOptions();
-    this.walker = new FullXyWalker(gramOpts);
+    if (trainOpts.useWindowWalker) {
+      this.walker = new WindowXyWalker(gramOpts);
+    } else {
+      this.walker = new FullXyWalker(gramOpts);
+    }
   }
 
   public AlignModel train(List<InputRecord> records) {

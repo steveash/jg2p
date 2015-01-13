@@ -62,6 +62,9 @@ public class TrainOptions {
   @Option(name = "--semiSupervisedFactor")
   public double semiSupervisedFactor = 0.6;
 
+  @Option(name = "--useWindowWalker")
+  public boolean useWindowWalker = false;
+
   @Option(name = "--infile", required = true)
   public File trainingFile;
 

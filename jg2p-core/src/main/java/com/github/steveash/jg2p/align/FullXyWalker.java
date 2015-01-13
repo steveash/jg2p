@@ -97,7 +97,11 @@ public class FullXyWalker implements XyWalker {
         }
         for (int i = 1; i <= opts.getMaxXGram() && (xx + i <= x.unigramCount()); i++) {
           for (int j = 1; j <= opts.getMaxYGram() && (yy + j <= y.unigramCount()); j++) {
-
+            if (opts.isOnlyOneGrams()) {
+              if (i > 1 && j > 1) {
+                continue;
+              }
+            }
             String xGram = x.gram(xx, i);
             String yGram = y.gram(yy, j);
             visitor.visit(xx, xx + i, xGram, yy, yy + j, yGram);

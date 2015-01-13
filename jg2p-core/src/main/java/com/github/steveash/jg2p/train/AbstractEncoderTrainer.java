@@ -52,9 +52,11 @@ public abstract class AbstractEncoderTrainer {
     EncoderEval eval = new EncoderEval(encoder);
     log.info("--------------------- " + phaseLabel + " Eval on training data ------------------------");
     eval.evalAndPrint(train, opts);
-    log.info("--------------------- " + phaseLabel + " Eval on testing data ------------------------");
-    EncoderEval eval2 = new EncoderEval(encoder);
-    eval2.evalAndPrint(test, opts);
+    if (test != null) {
+      log.info("--------------------- " + phaseLabel + " Eval on testing data ------------------------");
+      EncoderEval eval2 = new EncoderEval(encoder);
+      eval2.evalAndPrint(test, opts);
+    }
   }
 
   protected abstract PhoneticEncoder train(List<InputRecord> inputs, TrainOptions opts);

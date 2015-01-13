@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableList;
 
 import com.github.steveash.jg2p.util.TokenSeqUtil;
 
-import java.io.Serializable;
 import java.util.List;
 
 import cc.mallet.pipe.Pipe;
@@ -28,36 +27,23 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.Token;
 import cc.mallet.types.TokenSequence;
 
+import static com.github.steveash.jg2p.seq.TokenWindow.makeTokenWindowsForInts;
+
 /**
  * Creates features using a window that varies by starting point (relative to current) and width
  * @author Steve Ash
  */
 public class NeighborTokenFeature extends Pipe {
 
-  public static class NeighborWindow implements Serializable {
-
-    public final int offset;
-    public final int width;
-
-    public NeighborWindow(int offset, int width) {
-      this.offset = offset;
-      this.width = width;
-    }
-  }
-
   private final boolean includeCurrent;
-  private final ImmutableList<NeighborWindow> windows;
+  private final ImmutableList<TokenWindow> windows;
 
   public NeighborTokenFeature(boolean includeCurrent, int... neighbors) {
     this.includeCurrent = includeCurrent;
-    ImmutableList.Builder<NeighborWindow> builder = ImmutableList.builder();
-    for (int i = 0; i < neighbors.length; i++) {
-      builder.add(new NeighborWindow(neighbors[i], 1));
-    }
-    this.windows = builder.build();
+    this.windows = makeTokenWindowsForInts(neighbors);
   }
 
-  public NeighborTokenFeature(boolean includeCurrent, List<NeighborWindow> windows) {
+  public NeighborTokenFeature(boolean includeCurrent, List<TokenWindow> windows) {
     this.includeCurrent = includeCurrent;
     this.windows = ImmutableList.copyOf(windows);
   }
@@ -68,10 +54,10 @@ public class NeighborTokenFeature extends Pipe {
     for (int i = 0; i < ts.size(); i++) {
       Token t = ts.get(i);
       for (int j = 0; j < windows.size(); j++) {
-        NeighborWindow window = windows.get(j);
-        String windStr = TokenSeqUtil.getWindow(ts, i, window.offset, window.width);
+        TokenWindow window = windows.get(j);
+        String windStr = getWindow(ts, i, window);
         if (windStr == null) continue;
-          String feature = windStr + "@" + window.offset + "x" + window.width;
+          String feature = windStr + "@" + window.offset;
           if (includeCurrent) {
             feature += "^" + t.getText();
           }
@@ -79,5 +65,9 @@ public class NeighborTokenFeature extends Pipe {
         }
       }
     return carrier;
+  }
+
+  protected String getWindow(TokenSequence ts, int i, TokenWindow window) {
+    return TokenSeqUtil.getWindow(ts, i, window.offset, window.width);
   }
 }

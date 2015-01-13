@@ -46,9 +46,9 @@ class NeighborTokenFeatureTest {
   @Test
   public void shouldProcessTokens2() throws Exception {
     def ntf = new NeighborTokenFeature(true, [
-        new NeighborTokenFeature.NeighborWindow(-2, 2),
-        new NeighborTokenFeature.NeighborWindow(-1, 1),
-        new NeighborTokenFeature.NeighborWindow(1, 3),
+        new TokenWindow(-2, 2),
+        new TokenWindow(-1, 1),
+        new TokenWindow(1, 3),
     ])
     def (Instance inst, TokenSequence ts) = make("ST", "E", "PH", "E", "NSON")
     ntf.pipe(inst)

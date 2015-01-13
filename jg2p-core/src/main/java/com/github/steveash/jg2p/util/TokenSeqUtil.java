@@ -49,11 +49,16 @@ public class TokenSeqUtil {
     int eaten = 0;
     while (true) {
       if (strIndex < 0) {
-        current -= 1;
-        if (current < 0) {
-          return null; // ran out of chars to eat
+        findnext: while (true) {
+          current -= 1;
+          if (current < 0) {
+            return null; // ran out of chars to eat
+          }
+          str = ts.get(current).getText();
+          if (str.length() > 0) {
+            break findnext;
+          }
         }
-        str = ts.get(current).getText();
         strIndex = str.length() - 1;
       }
 
@@ -81,11 +86,16 @@ public class TokenSeqUtil {
     int eaten = 0;
     while (true) {
       if (strIndex >= str.length()) {
-        current += 1;
-        if (current > (ts.size() - 1)) {
-          return null; // ran out of chars to eat
+        findnext: while (true) {
+          current += 1;
+          if (current > (ts.size() - 1)) {
+            return null; // ran out of chars to eat
+          }
+          str = ts.get(current).getText();
+          if (str.length() > 0) {
+            break findnext;
+          }
         }
-        str = ts.get(current).getText();
         strIndex = 0;
       }
 

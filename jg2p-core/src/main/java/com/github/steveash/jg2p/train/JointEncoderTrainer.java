@@ -33,6 +33,7 @@ import com.github.steveash.jg2p.align.TrainOptions;
 import com.github.steveash.jg2p.aligntag.AlignTagTrainer;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 import com.github.steveash.jg2p.seq.PhonemeCrfTrainer;
+import com.github.steveash.jg2p.util.Zipper;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -55,7 +56,7 @@ import java.util.Set;
 public class JointEncoderTrainer extends AbstractEncoderTrainer {
 
   private static final Logger log = LoggerFactory.getLogger(JointEncoderTrainer.class);
-  private static final int MAX_JOINT_ITER = 3;
+  private static final int MAX_JOINT_ITER = 2;
 
   @Override
   protected PhoneticEncoder train(List<InputRecord> inputs, TrainOptions opts) {
@@ -72,31 +73,31 @@ public class JointEncoderTrainer extends AbstractEncoderTrainer {
 
     try (PhonemeCrfTrainer crfTrainer = PhonemeCrfTrainer.openAndTrain(crfExamples)) {
 
-      int iterCount = 0;
-      int previousGoodAligns = 0;
-      int goodAlignCount = 0;
+    int iterCount = 0;
+    int previousGoodAligns = 0;
+    int goodAlignCount = 0;
 
-      while (true) {
-        if (iterCount > 0) {
-          previousGoodAligns = goodAlignCount;
-        }
-        crfModel = crfTrainer.buildModel();
-
-        ProbTable goodAligns = new ProbTable();
-        goodAlignCount = collectGoodAligns(crfExamples, crfModel, goodAligns, goodExamples);
-        log.info("Trained CRF had " + goodAlignCount + " good aligns this time (last time " + previousGoodAligns + ")");
-
-        eval(PhoneticEncoderFactory.make(alignTagModel, crfModel), "PHASE" + iterCount, EncoderEval.PrintOpts.SIMPLE);
-
-        if (goodAlignCount == previousGoodAligns || iterCount++ >= MAX_JOINT_ITER) {
-          log.info("Stopping iteration on finding good aligns, previous model will stand");
-          break;
-        }
-
-        alignTagModel = alignTagTrainer.train(goodExamples, true);
-        crfExamples = makeCrfExamplesFromAlignTag(inputs, goodExamples, alignTagModel, model);
-        crfTrainer.trainFor(crfExamples);
+    while (true) {
+      if (iterCount > 0) {
+        previousGoodAligns = goodAlignCount;
       }
+      crfModel = crfTrainer.buildModel();
+
+      ProbTable goodAligns = new ProbTable();
+      goodAlignCount = collectGoodAligns(crfExamples, crfModel, goodAligns, goodExamples);
+      log.info("Trained CRF had " + goodAlignCount + " good aligns this time (last time " + previousGoodAligns + ")");
+
+      eval(PhoneticEncoderFactory.make(alignTagModel, crfModel), "PHASE" + iterCount, EncoderEval.PrintOpts.SIMPLE);
+
+      if (goodAlignCount == previousGoodAligns || iterCount++ >= MAX_JOINT_ITER) {
+        log.info("Stopping iteration on finding good aligns, previous model will stand");
+        break;
+      }
+
+      alignTagModel = alignTagTrainer.train(goodExamples, true);
+      crfExamples = makeCrfExamplesFromAlignTag(inputs, goodExamples, alignTagModel, model);
+      crfTrainer.trainFor(crfExamples);
+    }
     }
 
     PhoneticEncoder encoder = PhoneticEncoderFactory.make(alignTagModel, crfModel);
@@ -113,6 +114,7 @@ public class JointEncoderTrainer extends AbstractEncoderTrainer {
     Map<Pair<Word, Word>, Alignment> supervisedAligns = makeSupervisedAlignsMap(goodExamples);
 
     int superHit = 0;
+    int xyEqualCount = 0;
     int crfAlignHit = 0;
     int mlAlignHit = 0;
 
@@ -121,6 +123,13 @@ public class JointEncoderTrainer extends AbstractEncoderTrainer {
       if (maybeSuper != null) {
         superHit += 1;
         result.add(maybeSuper);
+        continue;
+      }
+
+      if (input.xWord.unigramCount() == input.yWord.unigramCount()) {
+        // no alignment necessary its already aligned
+        result.add(new Alignment(input.xWord, Zipper.up(input.xWord, input.yWord), 0.0));
+        xyEqualCount += 1;
         continue;
       }
 
@@ -138,7 +147,7 @@ public class JointEncoderTrainer extends AbstractEncoderTrainer {
     List<Alignment> mlAligns = makeCrfExamples(failedInputs, mlAligner);
     result.addAll(mlAligns);
 
-    log.info("Super/Crf/ML " + superHit + "/" + crfAlignHit + "/" + mlAlignHit + " ML added count " + mlAligns.size());
+    log.info("Super/Eq/Crf/ML " + superHit + "/" + xyEqualCount + "/" + crfAlignHit + "/" + mlAlignHit + " ML added count " + mlAligns.size());
     return result;
   }
 

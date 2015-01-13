@@ -30,19 +30,21 @@ public class GramOptions implements Serializable {
   private int maxYGram = 1;
   private boolean includeXEpsilons = true;
   private boolean includeEpsilonYs = false;
+  private boolean onlyOneGrams = true;  // if you have X>1 && Y>1 then only allow 1:y or x:1 not 2:2, 3:2, etc.
 
   public GramOptions(int minXGram, int maxXGram, int minYGram, int maxYGram, boolean includeXEpsilons,
-                     boolean includeEpsilonYs) {
+                     boolean includeEpsilonYs, boolean onlyOneGrams) {
     this.minXGram = minXGram;
     this.maxXGram = maxXGram;
     this.minYGram = minYGram;
     this.maxYGram = maxYGram;
     this.includeXEpsilons = includeXEpsilons;
     this.includeEpsilonYs = includeEpsilonYs;
+    this.onlyOneGrams = onlyOneGrams;
   }
 
   public GramOptions(int minGram, int maxGram) {
-    this(minGram, maxGram, minGram, maxGram, false, false);
+    this(minGram, maxGram, minGram, maxGram, false, false, true);
   }
 
   public GramOptions() {
@@ -94,5 +96,13 @@ public class GramOptions implements Serializable {
 
   public void setIncludeEpsilonYs(boolean includeEpsilonYs) {
     this.includeEpsilonYs = includeEpsilonYs;
+  }
+
+  public boolean isOnlyOneGrams() {
+    return onlyOneGrams;
+  }
+
+  public void setOnlyOneGrams(boolean onlyOneGrams) {
+    this.onlyOneGrams = onlyOneGrams;
   }
 }

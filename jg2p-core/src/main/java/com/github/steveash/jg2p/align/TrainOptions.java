@@ -47,6 +47,9 @@ public class TrainOptions {
   @Option(name = "--includeEpsY")
   public boolean includeEpsilonYs = false;
 
+  @Option(name = "--onlyOneGrams")
+  public boolean onlyOneGrams = true;
+
   @Option(name = "--maximizer")
   public transient Maximizer maximizer = Maximizer.JOINT;
 
@@ -75,7 +78,7 @@ public class TrainOptions {
   }
 
   public GramOptions makeGramOptions() {
-    return new GramOptions(minXGram, maxXGram, minYGram, maxYGram, includeXEpsilons, includeEpsilonYs);
+    return new GramOptions(minXGram, maxXGram, minYGram, maxYGram, includeXEpsilons, includeEpsilonYs, onlyOneGrams);
   }
 
   public InputReader makeReader() {

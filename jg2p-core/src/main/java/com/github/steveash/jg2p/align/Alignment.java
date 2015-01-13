@@ -19,7 +19,9 @@ package com.github.steveash.jg2p.align;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 import com.github.steveash.jg2p.Word;
@@ -33,6 +35,7 @@ import java.util.List;
 
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * Represents one alignment from X to Y.  In the case of running alignment between X to Y the x represents the grapheme
@@ -142,7 +145,7 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
    */
   public List<Boolean> getXBoundaryMarks() {
     Preconditions.checkArgument(graphones.size() > 0);
-    Iterator<Pair<String, String>> xIter = this.graphones.iterator();
+    Iterator<Pair<String, String>> xIter = Iterators.filter(this.graphones.iterator(), nonEmptyXGraphones);
     List<String> xEntry = getNextX(xIter);
     int xChar = 0;
 
@@ -208,4 +211,11 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
   public int compareTo(Alignment that) {
     return Double.compare(this.score, that.score);
   }
+
+  private static final Predicate<Pair<String,String>> nonEmptyXGraphones = new Predicate<Pair<String, String>>() {
+    @Override
+    public boolean apply(Pair<String, String> input) {
+      return isNotBlank(input.getLeft());
+    }
+  };
 }

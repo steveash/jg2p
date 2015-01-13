@@ -16,11 +16,6 @@
 
 package com.github.steveash.jg2p.align;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Table;
-import com.google.common.collect.Tables;
-
-import com.github.steveash.jg2p.Grams;
 import com.github.steveash.jg2p.Word;
 import com.github.steveash.jg2p.util.DoubleTable;
 import com.github.steveash.jg2p.util.ReadWrite;
@@ -39,20 +34,24 @@ import static com.google.common.collect.Tables.immutableCell;
 
 /**
  * Owns the training algorithms for an Aligner
+ *
  * @author Steve Ash
  */
 public class AlignerTrainer {
+
   private static final Logger log = LoggerFactory.getLogger(AlignerTrainer.class);
 
   private final ProbTable counts = new ProbTable();
   private final ProbTable probs = new ProbTable();
   private final TrainOptions trainOpts;
   private final GramOptions gramOpts;
+  private final XyWalker walker;
   private ProbTable labelledProbs;
 
   public AlignerTrainer(TrainOptions trainOpts) {
     this.trainOpts = trainOpts;
     this.gramOpts = trainOpts.makeGramOptions();
+    this.walker = new FullXyWalker(gramOpts);
   }
 
   public AlignModel train(List<InputRecord> records) {
@@ -102,136 +101,50 @@ public class AlignerTrainer {
     Word y = record.yWord;
     int xsize = x.unigramCount();
     int ysize = y.unigramCount();
-    DoubleTable alpha = new DoubleTable(xsize + 1, ysize + 1);
-    DoubleTable beta = new DoubleTable(xsize + 1, ysize + 1);
+    final DoubleTable alpha = new DoubleTable(xsize + 1, ysize + 1);
+    final DoubleTable beta = new DoubleTable(xsize + 1, ysize + 1);
 
     forward(x, y, alpha);
     backward(x, y, beta);
 
-    double alphaXy = alpha.get(xsize, ysize);
+    final double alphaXy = alpha.get(xsize, ysize);
     if (alphaXy == 0) {
       return;
     }
 
-    for (int xx = 0; xx <= xsize; xx++) {
-      for (int yy = 0; yy <= ysize; yy++) {
+    walker.forward(x, y, new XyWalker.Visitor() {
+      @Override
+      public void visit(int xxBefore, int xxAfter, String xGram, int yyBefore, int yyAfter, String yGram) {
+        double prob = alpha.get(xxBefore, yyBefore) *
+                      probs.prob(xGram, yGram) *
+                      beta.get(xxAfter, yyAfter) /
+                      alphaXy;
 
-        if (xx > 0 && gramOpts.isIncludeXEpsilons()) {
-          for (int i = 1; i <= gramOpts.getMaxXGram() && (xx - i) >= 0; i++) {
-
-            String xGram = x.gram(xx - i, i);
-            double prob = alpha.get(xx - i, yy) * probs.prob(xGram, Grams.EPSILON) * beta.get(xx, yy) / alphaXy;
-            counts.addProb(xGram, Grams.EPSILON, prob);
-          }
-        }
-
-        if (yy > 0 && gramOpts.isIncludeEpsilonYs()) {
-          for (int j = 1; j <= gramOpts.getMaxYGram() && (yy - j) >= 0; j++) {
-
-            String yGram = y.gram(yy - j, j);
-            double prob = alpha.get(xx, yy - j) * probs.prob(Grams.EPSILON, yGram) * beta.get(xx, yy) / alphaXy;
-            counts.addProb(Grams.EPSILON, yGram, prob);
-          }
-        }
-
-        if (xx == 0 || yy == 0) {
-          continue;
-        }
-        for (int i = 1; i <= gramOpts.getMaxXGram() && (xx - i) >= 0; i++) {
-          for (int j = 1; j <= gramOpts.getMaxYGram() && (yy - j) >= 0; j++) {
-            int xGramIndex = xx - i;
-            int yGramIndex = yy - j;
-            String xGram = x.gram(xGramIndex, i);
-            String yGram = y.gram(yGramIndex, j);
-            double prob = alpha.get(xGramIndex, yGramIndex) * probs.prob(xGram, yGram) * beta.get(xx, yy) / alphaXy;
-            counts.addProb(xGram, yGram, prob);
-
-          }
-        }
+        counts.addProb(xGram, yGram, prob);
       }
-    }
+    });
   }
 
-  private void backward(Word x, Word y, DoubleTable beta) {
+  private void backward(Word x, Word y, final DoubleTable beta) {
     beta.put(x.unigramCount(), y.unigramCount(), 1.0);
-    for (int xx = x.unigramCount(); xx >= 0; xx--) {
-      for (int yy = y.unigramCount(); yy >= 0; yy--) {
-
-        if (xx < x.unigramCount() && gramOpts.isIncludeXEpsilons()) {
-          for (int i = 1; i <= gramOpts.getMaxXGram() && (xx + i <= x.unigramCount()); i++) {
-            String xGram = x.gram(xx, i);
-            double newBeta = probs.prob(xGram, Grams.EPSILON) * beta.get(xx + i, yy);
-            beta.add(xx, yy, newBeta);
-          }
-        }
-
-        if (yy < y.unigramCount() && gramOpts.isIncludeEpsilonYs()) {
-          for (int j = 1; j <= gramOpts.getMaxYGram() && (yy + j <= y.unigramCount()); j++) {
-            String yGram = y.gram(yy, j);
-            double newBeta = probs.prob(Grams.EPSILON, yGram) * beta.get(xx, yy + j);
-            beta.add(xx, yy, newBeta);
-          }
-        }
-
-        if (xx == x.unigramCount() || yy == y.unigramCount()) {
-          continue;
-        }
-        for (int i = 1; i <= gramOpts.getMaxXGram() && (xx + i <= x.unigramCount()); i++) {
-          for (int j = 1; j <= gramOpts.getMaxYGram() && (yy + j <= y.unigramCount()); j++) {
-
-            String xGram = x.gram(xx, i);
-            String yGram = y.gram(yy, j);
-            double newBeta = probs.prob(xGram, yGram) * beta.get(xx + i, yy + j);
-            beta.add(xx, yy, newBeta);
-
-          }
-        }
+    walker.backward(x, y, new XyWalker.Visitor() {
+      @Override
+      public void visit(int xxBefore, int xxAfter, String xGram, int yyBefore, int yyAfter, String yGram) {
+        double newBeta = probs.prob(xGram, yGram) * beta.get(xxAfter, yyAfter);
+        beta.add(xxBefore, yyBefore, newBeta);
       }
-    }
+    });
   }
 
-  private void forward(Word x, Word y, DoubleTable alpha) {
+  private void forward(Word x, Word y, final DoubleTable alpha) {
     alpha.put(0, 0, 1.0);
-    for (int xx = 0; xx <= x.unigramCount(); xx++) {
-      for (int yy = 0; yy <= y.unigramCount(); yy++) {
-
-        // 0 is the edge of the table; so index 0 in the Word will be index 1 in the table
-        if (xx > 0 && gramOpts.isIncludeXEpsilons()) {
-          for (int i = 1; i <= gramOpts.getMaxXGram() && (xx - i) >= 0; i++) {
-            // the current i is the # of chars to look back to build a gram which works out since xx is 1-based
-            int xGramIndex = xx - i;
-            String xGram = x.gram(xGramIndex, i);
-            double newAlpha = probs.prob(xGram, Grams.EPSILON) * alpha.get(xGramIndex, yy);
-            alpha.add(xx, yy, newAlpha);
-          }
-        }
-
-        if (yy > 0 && gramOpts.isIncludeEpsilonYs()) {
-          for (int j = 1; j <= gramOpts.getMaxYGram() && (yy - j) >= 0; j++) {
-            // the current i is the # of chars to look back to build a gram which works out since yy is 1-based
-            int yGramIndex = yy - j;
-            String yGram = y.gram(yGramIndex, j);
-            double newAlpha = probs.prob(Grams.EPSILON, yGram) * alpha.get(xx, yGramIndex);
-            alpha.add(xx, yy, newAlpha);
-          }
-        }
-
-        if (xx == 0 || yy == 0) {
-          continue;
-        }
-        for (int i = 1; i <= gramOpts.getMaxXGram() && (xx - i) >= 0; i++) {
-          for (int j = 1; j <= gramOpts.getMaxYGram() && (yy - j) >= 0; j++) {
-            int xGramIndex = xx - i;
-            int yGramIndex = yy - j;
-            String xGram = x.gram(xGramIndex, i);
-            String yGram = y.gram(yGramIndex, j);
-            double newAlpha = probs.prob(xGram, yGram) * alpha.get(xGramIndex, yGramIndex);
-            alpha.add(xx, yy, newAlpha);
-
-          }
-        }
+    walker.forward(x, y, new XyWalker.Visitor() {
+      @Override
+      public void visit(int xxBefore, int xxAfter, String xGram, int yyBefore, int yyAfter, String yGram) {
+        double newAlpha = probs.prob(xGram, yGram) * alpha.get(xxBefore, yyBefore);
+        alpha.add(xxAfter, yyAfter, newAlpha);
       }
-    }
+    });
   }
 
   private double maximization() {
@@ -240,7 +153,7 @@ public class AlignerTrainer {
     double unsuperFactor = (1.0 - trainOpts.semiSupervisedFactor);
     double superFactor = trainOpts.semiSupervisedFactor;
 
-    for (Pair<String,String> xy : ProbTable.unionOfAllCells(counts, labelledProbs)) {
+    for (Pair<String, String> xy : ProbTable.unionOfAllCells(counts, labelledProbs)) {
       String x = xy.getLeft();
       String y = xy.getRight();
       double countExp = counts.prob(x, y);
@@ -259,9 +172,13 @@ public class AlignerTrainer {
   }
 
   private void initCounts(List<InputRecord> records) {
-    for (Pair<String, String> gram : Grams.wordPairsToAllGrams(records, gramOpts)) {
-      // TODO(SA) why wouldn't I increment here?
-      counts.addProb(gram.getLeft(), gram.getRight(), 1);
+    for (InputRecord record : records) {
+      walker.forward(record.getLeft(), record.getRight(), new XyWalker.Visitor() {
+        @Override
+        public void visit(int xxBefore, int xxAfter, String xGram, int yyBefore, int yyAfter, String yGram) {
+          counts.addProb(xGram, yGram, 1.0);
+        }
+      });
     }
   }
 

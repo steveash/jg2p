@@ -28,10 +28,11 @@ import java.util.List;
 
 /**
  * Word is a string with some helper methods for creating n-grams, etc.
+ * Grams are space separated
  *
  * @author Steve Ash
  */
-public class Word {
+public class Word implements Iterable<String> {
   private static final Splitter splitter = Splitter.on(' ').trimResults().omitEmptyStrings();
   private static final Joiner joiner = Joiner.on(' ');
 
@@ -136,5 +137,10 @@ public class Word {
   @Override
   public String toString() {
     return getAsSpaceString();
+  }
+  
+  @Override
+  public Iterator<String> iterator() {
+    return value.iterator();
   }
 }

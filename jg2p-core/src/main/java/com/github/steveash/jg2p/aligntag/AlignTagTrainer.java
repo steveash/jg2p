@@ -28,6 +28,7 @@ import com.github.steveash.jg2p.seq.NeighborTokenFeature;
 import com.github.steveash.jg2p.seq.SeqInputReader;
 import com.github.steveash.jg2p.seq.StringListToTokenSequence;
 import com.github.steveash.jg2p.seq.TokenSequenceToFeature;
+import com.github.steveash.jg2p.seq.TokenWindow;
 import com.github.steveash.jg2p.util.ReadWrite;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -140,8 +141,10 @@ public class AlignTagTrainer {
     CRF crf = new CRF(pipe, null);
     crf.addOrderNStates(trainData, new int[]{1}, null, null, null, null, false);
     crf.addStartState();
+//    crf.addStat(trainData);
+//    crf.addFullyConnectedStatesForBiLabels();
 //      crf.addFullyConnectedStatesForLabels();
-    crf.setWeightsDimensionAsIn(trainData, false);
+//    crf.setWeightsDimensionAsIn(trainData, false);
 
     log.info("Starting training...");
     CRFTrainerByThreadedLabelLikelihood trainer = new CRFTrainerByThreadedLabelLikelihood(crf, 8);
@@ -208,20 +211,36 @@ public class AlignTagTrainer {
         new StringListToTokenSequence(alpha, labelAlpha),   // convert to token sequence
         new TokenSequenceLowercase(),                       // make all lowercase
         new NeighborTokenFeature(true, makeNeighbors()),         // grab neighboring graphemes
+//        new NeighborShapeFeature(true, makeShapeNeighs()),
         new TokenSequenceToFeature(),                       // convert the strings in the text to features
         new TokenSequence2FeatureVectorSequence(alpha, true, true),
         labelPipe
     ));
   }
 
-  private List<NeighborTokenFeature.NeighborWindow> makeNeighbors() {
+  private static List<TokenWindow> makeShapeNeighs() {
     return ImmutableList.of(
-      new NeighborTokenFeature.NeighborWindow(1, 1),
-      new NeighborTokenFeature.NeighborWindow(1, 2),
-      new NeighborTokenFeature.NeighborWindow(1, 3),
-      new NeighborTokenFeature.NeighborWindow(-1, 1),
-      new NeighborTokenFeature.NeighborWindow(-2, 2),
-      new NeighborTokenFeature.NeighborWindow(-3, 3)
+//        new TokenWindow(-5, 5),
+        new TokenWindow(-4, 4),
+        new TokenWindow(-3, 3),
+        new TokenWindow(-2, 2),
+        new TokenWindow(-1, 1),
+        new TokenWindow(1, 1),
+        new TokenWindow(1, 2),
+        new TokenWindow(1, 3),
+        new TokenWindow(1, 4)
+//        new TokenWindow(1, 5)
+    );
+  }
+
+  private List<TokenWindow> makeNeighbors() {
+    return ImmutableList.of(
+        new TokenWindow(1, 1),
+        new TokenWindow(1, 2),
+        new TokenWindow(1, 3),
+        new TokenWindow(-1, 1),
+        new TokenWindow(-2, 2),
+        new TokenWindow(-3, 3)
     );
   }
 }

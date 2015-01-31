@@ -24,13 +24,19 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.github.steveash.jg2p</groupId>
+      <artifactId>jg2p-core</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+    </dependency>
+    <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
     </dependency>
     <dependency>
       <groupId>cc.factorie</groupId>
       <artifactId>factorie_2.11</artifactId>
-      <version>1.1</version>
+      <!--<version>1.1</version>-->
     </dependency>
   </dependencies>
 

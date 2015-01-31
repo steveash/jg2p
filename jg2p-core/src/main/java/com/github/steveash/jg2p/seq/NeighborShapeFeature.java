@@ -16,13 +16,11 @@
 
 package com.github.steveash.jg2p.seq;
 
-import com.google.common.base.CharMatcher;
+import com.github.steveash.jg2p.util.TokenSeqUtil;
 
 import java.util.List;
 
 import cc.mallet.types.TokenSequence;
-
-import static com.google.common.base.CharMatcher.WHITESPACE;
 
 /**
  * Feature that represents a neighbor as just consonants and vowels (normalizes distinct letters to v or c) also
@@ -31,10 +29,6 @@ import static com.google.common.base.CharMatcher.WHITESPACE;
  * @author Steve Ash
  */
 public class NeighborShapeFeature extends NeighborTokenFeature {
-
-  private static final CharMatcher vowels = CharMatcher.anyOf("AEIOUY").precomputed();
-  private static final CharMatcher consonants = CharMatcher.inRange('A', 'Z').and(vowels.negate()).precomputed();
-  private static final CharMatcher other = CharMatcher.ANY.and(vowels.or(consonants).negate()).precomputed();
 
   public NeighborShapeFeature(boolean includeCurrent, int... neighbors) {
     super(includeCurrent, neighbors);
@@ -49,23 +43,7 @@ public class NeighborShapeFeature extends NeighborTokenFeature {
     String winStr = super.getWindow(ts, i, window);
     if (winStr == null) return null;
 
-    return convertShape(winStr);
+    return TokenSeqUtil.convertShape(winStr);
   }
 
-  static String convertShape(String winStr) {
-    StringBuilder sb = new StringBuilder(winStr.length());
-    for (int i = 0; i < winStr.length(); i++) {
-      char c = winStr.charAt(i);
-      if (consonants.matches(c)) {
-        sb.append('c');
-      } else if (vowels.matches(c)) {
-        sb.append('v');
-      } else if (WHITESPACE.matches(c)) {
-        sb.append('s');
-      } else {
-        sb.append('p');
-      }
-    }
-    return sb.toString();
-  }
 }

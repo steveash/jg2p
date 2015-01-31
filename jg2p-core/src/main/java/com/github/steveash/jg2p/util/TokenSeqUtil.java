@@ -16,7 +16,10 @@
 
 package com.github.steveash.jg2p.util;
 
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 
 import java.util.List;
 
@@ -24,37 +27,49 @@ import javax.annotation.Nullable;
 
 import cc.mallet.types.Token;
 
+import static com.google.common.base.CharMatcher.WHITESPACE;
+
 /**
  * @author Steve Ash
  */
 public class TokenSeqUtil {
 
+  private static final CharMatcher vowels = CharMatcher.anyOf("AEIOUY").precomputed();
+  private static final CharMatcher consonants = CharMatcher.inRange('A', 'Z').and(vowels.negate()).precomputed();
+  private static final CharMatcher other = CharMatcher.ANY.and(vowels.or(consonants).negate()).precomputed();
+
   @Nullable
-  public static String getWindow(List<Token> ts, int current, int windowOffset, int windexWidth) {
-    if (windowOffset < 0) {
-      return getBakwardWindow(ts, current, windowOffset, windexWidth);
-    }
-    return getForwardWindow(ts, current, windowOffset, windexWidth);
+  public static String getWindow(List<Token> ts, int current, int windowOffset, int windowWidth) {
+    List<String> ss = Lists.transform(ts, tokenToString);
+    return getWindowFromStrings(ss, current, windowOffset, windowWidth);
   }
 
-  private static String getBakwardWindow(List<Token> ts, int current, int windowOffset, int windexWidth) {
+  public static String getWindowFromStrings(List<String> ts, int current, int windowOffset, int windowWidth) {
+    if (windowOffset < 0) {
+      return getBakwardWindowFromString(ts, current, windowOffset, windowWidth);
+    }
+    return getForwardWindowFromString(ts, current, windowOffset, windowWidth);
+  }
+
+  private static String getBakwardWindowFromString(List<String> ts, int current, int windowOffset, int windowWidth) {
     Preconditions.checkArgument(windowOffset < 0);
-    Preconditions.checkArgument(windowOffset + windexWidth <= 0);
+    Preconditions.checkArgument(windowOffset + windowWidth <= 0);
 
-    int start = -(windowOffset + windexWidth);
+    int start = -(windowOffset + windowWidth);
 
-    StringBuilder sb = new StringBuilder(windexWidth);
+    StringBuilder sb = new StringBuilder(windowWidth);
     int strIndex = -1;
     String str = "";
     int eaten = 0;
     while (true) {
       if (strIndex < 0) {
-        findnext: while (true) {
+        findnext:
+        while (true) {
           current -= 1;
           if (current < 0) {
             return null; // ran out of chars to eat
           }
-          str = ts.get(current).getText();
+          str = ts.get(current);
           if (str.length() > 0) {
             break findnext;
           }
@@ -65,7 +80,7 @@ public class TokenSeqUtil {
       if (eaten >= start) {
         char c = str.charAt(strIndex);
         sb.append(c);
-        if (sb.length() == windexWidth) {
+        if (sb.length() == windowWidth) {
           return sb.reverse().toString();
         }
       }
@@ -74,24 +89,25 @@ public class TokenSeqUtil {
     }
   }
 
-  private static String getForwardWindow(List<Token> ts, int current, int windowOffset, int windexWidth) {
+  private static String getForwardWindowFromString(List<String> ts, int current, int windowOffset, int windowWidth) {
     Preconditions.checkArgument(windowOffset > 0);
-    Preconditions.checkArgument(windowOffset + windexWidth > 0);
+    Preconditions.checkArgument(windowOffset + windowWidth > 0);
 
     int start = windowOffset - 1; // we're starting one character over from us, to be symmetric needs to be shifted
 
-    StringBuilder sb = new StringBuilder(windexWidth);
+    StringBuilder sb = new StringBuilder(windowWidth);
     int strIndex = 1;
     String str = "";
     int eaten = 0;
     while (true) {
       if (strIndex >= str.length()) {
-        findnext: while (true) {
+        findnext:
+        while (true) {
           current += 1;
           if (current > (ts.size() - 1)) {
             return null; // ran out of chars to eat
           }
-          str = ts.get(current).getText();
+          str = ts.get(current);
           if (str.length() > 0) {
             break findnext;
           }
@@ -102,12 +118,36 @@ public class TokenSeqUtil {
       if (eaten >= start) {
         char c = str.charAt(strIndex);
         sb.append(c);
-        if (sb.length() == windexWidth) {
+        if (sb.length() == windowWidth) {
           return sb.toString();
         }
       }
       strIndex += 1;
       eaten += 1;
     }
+  }
+
+  private static final Function<Token, String> tokenToString = new Function<Token, String>() {
+    @Override
+    public String apply(Token input) {
+      return input.getText();
+    }
+  };
+
+  public static String convertShape(String winStr) {
+    StringBuilder sb = new StringBuilder(winStr.length());
+    for (int i = 0; i < winStr.length(); i++) {
+      char c = winStr.charAt(i);
+      if (consonants.matches(c)) {
+        sb.append('c');
+      } else if (vowels.matches(c)) {
+        sb.append('v');
+      } else if (WHITESPACE.matches(c)) {
+        sb.append('s');
+      } else {
+        sb.append('p');
+      }
+    }
+    return sb.toString();
   }
 }

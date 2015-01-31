@@ -16,6 +16,7 @@
 
 package com.github.steveash.jg2p.seq
 
+import com.github.steveash.jg2p.util.TokenSeqUtil
 import org.junit.Test
 
 /**
@@ -25,10 +26,10 @@ class NeighborShapeFeatureTest {
 
   @Test
   void testShapes() {
-    assert "ccvcv" == NeighborShapeFeature.convertShape("STEVE")
-    assert "vvv" == NeighborShapeFeature.convertShape("AAA")
-    assert "vvvcc" == NeighborShapeFeature.convertShape("AAASS")
-    assert "ccvcvpc" == NeighborShapeFeature.convertShape("STEVE'S")
-    assert "ccvcvsvcc" == NeighborShapeFeature.convertShape("STEVE ASH")
+    assert "ccvcv" == TokenSeqUtil.convertShape("STEVE")
+    assert "vvv" == TokenSeqUtil.convertShape("AAA")
+    assert "vvvcc" == TokenSeqUtil.convertShape("AAASS")
+    assert "ccvcvpc" == TokenSeqUtil.convertShape("STEVE'S")
+    assert "ccvcvsvcc" == TokenSeqUtil.convertShape("STEVE ASH")
   }
 }

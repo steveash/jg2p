@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Steve Ash
+ * Copyright 2015 Steve Ash
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,20 @@
 package com.github.steveash.jg2p.seq;
 
 import com.google.common.base.Function;
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
 import com.github.steveash.jg2p.align.Alignment;
-import com.github.steveash.jg2p.util.ReadWrite;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-import cc.mallet.fst.CRF;
-import cc.mallet.fst.CRFTrainerByThreadedLabelLikelihood;
-import cc.mallet.fst.TokenAccuracyEvaluator;
+import cc.mallet.grmm.learning.ACRF;
+import cc.mallet.grmm.learning.ACRFTrainer;
+import cc.mallet.grmm.learning.DefaultAcrfTrainer;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.SerialPipes;
 import cc.mallet.pipe.Target2LabelSequence;
@@ -48,97 +44,33 @@ import cc.mallet.types.LabelAlphabet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
- * Trains a CRF to use the alignment model
- *
+ * Just the BP version of the linear chain CRF, performs similarly to the CRF class version (albeit 10x slower)
  * @author Steve Ash
  */
-public class PhonemeCrfTrainer implements AutoCloseable {
+public class PhonemeACrfTrainer {
 
-  private static final Logger log = LoggerFactory.getLogger(PhonemeCrfTrainer.class);
+  private static final Logger log = LoggerFactory.getLogger(PhonemeACrfTrainer.class);
 
-  public static PhonemeCrfTrainer openAndTrain(Collection<Alignment> examples) {
-    return openAndTrain(examples, false);
-  }
-
-  public static PhonemeCrfTrainer openAndTrain(Collection<Alignment> examples,
-                                               boolean printEval) {
+  public void train(Collection<Alignment> examples) {
     Pipe pipe = makePipe();
     InstanceList instances = makeExamplesFromAligns(examples, pipe);
 
-    CRF crf = makeNewCrf(instances, pipe);
-    CRFTrainerByThreadedLabelLikelihood trainer = makeNewTrainer(crf);
+    ACRF.Template[] tmpls = new ACRF.Template[]{
+        new ACRF.BigramTemplate(0)
+//                new ACRF.BigramTemplate (1),
+//                new ACRF.PairwiseFactorTemplate (0,1),
+//                new CrossTemplate1(0,1)
+    };
 
-    PhonemeCrfTrainer pct = new PhonemeCrfTrainer(pipe, trainer);
-    pct.trainForInstances(instances);
-    if (printEval) {
-      double accuracy = pct.accuracyFor(instances);
-      log.info("Trained model gets {} accuracy on training instances", accuracy);
-    }
-    return pct;
-  }
+    ACRF acrf = new ACRF(pipe, tmpls);
 
-  private final Pipe pipe;
-  private final CRFTrainerByThreadedLabelLikelihood trainer;
+    ACRFTrainer trainer = new DefaultAcrfTrainer();
+    acrf.setSupportedOnly(true);
+    acrf.setGaussianPriorVariance(2.0);
+    DefaultAcrfTrainer.LogEvaluator eval = new DefaultAcrfTrainer.LogEvaluator();
+    eval.setNumIterToSkip(2);
+    trainer.train(acrf, instances, null, null, eval, 9999);
 
-  private PhonemeCrfTrainer(Pipe pipe, CRFTrainerByThreadedLabelLikelihood trainer) {
-    this.pipe = pipe;
-    this.trainer = trainer;
-  }
-
-  public void trainFor(Collection<Alignment> inputs) {
-    InstanceList examples = makeExamplesFromAligns(inputs, pipe);
-    trainForInstances(examples);
-  }
-
-  public void trainForInstances(InstanceList examples) {
-    Stopwatch watch = Stopwatch.createStarted();
-    trainer.train(examples);
-    trainer.shutdown(); // just closes the pool; next call to train will create a new one
-    watch.stop();
-    log.info("Training took " + watch);
-  }
-
-  public double accuracyFor(InstanceList examples) {
-    TokenAccuracyEvaluator teval = new TokenAccuracyEvaluator(examples, "train");
-    teval.evaluate(trainer);
-    return teval.getAccuracy("train");
-  }
-
-  public PhonemeCrfModel buildModel() {
-    return new PhonemeCrfModel(trainer.getCRF());
-  }
-
-  private static CRFTrainerByThreadedLabelLikelihood makeNewTrainer(CRF crf) {
-    CRFTrainerByThreadedLabelLikelihood trainer = new CRFTrainerByThreadedLabelLikelihood(crf, getCpuCount());
-    trainer.setGaussianPriorVariance(2);
-    trainer.setUseSomeUnsupportedTrick(false);
-    return trainer;
-  }
-
-  private static CRF makeNewCrf(InstanceList examples, Pipe pipe) {
-    CRF crf = new CRF(pipe, null);
-    crf.addOrderNStates(examples, new int[]{1}, null, null, null, null, false);
-    crf.addStartState();
-//    crf.setWeightsDimensionDensely();
-//    crf.setWeightsDimensionAsIn(examples, false);
-//    crf.addFullyConnectedStatesForBiLabels();
-//    crf.addStartState();
-    return crf;
-  }
-
-  private static int getCpuCount() {
-    return Runtime.getRuntime().availableProcessors();
-  }
-
-
-  public void writeModel() throws IOException {
-    writeModel(new File("g2p_crf.dat"));
-  }
-
-  public void writeModel(File target) throws IOException {
-    CRF crf = (CRF) trainer.getTransducer();
-    ReadWrite.writeTo(new PhonemeCrfModel(crf), target);
-    log.info("Wrote for whole data");
   }
 
   private static InstanceList makeExamplesFromAligns(Iterable<Alignment> alignsToTrain, Pipe pipe) {
@@ -151,9 +83,9 @@ public class PhonemeCrfTrainer implements AutoCloseable {
       instances.addThruPipe(ii);
       count += 1;
 
-//      if (count > 1000) {
-//        break;
-//      }
+      //      if (count > 1000) {
+      //        break;
+      //      }
     }
     log.info("Read {} instances of training data", count);
     return instances;
@@ -175,7 +107,7 @@ public class PhonemeCrfTrainer implements AutoCloseable {
     for (int i = 0; i < phones.size(); i++) {
       String p = phones.get(i);
       if (isBlank(p)) {
-//        phones.set(i, last + "_" + blankCount);
+        //        phones.set(i, last + "_" + blankCount);
         phones.set(i, "<EPS>");
         blankCount += 1;
       } else {
@@ -197,7 +129,8 @@ public class PhonemeCrfTrainer implements AutoCloseable {
         new NeighborShapeFeature(true, makeShapeNeighs()),
         new TokenSequenceToFeature(),                       // convert the strings in the text to features
         new TokenSequence2FeatureVectorSequence(alpha, true, true),
-        labelPipe
+        labelPipe,
+        new LabelSequenceToLabelsAssignment(alpha, labelAlpha)
     ));
   }
 
@@ -221,19 +154,14 @@ public class PhonemeCrfTrainer implements AutoCloseable {
         new TokenWindow(1, 1),
         new TokenWindow(2, 1),
         new TokenWindow(3, 1),
-//        new TokenWindow(1, 2),
-//              new TokenWindow(1, 3),
+        //        new TokenWindow(1, 2),
+        //              new TokenWindow(1, 3),
         new TokenWindow(-1, 1),
         new TokenWindow(-2, 1),
         new TokenWindow(-3, 1),
         new TokenWindow(-2, 2)
-//        new TokenWindow(-3, 3)
-//        new TokenWindow(-4, 4),
+        //        new TokenWindow(-3, 3)
+        //        new TokenWindow(-4, 4),
     );
-  }
-
-  @Override
-  public void close() {
-    // we shut down the pool after training iterations so we don't leak pools (le sigh mallet)
   }
 }

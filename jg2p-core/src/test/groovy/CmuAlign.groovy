@@ -24,10 +24,12 @@ import groovy.transform.Field
 /*
 Script the builds the CMU alignment model and generates some stats
  */
-def cmuFile = "cmudict.0.7a"
-def model = ReadWrite.readFromClasspath(AlignModel, "cmua_2eps.model.dat")
-def training = InputReader.makeCmuReader().readFromClasspath(cmuFile)
-def out = new File("../../../target/cmua_2eps.align.txt")
+//def cmuFile = "cmudict.0.7a"
+def cmuFile = "cmubad.2kA.txt"
+//def model = ReadWrite.readFromClasspath(AlignModel, "cmua_2eps.model.dat")
+def model = ReadWrite.readFromClasspath(AlignModel, "cmubad_align.model.dat")
+def training = InputReader.makeDefaultFormatReader().readFromClasspath(cmuFile)
+def out = new File("../../../target/cmubad.2kA.align.txt")
 
 @Field def top1Histo = new Histogram(-200, 0, 25)
 @Field def top2Histo = new Histogram(-200, 0, 25)

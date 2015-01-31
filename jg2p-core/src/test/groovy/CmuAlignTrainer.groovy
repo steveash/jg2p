@@ -20,14 +20,17 @@ import com.github.steveash.jg2p.align.AlignerTrainer
 Script the builds the CMU alignment model and generates some stats
  */
 println "I am " + (new File(".")).canonicalPath
-def cmuFile = "cmudict.0.7a"
+//def cmuFile = "cmudict.0.7a"
+def cmuFile = "cmubad.2kA.txt"
 String[] args = [
     "--infile", "../resources/$cmuFile",
-    "--outfile", "../../../target/cmua_2.model.dat",
+    "--outfile", "../../../target/cmubad_align.model.dat",
     "--maxX", "2",
-    "--maxY", "1",
-//    "--includeXEps",
-    "--format", "CMU"
+    "--maxY", "2",
+    "--includeXEps",
+    "--useWindowWalker",
+    "--onlyOneGrams",
+    "--format", "TAB"
 ] as String[]
 def model = AlignerTrainer.trainAndSave(args)
 println "done with everything!"

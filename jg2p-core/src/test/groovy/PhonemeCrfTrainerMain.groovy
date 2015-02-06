@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import com.github.steveash.jg2p.seq.PhonemeACrfTrainer
-import com.github.steveash.jg2p.seq.PhonemeACrfTrainer2
+import com.github.steveash.jg2p.seq.PhonemeCrfModel
 import com.github.steveash.jg2p.seq.PhonemeCrfTrainer
 import com.github.steveash.jg2p.seq.SeqInputReader
+import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Charsets
-import com.google.common.io.Resources
 
 import static com.google.common.io.Resources.asCharSource
 import static com.google.common.io.Resources.getResource
@@ -31,8 +29,15 @@ import static com.google.common.io.Resources.getResource
 def file = "cmubad.2kA.align.txt"
 def input = new SeqInputReader().readInput(asCharSource(getResource(file), Charsets.UTF_8))
 def aligns = input.take(500).collect{it.alignments}.flatten()
-//def trainer = PhonemeCrfTrainer.openAndTrain(aligns, true)
+def trainer = PhonemeCrfTrainer.open()
+trainer.setPrintEval(true)
+
+def crf = ReadWrite.readFromFile(PhonemeCrfModel, new File("../resources/crf_cmubad2kA_500.dat"))
+trainer.setInitFromModel(new File("../resources/crf_cmubad2kA_500.dat"))
+trainer.trainFor(aligns)
+
 //new PhonemeACrfTrainer().train(aligns)
-new PhonemeACrfTrainer2().train(aligns)
-//    trainer.writeModel()
+//new PhonemeACrfTrainer2().train(aligns)
+
+//trainer.writeModel(new File("../resources/crf_cmubad2kA_500.dat"))
 

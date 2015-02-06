@@ -39,6 +39,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -58,6 +59,8 @@ public class JointEncoderTrainer extends AbstractEncoderTrainer {
   private static final Logger log = LoggerFactory.getLogger(JointEncoderTrainer.class);
   private static final int MAX_JOINT_ITER = 2;
 
+  private File startingPointCrf = null;
+
   @Override
   protected PhoneticEncoder train(List<InputRecord> inputs, TrainOptions opts) {
 
@@ -71,7 +74,8 @@ public class JointEncoderTrainer extends AbstractEncoderTrainer {
     PhonemeCrfModel crfModel;
     Aligner alignTagModel = model;
 
-    try (PhonemeCrfTrainer crfTrainer = PhonemeCrfTrainer.openAndTrain(crfExamples)) {
+    PhonemeCrfTrainer crfTrainer = PhonemeCrfTrainer.open();
+    crfTrainer.trainFor(crfExamples);
 
     int iterCount = 0;
     int previousGoodAligns = 0;
@@ -97,7 +101,6 @@ public class JointEncoderTrainer extends AbstractEncoderTrainer {
       alignTagModel = alignTagTrainer.train(goodExamples, true);
       crfExamples = makeCrfExamplesFromAlignTag(inputs, goodExamples, alignTagModel, model);
       crfTrainer.trainFor(crfExamples);
-    }
     }
 
     PhoneticEncoder encoder = PhoneticEncoderFactory.make(alignTagModel, crfModel);

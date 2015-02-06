@@ -17,7 +17,9 @@
 package com.github.steveash.jg2p.seq;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
@@ -33,8 +35,10 @@ import java.util.Collection;
 import java.util.List;
 
 import cc.mallet.fst.CRF;
+import cc.mallet.fst.CRFTrainerByLabelLikelihood;
 import cc.mallet.fst.CRFTrainerByThreadedLabelLikelihood;
 import cc.mallet.fst.TokenAccuracyEvaluator;
+import cc.mallet.fst.TransducerTrainer;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.SerialPipes;
 import cc.mallet.pipe.Target2LabelSequence;
@@ -52,37 +56,57 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  *
  * @author Steve Ash
  */
-public class PhonemeCrfTrainer implements AutoCloseable {
+public class PhonemeCrfTrainer {
 
   private static final Logger log = LoggerFactory.getLogger(PhonemeCrfTrainer.class);
 
-  public static PhonemeCrfTrainer openAndTrain(Collection<Alignment> examples) {
-    return openAndTrain(examples, false);
-  }
-
-  public static PhonemeCrfTrainer openAndTrain(Collection<Alignment> examples,
-                                               boolean printEval) {
+  public static PhonemeCrfTrainer open() {
     Pipe pipe = makePipe();
-    InstanceList instances = makeExamplesFromAligns(examples, pipe);
-
-    CRF crf = makeNewCrf(instances, pipe);
-    CRFTrainerByThreadedLabelLikelihood trainer = makeNewTrainer(crf);
-
-    PhonemeCrfTrainer pct = new PhonemeCrfTrainer(pipe, trainer);
-    pct.trainForInstances(instances);
-    if (printEval) {
-      double accuracy = pct.accuracyFor(instances);
-      log.info("Trained model gets {} accuracy on training instances", accuracy);
-    }
+    PhonemeCrfTrainer pct = new PhonemeCrfTrainer(pipe);
     return pct;
   }
 
-  private final Pipe pipe;
-  private final CRFTrainerByThreadedLabelLikelihood trainer;
+  private static enum State {Initializing, Training}
 
-  private PhonemeCrfTrainer(Pipe pipe, CRFTrainerByThreadedLabelLikelihood trainer) {
+  private final Pipe pipe;
+  private State state = State.Initializing;
+
+  private CRF crf = null;
+  private TransducerTrainer lastTrainer = null;
+
+  private int trimFeaturesUnderPercentile = 0;
+  private File initFromModel = null;
+  private boolean printEval = false;
+
+  private PhonemeCrfTrainer(Pipe pipe) {
     this.pipe = pipe;
-    this.trainer = trainer;
+  }
+
+  private void initializeFor(InstanceList examples) {
+    Preconditions.checkState(state == State.Initializing, "can only initialize once");
+    this.crf = new CRF(pipe, null);
+    crf.addOrderNStates(examples, new int[]{1}, null, null, null, null, false);
+    crf.addStartState();
+    //    crf.setWeightsDimensionDensely();
+    crf.setWeightsDimensionAsIn(examples, false);
+    //    crf.setWeightsDimensionWithFilterAsIn(examples, 2);
+
+    if (initFromModel != null) {
+      try {
+        log.info("Loading initial weights from " + initFromModel.getCanonicalPath());
+        PhonemeCrfModel initModel = ReadWrite.readFromFile(PhonemeCrfModel.class, initFromModel);
+        crf.initializeApplicableParametersFrom(initModel.getCrf());
+
+      } catch (Exception e) {
+        throw Throwables.propagate(e);
+      }
+    }
+  }
+
+  public void useCrf(CRF crf) {
+    Preconditions.checkState(state == State.Initializing);
+    this.crf = crf;
+    this.state = State.Training;
   }
 
   public void trainFor(Collection<Alignment> inputs) {
@@ -91,26 +115,73 @@ public class PhonemeCrfTrainer implements AutoCloseable {
   }
 
   public void trainForInstances(InstanceList examples) {
+    if (state == State.Initializing) {
+      initializeFor(examples);
+    }
+    state = State.Training;
     Stopwatch watch = Stopwatch.createStarted();
-    trainer.train(examples);
+    CRFTrainerByThreadedLabelLikelihood trainer = makeNewTrainer(crf);
+//    CRFTrainerByLabelLikelihood trainer = makeNewTrainerSingleThreaded(crf);
+    this.lastTrainer = trainer;
+
+    trainer.train(examples, 100);
+//    trainer.train(examples, 8, 250, new double[]{0.15, 1.0});
+//    trainer.train(examples, 8, new double[]{0.15, 1.0});
     trainer.shutdown(); // just closes the pool; next call to train will create a new one
+
+    if (trimFeaturesUnderPercentile > 0) {
+      trainer.getCRF().pruneFeaturesBelowPercentile(trimFeaturesUnderPercentile);
+      trainer.train(examples);
+      trainer.shutdown();
+    }
+
     watch.stop();
     log.info("Training took " + watch);
+    if (printEval) {
+      log.info("Accuracy on training data: " + accuracyFor(examples));
+    }
+  }
+
+  public double accuracyFor(Collection<Alignment> inputs) {
+    InstanceList examples = makeExamplesFromAligns(inputs, pipe);
+    return accuracyFor(examples);
   }
 
   public double accuracyFor(InstanceList examples) {
+    Preconditions.checkState(state == State.Training, "cant call before training");
     TokenAccuracyEvaluator teval = new TokenAccuracyEvaluator(examples, "train");
-    teval.evaluate(trainer);
+    teval.evaluate(lastTrainer);
     return teval.getAccuracy("train");
   }
 
   public PhonemeCrfModel buildModel() {
-    return new PhonemeCrfModel(trainer.getCRF());
+    return new PhonemeCrfModel(crf);
+  }
+
+  public void setTrimFeaturesUnderPercentile(int trimFeaturesUnderPercentile) {
+    this.trimFeaturesUnderPercentile = trimFeaturesUnderPercentile;
+  }
+
+  public void setInitFromModel(File initFromModel) {
+    this.initFromModel = initFromModel;
+  }
+
+  public void setPrintEval(boolean printEval) {
+    this.printEval = printEval;
   }
 
   private static CRFTrainerByThreadedLabelLikelihood makeNewTrainer(CRF crf) {
     CRFTrainerByThreadedLabelLikelihood trainer = new CRFTrainerByThreadedLabelLikelihood(crf, getCpuCount());
     trainer.setGaussianPriorVariance(2);
+    trainer.setAddNoFactors(true);
+    trainer.setUseSomeUnsupportedTrick(false);
+    return trainer;
+  }
+
+  private static CRFTrainerByLabelLikelihood makeNewTrainerSingleThreaded(CRF crf) {
+    CRFTrainerByLabelLikelihood trainer = new CRFTrainerByLabelLikelihood(crf);
+    trainer.setGaussianPriorVariance(2);
+    trainer.setAddNoFactors(true);
     trainer.setUseSomeUnsupportedTrick(false);
     return trainer;
   }
@@ -120,7 +191,8 @@ public class PhonemeCrfTrainer implements AutoCloseable {
     crf.addOrderNStates(examples, new int[]{1}, null, null, null, null, false);
     crf.addStartState();
 //    crf.setWeightsDimensionDensely();
-//    crf.setWeightsDimensionAsIn(examples, false);
+    crf.setWeightsDimensionAsIn(examples, false);
+//    crf.setWeightsDimensionWithFilterAsIn(examples, 2);
 //    crf.addFullyConnectedStatesForBiLabels();
 //    crf.addStartState();
     return crf;
@@ -130,13 +202,8 @@ public class PhonemeCrfTrainer implements AutoCloseable {
     return Runtime.getRuntime().availableProcessors();
   }
 
-
-  public void writeModel() throws IOException {
-    writeModel(new File("g2p_crf.dat"));
-  }
-
   public void writeModel(File target) throws IOException {
-    CRF crf = (CRF) trainer.getTransducer();
+    CRF crf = (CRF) lastTrainer.getTransducer();
     ReadWrite.writeTo(new PhonemeCrfModel(crf), target);
     log.info("Wrote for whole data");
   }
@@ -221,8 +288,8 @@ public class PhonemeCrfTrainer implements AutoCloseable {
         new TokenWindow(1, 1),
         new TokenWindow(2, 1),
         new TokenWindow(3, 1),
-//        new TokenWindow(1, 2),
-//              new TokenWindow(1, 3),
+        new TokenWindow(1, 2),
+              new TokenWindow(1, 3),
         new TokenWindow(-1, 1),
         new TokenWindow(-2, 1),
         new TokenWindow(-3, 1),
@@ -230,10 +297,5 @@ public class PhonemeCrfTrainer implements AutoCloseable {
 //        new TokenWindow(-3, 3)
 //        new TokenWindow(-4, 4),
     );
-  }
-
-  @Override
-  public void close() {
-    // we shut down the pool after training iterations so we don't leak pools (le sigh mallet)
   }
 }

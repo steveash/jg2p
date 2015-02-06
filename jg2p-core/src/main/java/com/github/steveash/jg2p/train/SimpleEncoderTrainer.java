@@ -47,11 +47,11 @@ public class SimpleEncoderTrainer extends AbstractEncoderTrainer {
     List<Alignment> crfExamples = makeCrfExamples(inputs, model);
     AlignTagModel alignTagModel = alignTagTrainer.train(crfExamples);
 
-    try (PhonemeCrfTrainer crfTrainer = PhonemeCrfTrainer.openAndTrain(crfExamples)) {
-      PhonemeCrfModel crfModel = crfTrainer.buildModel();
-      PhoneticEncoder encoder = PhoneticEncoderFactory.make(alignTagModel, crfModel);
-      return encoder;
-    }
+    PhonemeCrfTrainer crfTrainer = PhonemeCrfTrainer.open();
+    crfTrainer.trainFor(crfExamples);
+    PhonemeCrfModel crfModel = crfTrainer.buildModel();
+    PhoneticEncoder encoder = PhoneticEncoderFactory.make(alignTagModel, crfModel);
+    return encoder;
   }
 
 }

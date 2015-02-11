@@ -26,20 +26,20 @@ import com.github.steveash.jg2p.util.ReadWrite
  * overall performance by measuring the actual error rates for the overall process
  * @author Steve Ash
  */
-def trainFile = "cmudict.2kA.txt"
-def testFile = "cmudict.2kB.txt"
+def trainFile = "cmudict.20kA.txt"
+def testFile = "cmudict.20kB.txt"
 def train = InputReader.makeDefaultFormatReader().readFromClasspath(trainFile)
 def test = InputReader.makeDefaultFormatReader().readFromClasspath(testFile).take(200)
 def opts = new TrainOptions()
 opts.maxXGram = 2
 opts.maxYGram = 2
 opts.onlyOneGrams = true
-opts.useWindowWalker = false
-opts.includeXEpsilons = true
+opts.useWindowWalker = false 
+opts.includeXEpsilons = true 
 opts.maximizer = Maximizer.JOINT
 
 //def t = new SimpleEncoderTrainer()
 def t = new JointEncoderTrainer()
 def model = t.trainAndEval(train, test, opts)
-ReadWrite.writeTo(model, new File("../resources/pe_cmudct2ka_2_2.dat"))
+ReadWrite.writeTo(model, new File("../resources/pe_cmudct20ka_2_2.dat"))
 println "Wrote model"

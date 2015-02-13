@@ -31,9 +31,10 @@ public class GramOptions implements Serializable {
   private boolean includeXEpsilons = true;
   private boolean includeEpsilonYs = false;
   private boolean onlyOneGrams = true;  // if you have X>1 && Y>1 then only allow 1:y or x:1 not 2:2, 3:2, etc.
+  private int windowPadding = 0;  // how many epsilons might you allow when enumerating possible alignments
 
   public GramOptions(int minXGram, int maxXGram, int minYGram, int maxYGram, boolean includeXEpsilons,
-                     boolean includeEpsilonYs, boolean onlyOneGrams) {
+                     boolean includeEpsilonYs, boolean onlyOneGrams, int windowPadding) {
     this.minXGram = minXGram;
     this.maxXGram = maxXGram;
     this.minYGram = minYGram;
@@ -41,10 +42,11 @@ public class GramOptions implements Serializable {
     this.includeXEpsilons = includeXEpsilons;
     this.includeEpsilonYs = includeEpsilonYs;
     this.onlyOneGrams = onlyOneGrams;
+    this.windowPadding = windowPadding;
   }
 
   public GramOptions(int minGram, int maxGram) {
-    this(minGram, maxGram, minGram, maxGram, false, false, true);
+    this(minGram, maxGram, minGram, maxGram, false, false, true, 0);
   }
 
   public GramOptions() {
@@ -104,5 +106,13 @@ public class GramOptions implements Serializable {
 
   public void setOnlyOneGrams(boolean onlyOneGrams) {
     this.onlyOneGrams = onlyOneGrams;
+  }
+
+  public int getWindowPadding() {
+    return windowPadding;
+  }
+
+  public void setWindowPadding(int windowPadding) {
+    this.windowPadding = windowPadding;
   }
 }

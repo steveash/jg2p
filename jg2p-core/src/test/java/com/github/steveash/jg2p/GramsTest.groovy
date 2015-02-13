@@ -39,7 +39,7 @@ class GramsTest {
   public void shouldNestedLoopWithGramEps() throws Exception {
     def a = Word.fromNormalString("ab")
     def b = Word.fromNormalString("c")
-    def opts = new GramOptions(1, 2, 1, 2, true, true, true)
+    def opts = new GramOptions(1, 2, 1, 2, true, true, true, 0)
     def expected = ["a^c", "b^c", "a b^c", "a^", "b^", "^c", "a b^"].toSet()
     assert expected == Grams.gramProduct(a, b, opts).collect { it.left + "^" + it.right }.toSet()
   }

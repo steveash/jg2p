@@ -65,6 +65,9 @@ public class TrainOptions {
   @Option(name = "--useWindowWalker")
   public boolean useWindowWalker = false;
 
+  @Option(name= "--windowWalkerPadding")
+  public int windowPadding = 0;
+
   @Option(name = "--infile", required = true)
   public File trainingFile;
 
@@ -81,7 +84,8 @@ public class TrainOptions {
   }
 
   public GramOptions makeGramOptions() {
-    return new GramOptions(minXGram, maxXGram, minYGram, maxYGram, includeXEpsilons, includeEpsilonYs, onlyOneGrams);
+    return new GramOptions(minXGram, maxXGram, minYGram, maxYGram, includeXEpsilons, includeEpsilonYs, onlyOneGrams,
+                           windowPadding);
   }
 
   public InputReader makeReader() {

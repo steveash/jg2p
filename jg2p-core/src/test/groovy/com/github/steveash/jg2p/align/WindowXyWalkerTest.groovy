@@ -17,29 +17,43 @@
 package com.github.steveash.jg2p.align
 
 import com.github.steveash.jg2p.Word
+import org.junit.Before
 import org.junit.Test
 
 /**
  * @author Steve Ash
  */
 class WindowXyWalkerTest {
-
+  def xsize = 5
+  def ysize = 4
+  def visitCount = 0
   def v = new XyWalker.Visitor() {
 
     @Override
     void visit(int xxBefore, int xxAfter, String xGram, int yyBefore, int yyAfter, String yGram) {
+
       println "($xxBefore,$xxAfter) $xGram -> ($yyBefore,$yyAfter) $yGram"
+      visitCount += 1
     }
   }
 
   def steve = Word.fromNormalString("STEVE")
   def stev = Word.fromNormalString("STEV")
-  private opts = new GramOptions(1, 2)
+  private opts = new GramOptions(2, 2)
   def w2 = new WindowXyWalker(opts)
+
+
+  @Before
+  public void setUp() throws Exception {
+    opts.setIncludeXEpsilons(true)
+    opts.setIncludeEpsilonYs(true)
+    visitCount = 0
+  }
 
   @Test
   public void shouldIterateOverWindows() throws Exception {
     w2.forward(steve, stev, v)
+    println "Visited $visitCount"
   }
 
   static class RecordingVisitor implements XyWalker.Visitor {

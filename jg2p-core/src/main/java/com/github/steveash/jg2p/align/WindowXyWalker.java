@@ -22,8 +22,9 @@ import com.github.steveash.jg2p.Grams;
 import com.github.steveash.jg2p.Word;
 
 /**
- * In this walker we don't visit all possible combinations of X & Y.  We ignore epsilons (assume they are rare) and
- * only visit the _possible_ combinations of X and Y given that we have to assign the other X's or Y's to _something_
+ * In this walker we don't visit all possible combinations of X & Y.  We ignore epsilons (assume they are rare) and only
+ * visit the _possible_ combinations of X and Y given that we have to assign the other X's or Y's to _something_
+ *
  * @author Steve Ash
  */
 public class WindowXyWalker implements XyWalker {
@@ -43,6 +44,16 @@ public class WindowXyWalker implements XyWalker {
     // in the forward pass we only look at windows _behind_ us so the window is [xx - i, xx)
     for (int xx = 0; xx <= xsize; xx++) {
       for (int yy = 0; yy <= ysize; yy++) {
+
+        if (yy > 0 && opts.isIncludeEpsilonYs()) {
+          for (int j = 1; j <= opts.getMaxYGram() && (yy - j) >= 0; j++) {
+
+            if (isValidForwardWindow(xx, yy, 0, j, xsize, ysize)) {
+              String yGram = y.gram(yy - j, j);
+              visitor.visit(xx, xx, Grams.EPSILON, yy - j, yy, yGram);
+            }
+          }
+        }
 
         if (xx > 0 && opts.isIncludeXEpsilons()) {
           for (int i = 1; i <= opts.getMaxXGram() && (xx - i) >= 0; i++) {
@@ -83,8 +94,8 @@ public class WindowXyWalker implements XyWalker {
 
   // note that the xx and yy cursors are _after_ the window; i.e. window would be [xx - i, xx)
   private boolean isValidForwardWindow(int xx, int yy, int i, int j, int xsize, int ysize) {
-    int minPhonesAfterX = (int) Math.ceil( ((double) (xsize - xx)) / (double) opts.getMaxXGram() );
-    int minPhonesBeforeX = (int) Math.max(0, Math.ceil( ((double)(xx - i)) / (double) opts.getMaxXGram() ));
+    int minPhonesAfterX = (int) Math.ceil(((double) (xsize - xx)) / (double) opts.getMaxXGram());
+    int minPhonesBeforeX = (int) Math.max(0, Math.ceil(((double) (xx - i)) / (double) opts.getMaxXGram()));
 
     // is this going to be good from X to Y
     if (((yy - j) < minPhonesBeforeX) || ((ysize - yy) < minPhonesAfterX)) {
@@ -92,8 +103,8 @@ public class WindowXyWalker implements XyWalker {
     }
 
     // is this going to be good from Y to X
-    int minGraphsAfterY = (int) Math.ceil( ((double) (ysize - yy)) / (double) opts.getMaxYGram() );
-    int minGraphsBeforeY = (int) Math.max(0, Math.ceil( ((double)(yy - j)) / (double) opts.getMaxYGram() ));
+    int minGraphsAfterY = (int) Math.ceil(((double) (ysize - yy)) / (double) opts.getMaxYGram());
+    int minGraphsBeforeY = (int) Math.max(0, Math.ceil(((double) (yy - j)) / (double) opts.getMaxYGram()));
 
     // if i choose this x window are there enough graphs to satisfy min Y reqs (and vice versa)
     if (((xx - i) < minGraphsBeforeY) || ((xsize - xx) < minGraphsAfterY)) {
@@ -110,6 +121,16 @@ public class WindowXyWalker implements XyWalker {
 
     for (int xx = xsize; xx >= 0; xx--) {
       for (int yy = ysize; yy >= 0; yy--) {
+
+        if (yy < y.unigramCount() && opts.isIncludeEpsilonYs()) {
+          for (int j = 1; j <= opts.getMaxYGram() && (yy + j <= y.unigramCount()); j++) {
+
+            if (isValidBackwardWindow(xx, yy, 0, j, xsize, ysize)) {
+              String yGram = y.gram(yy, j);
+              visitor.visit(xx, xx, Grams.EPSILON, yy, yy + j, yGram);
+            }
+          }
+        }
 
         if (xx < xsize && opts.isIncludeXEpsilons()) {
           for (int i = 1; i <= opts.getMaxXGram() && (xx + i <= xsize); i++) {

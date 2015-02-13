@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import com.github.steveash.jg2p.align.TrainOptions
 import com.github.steveash.jg2p.seq.PhonemeCrfModel
 import com.github.steveash.jg2p.seq.PhonemeCrfTrainer
 import com.github.steveash.jg2p.seq.SeqInputReader
@@ -29,11 +31,10 @@ import static com.google.common.io.Resources.getResource
 def file = "cmubad.2kA.align.txt"
 def input = new SeqInputReader().readInput(asCharSource(getResource(file), Charsets.UTF_8))
 def aligns = input.take(500).collect{it.alignments}.flatten()
-def trainer = PhonemeCrfTrainer.open()
+def opts = new TrainOptions()
+opts.initCrfFromModelFile = "../resources/crf_cmubad2kA_500.dat"
+def trainer = PhonemeCrfTrainer.open(opts)
 trainer.setPrintEval(true)
-
-def crf = ReadWrite.readFromFile(PhonemeCrfModel, new File("../resources/crf_cmubad2kA_500.dat"))
-trainer.setInitFromModel(new File("../resources/crf_cmubad2kA_500.dat"))
 trainer.trainFor(aligns)
 
 //new PhonemeACrfTrainer().train(aligns)

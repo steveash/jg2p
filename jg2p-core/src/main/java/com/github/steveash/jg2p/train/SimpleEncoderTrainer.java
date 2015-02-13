@@ -47,7 +47,7 @@ public class SimpleEncoderTrainer extends AbstractEncoderTrainer {
     List<Alignment> crfExamples = makeCrfExamples(inputs, model);
     AlignTagModel alignTagModel = alignTagTrainer.train(crfExamples);
 
-    PhonemeCrfTrainer crfTrainer = PhonemeCrfTrainer.open();
+    PhonemeCrfTrainer crfTrainer = PhonemeCrfTrainer.open(opts);
     crfTrainer.trainFor(crfExamples);
     PhonemeCrfModel crfModel = crfTrainer.buildModel();
     PhoneticEncoder encoder = PhoneticEncoderFactory.make(alignTagModel, crfModel);

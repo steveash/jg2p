@@ -23,7 +23,9 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
+import com.github.steveash.jg2p.PhoneticEncoder;
 import com.github.steveash.jg2p.align.Alignment;
+import com.github.steveash.jg2p.align.TrainOptions;
 import com.github.steveash.jg2p.util.ReadWrite;
 
 import org.slf4j.Logger;
@@ -60,26 +62,26 @@ public class PhonemeCrfTrainer {
 
   private static final Logger log = LoggerFactory.getLogger(PhonemeCrfTrainer.class);
 
-  public static PhonemeCrfTrainer open() {
+  public static PhonemeCrfTrainer open(TrainOptions opts) {
     Pipe pipe = makePipe();
-    PhonemeCrfTrainer pct = new PhonemeCrfTrainer(pipe);
+    PhonemeCrfTrainer pct = new PhonemeCrfTrainer(pipe, opts);
     return pct;
   }
 
   private static enum State {Initializing, Training}
 
   private final Pipe pipe;
+  private final TrainOptions opts;
   private State state = State.Initializing;
 
   private CRF crf = null;
   private TransducerTrainer lastTrainer = null;
 
-  private int trimFeaturesUnderPercentile = 0;
-  private File initFromModel = null;
   private boolean printEval = false;
 
-  private PhonemeCrfTrainer(Pipe pipe) {
+  private PhonemeCrfTrainer(Pipe pipe, TrainOptions opts) {
     this.pipe = pipe;
+    this.opts = opts;
   }
 
   private void initializeFor(InstanceList examples) {
@@ -91,16 +93,26 @@ public class PhonemeCrfTrainer {
     crf.setWeightsDimensionAsIn(examples, false);
     //    crf.setWeightsDimensionWithFilterAsIn(examples, 2);
 
-    if (initFromModel != null) {
+    if (opts.initCrfFromModelFile != null) {
       try {
-        log.info("Loading initial weights from " + initFromModel.getCanonicalPath());
-        PhonemeCrfModel initModel = ReadWrite.readFromFile(PhonemeCrfModel.class, initFromModel);
-        crf.initializeApplicableParametersFrom(initModel.getCrf());
+        log.info("Loading initial weights from " + opts.initCrfFromModelFile);
+        CRF crfFrom = readCrfFrom();
+        crf.initializeApplicableParametersFrom(crfFrom);
 
       } catch (Exception e) {
         throw Throwables.propagate(e);
       }
     }
+  }
+
+  private CRF readCrfFrom() throws IOException, ClassNotFoundException {
+    Object model = ReadWrite.readFromFile(Object.class, new File(opts.initCrfFromModelFile));
+    if (model instanceof PhonemeCrfModel) {
+      return ((PhonemeCrfModel) model).getCrf();
+    } else if (model instanceof PhoneticEncoder) {
+      return ((PhoneticEncoder) model).getPhoneTagger().getCrf();
+    }
+    throw new IllegalArgumentException("Dont know how to get a crf out of " + model);
   }
 
   public void useCrf(CRF crf) {
@@ -124,13 +136,13 @@ public class PhonemeCrfTrainer {
 //    CRFTrainerByLabelLikelihood trainer = makeNewTrainerSingleThreaded(crf);
     this.lastTrainer = trainer;
 
-    trainer.train(examples, 100);
+    trainer.train(examples, opts.maxIterations);
 //    trainer.train(examples, 8, 250, new double[]{0.15, 1.0});
 //    trainer.train(examples, 8, new double[]{0.15, 1.0});
     trainer.shutdown(); // just closes the pool; next call to train will create a new one
 
-    if (trimFeaturesUnderPercentile > 0) {
-      trainer.getCRF().pruneFeaturesBelowPercentile(trimFeaturesUnderPercentile);
+    if (opts.trimFeaturesUnderPercentile > 0) {
+      trainer.getCRF().pruneFeaturesBelowPercentile(opts.trimFeaturesUnderPercentile);
       trainer.train(examples);
       trainer.shutdown();
     }
@@ -158,14 +170,6 @@ public class PhonemeCrfTrainer {
     return new PhonemeCrfModel(crf);
   }
 
-  public void setTrimFeaturesUnderPercentile(int trimFeaturesUnderPercentile) {
-    this.trimFeaturesUnderPercentile = trimFeaturesUnderPercentile;
-  }
-
-  public void setInitFromModel(File initFromModel) {
-    this.initFromModel = initFromModel;
-  }
-
   public void setPrintEval(boolean printEval) {
     this.printEval = printEval;
   }
@@ -186,17 +190,17 @@ public class PhonemeCrfTrainer {
     return trainer;
   }
 
-  private static CRF makeNewCrf(InstanceList examples, Pipe pipe) {
-    CRF crf = new CRF(pipe, null);
-    crf.addOrderNStates(examples, new int[]{1}, null, null, null, null, false);
-    crf.addStartState();
+//  private static CRF makeNewCrf(InstanceList examples, Pipe pipe) {
+//    CRF crf = new CRF(pipe, null);
+//    crf.addOrderNStates(examples, new int[]{1}, null, null, null, null, false);
+//    crf.addStartState();
 //    crf.setWeightsDimensionDensely();
-    crf.setWeightsDimensionAsIn(examples, false);
+//    crf.setWeightsDimensionAsIn(examples, false);
 //    crf.setWeightsDimensionWithFilterAsIn(examples, 2);
 //    crf.addFullyConnectedStatesForBiLabels();
 //    crf.addStartState();
-    return crf;
-  }
+//    return crf;
+//  }
 
   private static int getCpuCount() {
     return Runtime.getRuntime().availableProcessors();

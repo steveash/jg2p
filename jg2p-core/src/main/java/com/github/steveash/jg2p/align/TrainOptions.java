@@ -59,6 +59,15 @@ public class TrainOptions {
   @Option(name = "--trainingConvergence")
   public double probDeltaConvergenceThreshold = 1.0e-5;
 
+  @Option(name = "--maxCrfTrainingIterations")
+  public int maxCrfIterations = 100;
+
+  @Option(name = "--trimFeaturesUnderPercentile")
+  public int trimFeaturesUnderPercentile = 0;
+
+  @Option(name = "--initCrfFromModel")
+  public String initCrfFromModelFile = null;
+
   @Option(name = "--semiSupervisedFactor")
   public double semiSupervisedFactor = 0.6;
 

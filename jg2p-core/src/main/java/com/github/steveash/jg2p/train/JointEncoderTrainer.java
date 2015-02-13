@@ -74,7 +74,7 @@ public class JointEncoderTrainer extends AbstractEncoderTrainer {
     PhonemeCrfModel crfModel;
     Aligner alignTagModel = model;
 
-    PhonemeCrfTrainer crfTrainer = PhonemeCrfTrainer.open();
+    PhonemeCrfTrainer crfTrainer = PhonemeCrfTrainer.open(opts);
     crfTrainer.trainFor(crfExamples);
 
     int iterCount = 0;

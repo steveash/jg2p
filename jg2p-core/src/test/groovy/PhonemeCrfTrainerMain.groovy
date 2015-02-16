@@ -17,6 +17,7 @@
 import com.github.steveash.jg2p.align.TrainOptions
 import com.github.steveash.jg2p.seq.PhonemeCrfModel
 import com.github.steveash.jg2p.seq.PhonemeCrfTrainer
+import com.github.steveash.jg2p.seq.PhonemeHmmTrainer
 import com.github.steveash.jg2p.seq.SeqInputReader
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Charsets
@@ -32,8 +33,9 @@ def file = "cmubad.2kA.align.txt"
 def input = new SeqInputReader().readInput(asCharSource(getResource(file), Charsets.UTF_8))
 def aligns = input.take(500).collect{it.alignments}.flatten()
 def opts = new TrainOptions()
-opts.initCrfFromModelFile = "../resources/crf_cmubad2kA_500.dat"
-def trainer = PhonemeCrfTrainer.open(opts)
+//opts.initCrfFromModelFile = "../resources/crf_cmubad2kA_500.dat"
+//def trainer = PhonemeCrfTrainer.open(opts)
+def trainer = PhonemeHmmTrainer.open(opts)
 trainer.setPrintEval(true)
 trainer.trainFor(aligns)
 

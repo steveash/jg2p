@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import cc.mallet.fst.CRF;
+import cc.mallet.fst.Transducer;
 import cc.mallet.types.Instance;
 import cc.mallet.types.Sequence;
 
@@ -32,6 +33,7 @@ import cc.mallet.types.Sequence;
  * @author Steve Ash
  */
 public class PhonemeCrfModel implements Serializable {
+//  private static final long serialVersionUID = -6696520265858560431L;
   private static final Splitter split =com.google.common.base.Splitter.on(' ');
 
   public static class TagResult {
@@ -59,23 +61,23 @@ public class PhonemeCrfModel implements Serializable {
     }
   }
 
-  private final CRF crf;
+  private final Transducer tduc;
 
-  public PhonemeCrfModel(CRF crf) {
-    this.crf = crf;
+  public PhonemeCrfModel(Transducer tduc) {
+    this.tduc = tduc;
   }
 
   public List<TagResult> tag(List<String> xTokens, int nBest) {
     Instance instance = new Instance(xTokens, null, null, null);
-    instance = crf.getInputPipe().instanceFrom(instance);
+    instance = tduc.getInputPipe().instanceFrom(instance);
 
     Sequence inSeq = (Sequence) instance.getData();
-    List<Sequence<Object>> outSeqs = crf.getMaxLatticeFactory().newMaxLattice(crf, inSeq).bestOutputSequences(nBest);
+    List<Sequence<Object>> outSeqs = tduc.getMaxLatticeFactory().newMaxLattice(tduc, inSeq).bestOutputSequences(nBest);
 
     ArrayList<TagResult> results = Lists.newArrayListWithCapacity(outSeqs.size());
-    double z = crf.getSumLatticeFactory().newSumLattice(crf, inSeq).getTotalWeight();
+    double z = tduc.getSumLatticeFactory().newSumLattice(tduc, inSeq).getTotalWeight();
     for (Sequence<Object> outSeq : outSeqs) {
-      double score = crf.getSumLatticeFactory().newSumLattice(crf, inSeq, outSeq).getTotalWeight();
+      double score = tduc.getSumLatticeFactory().newSumLattice(tduc, inSeq, outSeq).getTotalWeight();
       results.add(new TagResult(makePhones(outSeq), score - z));
     }
 
@@ -99,6 +101,6 @@ public class PhonemeCrfModel implements Serializable {
   }
 
   public CRF getCrf() {
-    return crf;
+    return (CRF) tduc;
   }
 }

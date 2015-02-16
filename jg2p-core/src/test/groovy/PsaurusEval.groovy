@@ -31,7 +31,10 @@ def train = InputReader.makePSaurusReader().readFromClasspath(trainFile)
 def test = InputReader.makePSaurusReader().readFromClasspath(testFile)
 def opts = new TrainOptions()
 opts.maxXGram = 2
-opts.includeXEpsilons = false
+opts.maxYGram = 2
+opts.includeXEpsilons = true
+opts.onlyOneGrams = true
+opts.maxCrfIterations = 100
 opts.maximizer = Maximizer.JOINT
 
 //def t = new SimpleEncoderTrainer()

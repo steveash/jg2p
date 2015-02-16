@@ -77,6 +77,12 @@ public class TrainOptions {
   @Option(name= "--windowWalkerPadding")
   public int windowPadding = 0;
 
+  @Option(name = "--topKAlignCandidates")
+  public int topKAlignCandidates = 5;
+
+  @Option(name = "--minAlignScore")
+  public int minAlignScore = -150;
+
   @Option(name = "--infile", required = true)
   public File trainingFile;
 

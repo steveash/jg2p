@@ -48,26 +48,30 @@ public abstract class AbstractEncoderTrainer {
     return encoder;
   }
 
-  protected void eval(PhoneticEncoder encoder, String phaseLabel, EncoderEval.PrintOpts opts) {
+  public static void eval(PhoneticEncoder encoder, String label, List<InputRecord> inputs, EncoderEval.PrintOpts opts) {
     EncoderEval eval = new EncoderEval(encoder);
-    log.info("--------------------- " + phaseLabel + " Eval on training data ------------------------");
-    eval.evalAndPrint(train, opts);
+        log.info("--------------------- " + label + " ------------------------");
+        eval.evalAndPrint(inputs, opts);
+  }
+
+  protected void eval(PhoneticEncoder encoder, String phaseLabel, EncoderEval.PrintOpts opts) {
+    if (train != null) {
+      eval(encoder, phaseLabel +  " Eval on training data", train, opts);
+    }
     if (test != null) {
-      log.info("--------------------- " + phaseLabel + " Eval on testing data ------------------------");
-      EncoderEval eval2 = new EncoderEval(encoder);
-      eval2.evalAndPrint(test, opts);
+      eval(encoder, phaseLabel +  " Eval on test data", test, opts);
     }
   }
 
   protected abstract PhoneticEncoder train(List<InputRecord> inputs, TrainOptions opts);
 
-  public static List<Alignment> makeCrfExamples(List<InputRecord> inputs, AlignModel model) {
+  public static List<Alignment> makeCrfExamples(List<InputRecord> inputs, AlignModel model, TrainOptions opts) {
     List<Alignment> examples = Lists.newArrayListWithCapacity(inputs.size());
     for (InputRecord input : inputs) {
-      List<Alignment> best = model.align(input.xWord, input.yWord, 5);
+      List<Alignment> best = model.align(input.xWord, input.yWord, opts.topKAlignCandidates);
 
       for (Alignment pairs : best) {
-        if (pairs.getScore() > -150) {
+        if (pairs.getScore() > opts.minAlignScore) {
           examples.add(pairs);
         }
       }

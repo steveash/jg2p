@@ -69,7 +69,7 @@ public class JointEncoderTrainer extends AbstractEncoderTrainer {
 
     // first model
     AlignModel model = alignTrainer.train(inputs);
-    Collection<Alignment> crfExamples = makeCrfExamples(inputs, model);
+    Collection<Alignment> crfExamples = makeCrfExamples(inputs, model, opts);
     Set<Alignment> goodExamples = Sets.newHashSet();
     PhonemeCrfModel crfModel;
     Aligner alignTagModel = model;
@@ -99,7 +99,7 @@ public class JointEncoderTrainer extends AbstractEncoderTrainer {
       }
 
       alignTagModel = alignTagTrainer.train(goodExamples, true);
-      crfExamples = makeCrfExamplesFromAlignTag(inputs, goodExamples, alignTagModel, model);
+      crfExamples = makeCrfExamplesFromAlignTag(inputs, goodExamples, alignTagModel, model, opts);
       crfTrainer.trainFor(crfExamples);
     }
 
@@ -109,7 +109,7 @@ public class JointEncoderTrainer extends AbstractEncoderTrainer {
   }
 
   private Collection<Alignment> makeCrfExamplesFromAlignTag(List<InputRecord> inputs, Set<Alignment> goodExamples,
-                                                            Aligner crfAligner, AlignModel mlAligner) {
+                                                            Aligner crfAligner, AlignModel mlAligner, TrainOptions opts) {
     // this is a little complicated; we want to use the goodExamples (supervised aligns) if we have it; next use the
     // crfAligner if it produces a good alignment that matches the Y count; else use the mlAligner
     Set<Alignment> result = Sets.newHashSetWithExpectedSize(inputs.size());
@@ -147,7 +147,7 @@ public class JointEncoderTrainer extends AbstractEncoderTrainer {
       failedInputs.add(input);
     }
 
-    List<Alignment> mlAligns = makeCrfExamples(failedInputs, mlAligner);
+    List<Alignment> mlAligns = makeCrfExamples(failedInputs, mlAligner, opts);
     result.addAll(mlAligns);
 
     log.info("Super/Eq/Crf/ML " + superHit + "/" + xyEqualCount + "/" + crfAlignHit + "/" + mlAlignHit + " ML added count " + mlAligns.size());

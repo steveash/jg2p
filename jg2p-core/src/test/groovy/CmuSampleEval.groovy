@@ -43,6 +43,8 @@ opts.initCrfFromModelFile = "../resources/pe_cmudct2ka_2_2_A.dat"
 
 //def t = new SimpleEncoderTrainer(false)
 def t = new SimpleEncoderTrainer()
-def model = t.trainAndEval(train, test, opts)
-//ReadWrite.writeTo(model, new File("../resources/pe_cmudct2ka_2_2_A.dat"))
+def model = t.trainNoEval(train, test, opts)
+ReadWrite.writeTo(model, new File("../resources/pe_cmudct2ka_2_2_B.dat"))
+t.eval(model, "FINAL", opts)
+
 println "Wrote model"

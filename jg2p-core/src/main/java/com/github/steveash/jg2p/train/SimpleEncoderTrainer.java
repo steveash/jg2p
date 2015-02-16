@@ -49,7 +49,7 @@ public class SimpleEncoderTrainer extends AbstractEncoderTrainer {
   }
 
   @Override
-  protected PhoneticEncoder train(List<InputRecord> inputs, TrainOptions opts) {
+  public PhoneticEncoder train(List<InputRecord> inputs, TrainOptions opts) {
     AlignerTrainer alignTrainer = new AlignerTrainer(opts);
     AlignTagTrainer alignTagTrainer = new AlignTagTrainer();
 

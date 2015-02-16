@@ -39,6 +39,13 @@ public abstract class AbstractEncoderTrainer {
   private List<InputRecord> train;
   private List<InputRecord> test;
 
+  public PhoneticEncoder trainNoEval(List<InputRecord> train, List<InputRecord> test, TrainOptions opts) {
+    this.train = train;
+    this.test = test;
+    PhoneticEncoder encoder = train(train, opts);
+    return encoder;
+  }
+
   public PhoneticEncoder trainAndEval(List<InputRecord> train, List<InputRecord> test, TrainOptions opts) {
     this.train = train;
     this.test = test;
@@ -50,16 +57,16 @@ public abstract class AbstractEncoderTrainer {
 
   public static void eval(PhoneticEncoder encoder, String label, List<InputRecord> inputs, EncoderEval.PrintOpts opts) {
     EncoderEval eval = new EncoderEval(encoder);
-        log.info("--------------------- " + label + " ------------------------");
-        eval.evalAndPrint(inputs, opts);
+    log.info("--------------------- " + label + " ------------------------");
+    eval.evalAndPrint(inputs, opts);
   }
 
-  protected void eval(PhoneticEncoder encoder, String phaseLabel, EncoderEval.PrintOpts opts) {
+  public void eval(PhoneticEncoder encoder, String phaseLabel, EncoderEval.PrintOpts opts) {
     if (train != null) {
-      eval(encoder, phaseLabel +  " Eval on training data", train, opts);
+      eval(encoder, phaseLabel + " Eval on training data", train, opts);
     }
     if (test != null) {
-      eval(encoder, phaseLabel +  " Eval on test data", test, opts);
+      eval(encoder, phaseLabel + " Eval on test data", test, opts);
     }
   }
 

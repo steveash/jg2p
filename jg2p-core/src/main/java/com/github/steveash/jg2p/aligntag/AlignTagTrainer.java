@@ -178,9 +178,9 @@ public class AlignTagTrainer {
       instances.addThruPipe(ii);
       count += 1;
 
-      if (count > 5000) {
-        break;
-      }
+//      if (count > 5000) {
+//        break;
+//      }
     }
     log.info("Read {} instances of training data", count);
     return instances;

@@ -109,4 +109,31 @@ public class TrainOptions {
 
     return InputReader.makeDefaultFormatReader();
   }
+
+  @Override
+  public String toString() {
+    return "TrainOptions{" +
+           "\n\tminXGram=" + minXGram +
+           ",\n\tmaxXGram=" + maxXGram +
+           ",\n\tminYGram=" + minYGram +
+           ",\n\tmaxYGram=" + maxYGram +
+           ",\n\tincludeXEpsilons=" + includeXEpsilons +
+           ",\n\tincludeEpsilonYs=" + includeEpsilonYs +
+           ",\n\tonlyOneGrams=" + onlyOneGrams +
+           ",\n\tmaximizer=" + maximizer +
+           ",\n\tmaxIterations=" + maxIterations +
+           ",\n\tprobDeltaConvergenceThreshold=" + probDeltaConvergenceThreshold +
+           ",\n\tmaxCrfIterations=" + maxCrfIterations +
+           ",\n\ttrimFeaturesUnderPercentile=" + trimFeaturesUnderPercentile +
+           ",\n\tinitCrfFromModelFile='" + initCrfFromModelFile + '\'' +
+           ",\n\tsemiSupervisedFactor=" + semiSupervisedFactor +
+           ",\n\tuseWindowWalker=" + useWindowWalker +
+           ",\n\twindowPadding=" + windowPadding +
+           ",\n\ttopKAlignCandidates=" + topKAlignCandidates +
+           ",\n\tminAlignScore=" + minAlignScore +
+           ",\n\ttrainingFile=" + trainingFile +
+           ",\n\toutputFile=" + outputFile +
+           ",\n\tformat=" + format +
+           '}';
+  }
 }

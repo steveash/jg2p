@@ -16,7 +16,9 @@
 
 package com.github.steveash.jg2p.seq;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import java.io.Serializable;
@@ -37,16 +39,21 @@ public class PhonemeCrfModel implements Serializable {
   private static final Splitter split =com.google.common.base.Splitter.on(' ');
 
   public static class TagResult {
-    public final List<String> phones;
-    public final double logScore;
+    private final List<String> phones;
+    private final double logScore;
 
     public TagResult(List<String> phones, double logScore) {
       this.phones = phones;
       this.logScore = logScore;
     }
 
+    public double sequenceLogProbability() { return logScore; }
     public double sequenceProbability() {
       return Math.exp(logScore);
+    }
+
+    public List<String> phonesNoEps() {
+      return Lists.newArrayList(Iterables.filter(phones, isNotEps));
     }
 
     public boolean isEqualTo(Iterable<String> expected) {
@@ -103,4 +110,11 @@ public class PhonemeCrfModel implements Serializable {
   public CRF getCrf() {
     return (CRF) tduc;
   }
+
+  private static final Predicate<String> isNotEps = new Predicate<String>() {
+    @Override
+    public boolean apply(String input) {
+      return !input.equalsIgnoreCase(PhonemeCrfTrainer.EPS);
+    }
+  };
 }

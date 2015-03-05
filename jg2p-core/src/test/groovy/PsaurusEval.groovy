@@ -19,6 +19,7 @@ import com.github.steveash.jg2p.align.Maximizer
 import com.github.steveash.jg2p.align.TrainOptions
 import com.github.steveash.jg2p.train.JointEncoderTrainer
 import com.github.steveash.jg2p.util.ReadWrite
+import org.slf4j.LoggerFactory
 
 /**
  * Driver for the whole end to end training and eval process so that I can play with the alignment code to improve
@@ -36,9 +37,12 @@ opts.includeXEpsilons = true
 opts.onlyOneGrams = true
 opts.maxCrfIterations = 100
 opts.maximizer = Maximizer.JOINT
+def log = LoggerFactory.getLogger("psaurus")
+log.info("Starting training with $trainFile and $testFile with opts $opts")
 
 //def t = new SimpleEncoderTrainer()
 def t = new JointEncoderTrainer()
 def model = t.trainAndEval(train, test, opts)
 ReadWrite.writeTo(model, new File("../resources/encoder.dat"))
-println "Wrote model"
+
+log.info("***********************************Finished*************************************")

@@ -96,10 +96,10 @@ public class PhoneticEncoder implements Serializable {
       List<String> graphemes = alignment.getAllXTokensAsList();
       List<PhonemeCrfModel.TagResult> tagResults = phoneTagger.tag(graphemes, bestAlignments);
       for (PhonemeCrfModel.TagResult tagResult : tagResults) {
-        if (!results.isEmpty() && tagResult.logScore < tagMinScore) {
+        if (!results.isEmpty() && tagResult.sequenceLogProbability() < tagMinScore) {
           continue;
         }
-        results.add(new Encoding(graphemes, tagResult.phones, alignment.getScore(), tagResult.logScore));
+        results.add(new Encoding(graphemes, tagResult.phonesNoEps(), alignment.getScore(), tagResult.sequenceLogProbability()));
       }
     }
     Collections.sort(results, OrderByTagScore);

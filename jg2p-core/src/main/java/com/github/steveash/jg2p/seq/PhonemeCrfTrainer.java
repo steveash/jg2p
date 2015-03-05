@@ -61,6 +61,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class PhonemeCrfTrainer {
 
   private static final Logger log = LoggerFactory.getLogger(PhonemeCrfTrainer.class);
+  public static final String EPS = "<EPS>";
 
   public static PhonemeCrfTrainer open(TrainOptions opts) {
     Pipe pipe = makePipe();
@@ -241,13 +242,13 @@ public class PhonemeCrfTrainer {
   }
 
   private static void updateEpsilons(List<String> phones) {
-    String last = "<EPS>";
+    String last = EPS;
     int blankCount = 0;
     for (int i = 0; i < phones.size(); i++) {
       String p = phones.get(i);
       if (isBlank(p)) {
 //        phones.set(i, last + "_" + blankCount);
-        phones.set(i, "<EPS>");
+        phones.set(i, EPS);
         blankCount += 1;
       } else {
         last = p;

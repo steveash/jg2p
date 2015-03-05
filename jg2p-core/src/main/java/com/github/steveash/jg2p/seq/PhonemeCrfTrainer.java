@@ -267,6 +267,9 @@ public class PhonemeCrfTrainer {
         new TokenSequenceLowercase(),                       // make all lowercase
         new NeighborTokenFeature(true, makeNeighbors()),         // grab neighboring graphemes
         new NeighborShapeFeature(true, makeShapeNeighs()),
+        new SurroundingTokenFeature(false),
+        new SurroundingTokenFeature(true),
+        new LeadingTrailingFeature(),
         new TokenSequenceToFeature(),                       // convert the strings in the text to features
         new TokenSequence2FeatureVectorSequence(alpha, true, true),
         labelPipe

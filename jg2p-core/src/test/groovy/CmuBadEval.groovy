@@ -38,8 +38,8 @@ opts.onlyOneGrams = true
 opts.useWindowWalker = true
 opts.maximizer = Maximizer.JOINT
 
-//def t = new SimpleEncoderTrainer()
-def t = new JointEncoderTrainer()
+def t = new SimpleEncoderTrainer()
+//def t = new JointEncoderTrainer()
 def model = t.trainAndEval(train, null, opts)
 //ReadWrite.writeTo(model, new File("../resources/encoder.dat"))
 println "Wrote model"

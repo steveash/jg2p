@@ -135,6 +135,7 @@ public class TokenSeqUtil {
   };
 
   public static String convertShape(String winStr) {
+    if (winStr == null) return null;
     StringBuilder sb = new StringBuilder(winStr.length());
     for (int i = 0; i < winStr.length(); i++) {
       char c = winStr.charAt(i);

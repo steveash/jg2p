@@ -24,9 +24,12 @@ import com.google.common.collect.Iterables;
 
 import com.github.steveash.jg2p.Word;
 import com.github.steveash.jg2p.align.Alignment;
+import com.github.steveash.jg2p.seq.LeadingTrailingFeature;
+import com.github.steveash.jg2p.seq.NeighborShapeFeature;
 import com.github.steveash.jg2p.seq.NeighborTokenFeature;
 import com.github.steveash.jg2p.seq.SeqInputReader;
 import com.github.steveash.jg2p.seq.StringListToTokenSequence;
+import com.github.steveash.jg2p.seq.SurroundingTokenFeature;
 import com.github.steveash.jg2p.seq.TokenSequenceToFeature;
 import com.github.steveash.jg2p.seq.TokenWindow;
 import com.github.steveash.jg2p.util.ReadWrite;
@@ -211,7 +214,10 @@ public class AlignTagTrainer {
         new StringListToTokenSequence(alpha, labelAlpha),   // convert to token sequence
         new TokenSequenceLowercase(),                       // make all lowercase
         new NeighborTokenFeature(true, makeNeighbors()),         // grab neighboring graphemes
-//        new NeighborShapeFeature(true, makeShapeNeighs()),
+        new SurroundingTokenFeature(false),
+        new SurroundingTokenFeature(true),
+        new NeighborShapeFeature(true, makeShapeNeighs()),
+        new LeadingTrailingFeature(),
         new TokenSequenceToFeature(),                       // convert the strings in the text to features
         new TokenSequence2FeatureVectorSequence(alpha, true, true),
         labelPipe

@@ -25,8 +25,10 @@ import com.google.common.base.Stopwatch
 import com.google.common.collect.HashMultiset
 import groovy.transform.Field
 import groovy.transform.ToString
+import groovyx.gpars.GParsPool
 
 import java.util.concurrent.ThreadLocalRandom
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Used to play with the failing examples to try and figure out some areas for improvement
@@ -69,17 +71,19 @@ def enc = ReadWrite.readFromClasspath(PhoneticEncoder.class, "cmu_all_jt_2eps_wi
 //def enc2 = enc.withAligner(alignTag)
 
 class Entry {
-  int count = 0
-  List examples = []
+  AtomicInteger count = new AtomicInteger(0)
+  List examples = Collections.synchronizedList([])
 
   void addExample(Encoding enc, InputRecord input) {
-    count += 1
+    int thisCount = count.incrementAndGet();
 
-    if (examples.size() < 333) {
+
+    def size = examples.size()
+    if (size < 333) {
       examples << [enc, input]
     } else {
-      def next = ThreadLocalRandom.current().nextInt(0, count)
-      if (next < examples.size()) {
+      def next = ThreadLocalRandom.current().nextInt(0, thisCount)
+      if (next < size) {
         examples[next] = [enc, input]
       }
     }
@@ -89,9 +93,9 @@ class Entry {
 }
 
 class Counts {
-  int wins = 0;
-  int total = 0;
-  def winExamples = []
+  AtomicInteger wins = new AtomicInteger(0)
+  AtomicInteger total = new AtomicInteger(0)
+  def winExamples = Collections.synchronizedList([])
   def lostRightAlign = new Entry()
   def lostWrongAlign = new Entry()
   def lostWrongAlignGgtP = new Entry()
@@ -130,47 +134,47 @@ class Counts {
 def c = new Counts()
 Stopwatch watch = Stopwatch.createStarted()
 
-for (InputRecord input : inps) {
-
-//  if (c.total > 50) break;
-  if (c.isDone()) {
-    break;
-  }
-
-  List<PhoneticEncoder.Encoding> ans = enc.encode(input.xWord);
-  c.total += 1;
-
-  if (c.total % 5000 == 0) {
-    println "Completed " + c.total + " of " + inps.size()
-  }
-
-  def exp = input.yWord.value
-  def neww = ans.get(0)
-
-  if (neww.phones == exp) {
-    c.wins += 1
-    if (c.winExamples.size() < 333) {
-      c.winExamples << [neww, input]
+GParsPool.withPool {
+  inps.everyParallel { InputRecord input ->
+    if (c.isDone()) {
+      return false
     }
-    continue;
-  }
 
-  def expc = exp.size()
-  def algc = neww.alignment.size()
-  def gc = input.xWord.unigramCount()
+    List<PhoneticEncoder.Encoding> ans = enc.encode(input.xWord);
+    def newTotal = c.total.incrementAndGet()
 
-  if (expc == algc) {
-    c.lostRightAlign.addExample(neww, input)
-  } else {
-    c.lostWrongAlign.addExample(neww, input)
-    if (gc > expc) {
-      c.lostWrongAlignGgtP.addExample(neww, input)
-    } else if (gc < expc) {
-      c.lostWrongAlignGltP.addExample(neww, input)
+    if (newTotal % 5000 == 0) {
+      println "Completed " + newTotal + " of " + inps.size()
+    }
+
+    def exp = input.yWord.value
+    def neww = ans.get(0)
+
+    if (neww.phones == exp) {
+      int newWins = c.wins.incrementAndGet()
+      if (newWins < 333) {
+        c.winExamples << [neww, input]
+      }
+      return true;
+    }
+
+    def expc = exp.size()
+    def algc = neww.alignment.size()
+    def gc = input.xWord.unigramCount()
+
+    if (expc == algc) {
+      c.lostRightAlign.addExample(neww, input)
     } else {
-      c.lostWrongAlignGeqP.addExample(neww, input)
-    }
+      c.lostWrongAlign.addExample(neww, input)
+      if (gc > expc) {
+        c.lostWrongAlignGgtP.addExample(neww, input)
+      } else if (gc < expc) {
+        c.lostWrongAlignGltP.addExample(neww, input)
+      } else {
+        c.lostWrongAlignGeqP.addExample(neww, input)
+      }
 
+    }
   }
 }
 watch.stop()

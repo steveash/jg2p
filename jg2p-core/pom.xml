@@ -54,6 +54,11 @@
       <groupId>com.github.steveash.mallet</groupId>
       <artifactId>mallet</artifactId>
     </dependency>
+    <dependency>
+        <groupId>org.codehaus.gpars</groupId>
+        <artifactId>gpars</artifactId>
+        <version>1.2.1</version>
+    </dependency>
   </dependencies>
 
   <build>

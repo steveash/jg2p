@@ -34,6 +34,7 @@ import static com.github.steveash.jg2p.seq.TokenWindow.makeTokenWindowsForInts;
  * @author Steve Ash
  */
 public class NeighborTokenFeature extends Pipe {
+  private static final long serialVersionUID = -3645223081008993222L;
 
   private final boolean includeCurrent;
   private final ImmutableList<TokenWindow> windows;

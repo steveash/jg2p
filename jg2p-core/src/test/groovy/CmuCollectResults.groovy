@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
+import com.github.steveash.jg2p.util.Histogram
+import com.github.steveash.jg2p.util.Percent
+import groovyx.gpars.GParsConfig
 import groovyx.gpars.dataflow.DataflowQueue
 import groovyx.gpars.dataflow.operator.PoisonPill
+import groovyx.gpars.group.PGroup
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics
 
 import java.util.concurrent.atomic.AtomicBoolean
@@ -55,7 +59,7 @@ def inps = InputReader.makePSaurusReader().readFromClasspath(file)
 //Collections.shuffle(inps, new Random(0xCAFEBABE))
 //inps = inps.subList(0, (int)(inps.size() / 4));
 
-def enc = ReadWrite.readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_withWindow.dat"))
+def enc = ReadWrite.readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f3.dat"))
 //def alignTag = ReadWrite.readFromClasspath(AlignTagModel, "aligntag.dat")
 //def enc2 = enc.withAligner(alignTag)
 
@@ -68,6 +72,8 @@ GParsPool.withPool {
 
   def good = new SummaryStatistics()
   def bad = new SummaryStatistics()
+  def goodHisto = new Histogram(0.0, 100.0, 20)
+  def badHisto = new Histogram(0.0, 100.0, 20)
 
   def writer = task {
     new File(outfile).withPrintWriter { pw ->
@@ -77,8 +83,10 @@ GParsPool.withPool {
         synchronized (CmuCollectResults.class) {
           if (isGood) {
             good.addValue(prob)
+            goodHisto.add(prob * 100)
           } else {
             bad.addValue(prob)
+            badHisto.add(prob * 100)
           }
         }
       }
@@ -107,9 +115,15 @@ GParsPool.withPool {
   synchronized (CmuCollectResults.class) {
     println "Good stuff\n" + good.toString()
     println "Bad stuff\n" + bad.toString()
+    println "-- Histo Range -- Good Perc -- Bad Perc -- "
+    for (int i = 0; i < goodHisto.binCount; i++) {
+      double goodPerc = Percent.value(goodHisto.getCountAtIndex(i), good.getN())
+      double badPerc = Percent.value(badHisto.getCountAtIndex(i), bad.getN())
+      println String.format("%s   %.4f   %.4f", goodHisto.getRangeLabelAtIndex(i), goodPerc, badPerc)
+    }
   }
 
 }
 watch.stop()
-
+GParsConfig.shutdown()
 println "done took " + watch.toString()

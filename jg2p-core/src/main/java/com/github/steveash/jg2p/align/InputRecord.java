@@ -28,10 +28,18 @@ public class InputRecord extends Pair<Word, Word> {
 
   public final Word xWord;
   public final Word yWord;
+  public final String memo;
 
   public InputRecord(Word xWord, Word yWord) {
     this.xWord = xWord;
     this.yWord = yWord;
+    this.memo = null;
+  }
+
+  public InputRecord(Word xWord, Word yWord, String memo) {
+    this.xWord = xWord;
+    this.yWord = yWord;
+    this.memo = memo;
   }
 
   public Pair<Word,Word> xyWordPair() {

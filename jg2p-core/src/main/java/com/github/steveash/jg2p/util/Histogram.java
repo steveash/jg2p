@@ -120,6 +120,11 @@ public class Histogram {
         return histogram[index];
     }
 
+    public String getRangeLabelAtIndex(int index) {
+      double rangeMin = (index * binWidth) + min;
+      return String.format("[%.2f,%.2f)", rangeMin, rangeMin + binWidth);
+    }
+
     /**
      * Returns the count in this bin which corresponds to where the given value
      * would be placed. Thus, if you had a histogram covering [0.0, 1.0) with 10 bins,

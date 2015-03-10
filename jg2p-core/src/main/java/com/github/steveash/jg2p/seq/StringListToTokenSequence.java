@@ -20,6 +20,7 @@ import com.google.common.base.Preconditions;
 
 import com.github.steveash.jg2p.Word;
 
+import java.io.Serializable;
 import java.util.List;
 
 import cc.mallet.pipe.Pipe;
@@ -32,19 +33,28 @@ import cc.mallet.types.TokenSequence;
  * Converts a Word in the data (and target if present) section in to a tokenSequence
  * @author Steve Ash
  */
-public class StringListToTokenSequence extends Pipe {
+public class StringListToTokenSequence extends Pipe implements Serializable {
+  private static final long serialVersionUID = 123L;
+
+  private final boolean updateTarget;
 
   public StringListToTokenSequence(Alphabet dataDict, Alphabet targetDict) {
+    this(dataDict, targetDict, true);
+  }
+
+  public StringListToTokenSequence(Alphabet dataDict, Alphabet targetDict,
+                                   boolean updateTarget) {
     super(dataDict, targetDict);
+    this.updateTarget = updateTarget;
   }
 
   @Override
   public Instance pipe(Instance inst) {
     List<String> source = (List<String>) inst.getData();
-    List<String> target = (List<String>) inst.getTarget();
 
     inst.setData(makeTokenSeq(source));
-    if (target != null) {
+    if (inst.getTarget() != null && updateTarget) {
+      List<String> target = (List<String>) inst.getTarget();
       Preconditions.checkState(target.size() == source.size(), "target %s source %s", target, source);
       inst.setTarget(makeTokenSeq(target));
     }

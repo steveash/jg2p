@@ -1,5 +1,13 @@
+import com.github.steveash.jg2p.align.InputReader
+import com.github.steveash.jg2p.seq.SeqInputReader
+import com.github.steveash.jg2p.seqbin.SeqBinTrainer
+import com.google.common.base.Charsets
+
+import static com.google.common.io.Resources.asCharSource
+import static com.google.common.io.Resources.getResource
+
 /*
- * Copyright 2014 Steve Ash
+ * Copyright 2015 Steve Ash
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +22,11 @@
  * limitations under the License.
  */
 
-package com.github.steveash.jg2p.util;
-
 /**
+ * Trains a seq bin trainer from the given input data
  * @author Steve Ash
  */
-public class Percent {
-
-  public static double value(Number num, Number den) {
-    double outOfOne = num.doubleValue() / den.doubleValue();
-    return outOfOne;
-  }
-
-  public static String print(Number num, Number den) {
-    return String.format("%.4f%%", value(num, den) * 100.0);
-  }
-
-}
+def inputFile = "g014b2b-results.train"
+def training = InputReader.makeDefaultFormatReader().readFromClasspath(inputFile)
+def sbt = new SeqBinTrainer()
+sbt.trainFor(training)

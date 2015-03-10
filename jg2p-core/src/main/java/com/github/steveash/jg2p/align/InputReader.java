@@ -119,7 +119,11 @@ public class InputReader {
       Iterator<String> iter = tabSplit.split(line).iterator();
       Word x = Word.fromSpaceSeparated(iter.next());
       Word y = Word.fromSpaceSeparated(iter.next());
-      return new InputRecord(x, y);
+      String other = null;
+      if (iter.hasNext()) {
+        other = iter.next();
+      }
+      return new InputRecord(x, y, other);
     }
   };
 

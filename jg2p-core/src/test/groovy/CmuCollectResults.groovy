@@ -45,17 +45,17 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 
 
-def file = "cmudict.5kA.txt"
+//def file = "cmudict.5kA.txt"
 //def file = "cmudict.5kB.txt"
-//def file = "g014b2b.train"
-def outfile = "outfile.txt"
+def file = "g014b2b.train"
+def outfile = "../resources/g014b2b-results.train"
 //def file = "g014b2b.test"
-def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
-//def inps = InputReader.makePSaurusReader().readFromClasspath(file)
+//def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
+def inps = InputReader.makePSaurusReader().readFromClasspath(file)
 //Collections.shuffle(inps, new Random(0xCAFEBABE))
 //inps = inps.subList(0, (int)(inps.size() / 4));
 
-def enc = ReadWrite.readFromClasspath(PhoneticEncoder.class, "pe_cmudct2ka_2_2_A.dat")
+def enc = ReadWrite.readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_withWindow.dat"))
 //def alignTag = ReadWrite.readFromClasspath(AlignTagModel, "aligntag.dat")
 //def enc2 = enc.withAligner(alignTag)
 

@@ -63,10 +63,11 @@ def file = "g014b2b.train"
 //def file = "g014b2b.test"
 //def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
 def inps = InputReader.makePSaurusReader().readFromClasspath(file)
-Collections.shuffle(inps, new Random(0xCAFEBABE))
-inps = inps.subList(0, (int)(inps.size() / 4));
+//Collections.shuffle(inps, new Random(0xCAFEBABE))
+//inps = inps.subList(0, (int)(inps.size() / 4));
 
-def enc = ReadWrite.readFromClasspath(PhoneticEncoder.class, "cmu_all_jt_2eps_winB.model.dat")
+//def enc = ReadWrite.readFromClasspath(PhoneticEncoder.class, "cmu_all_jt_2eps_winB.model.dat")
+def enc = ReadWrite.readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_withWindow.dat"))
 //def alignTag = ReadWrite.readFromClasspath(AlignTagModel, "aligntag.dat")
 //def enc2 = enc.withAligner(alignTag)
 
@@ -112,11 +113,12 @@ class Counts {
   }
 
   boolean isDone() {
-    winExamples.size() >= 666 &&
-            lostRightAlign.examples.size() >= 333 &&
-            lostWrongAlignGgtP.examples.size() >= 333 &&
-            lostWrongAlignGeqP.examples.size() >= 333 &&
-            lostWrongAlignGltP.examples.size() >= 333
+	return false
+    //winExamples.size() >= 666 &&
+    //        lostRightAlign.examples.size() >= 333 &&
+    //        lostWrongAlignGgtP.examples.size() >= 333 &&
+    //        lostWrongAlignGeqP.examples.size() >= 333 &&
+    //        lostWrongAlignGltP.examples.size() >= 333
   }
 
   @Override
@@ -133,7 +135,6 @@ class Counts {
 }
 def c = new Counts()
 Stopwatch watch = Stopwatch.createStarted()
-
 GParsPool.withPool {
   inps.everyParallel { InputRecord input ->
     if (c.isDone()) {
@@ -179,12 +180,13 @@ GParsPool.withPool {
 }
 watch.stop()
 
-/*c.eachExample examplePrinter
-println "Counts of errors with 1 phoneme error"
-oneEditCounts.entrySet().each { println it.element + " = " + it.count}
+c.eachExample examplePrinter
+//println "Counts of errors with 1 phoneme error"
+//oneEditCounts.entrySet().each { println it.element + " = " + it.count}
 println "Done! Counts=\n" + c.toString()
 println "Eval took " + watch
-*/
+
+/*
 def ex = []
 ex.addAll(c.winExamples.subList(0, 333))
 ex.addAll(c.lostRightAlign.examples.subList(0, 333))
@@ -199,4 +201,5 @@ new File("cmubad.2kA.txt").withPrintWriter { pw ->
     pw.println(inp.left.asSpaceString + "\t" + inp.right.asSpaceString)
   }
 }
+*/
 println "done!"

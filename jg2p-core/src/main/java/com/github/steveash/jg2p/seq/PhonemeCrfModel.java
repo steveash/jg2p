@@ -35,6 +35,7 @@ import cc.mallet.types.Sequence;
  * @author Steve Ash
  */
 public class PhonemeCrfModel implements Serializable {
+  //  private static final long serialVersionUID = -6696520265858560431L;
   private static final long serialVersionUID = 1888858574145460221L;
 
   private static final Splitter split =com.google.common.base.Splitter.on(' ');

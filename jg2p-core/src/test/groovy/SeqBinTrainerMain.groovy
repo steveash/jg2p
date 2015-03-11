@@ -1,6 +1,7 @@
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.seq.SeqInputReader
 import com.github.steveash.jg2p.seqbin.SeqBinTrainer
+import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Charsets
 
 import static com.google.common.io.Resources.asCharSource
@@ -29,4 +30,5 @@ import static com.google.common.io.Resources.getResource
 def inputFile = "g014b2b-results.train"
 def training = InputReader.makeDefaultFormatReader().readFromClasspath(inputFile)
 def sbt = new SeqBinTrainer()
-sbt.trainFor(training)
+def model = sbt.trainFor(training)
+ReadWrite.writeTo(model, new File("../resources/cmu_gb_seqbin_A.dat"))

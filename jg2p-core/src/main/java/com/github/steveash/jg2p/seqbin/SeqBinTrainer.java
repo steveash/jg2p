@@ -61,7 +61,7 @@ public class SeqBinTrainer {
     this.pipe = makePipe();
   }
 
-  public MaxEnt trainFor(Collection<InputRecord> recs) {
+  public SeqBinModel trainFor(Collection<InputRecord> recs) {
     InstanceList instances = convertToInstances(recs);
     MaxEntTrainer trainer = new MaxEntTrainer();
 
@@ -69,7 +69,7 @@ public class SeqBinTrainer {
     Trial trial = new Trial(model, instances);
     log.info("Trained seq bin. Final accuracy on itself: " + trial.getAccuracy());
     log.info(new ConfusionMatrix(trial).toString());
-    return model;
+    return new SeqBinModel(model);
   }
 
   private InstanceList convertToInstances(Collection<InputRecord> recs) {

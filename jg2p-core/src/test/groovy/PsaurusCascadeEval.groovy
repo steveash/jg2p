@@ -27,9 +27,9 @@ import org.slf4j.LoggerFactory
  * overall performance by measuring the actual error rates for the overall process
  * @author Steve Ash
  */
-def trainFile = "g014b2b.train"
+def trainFile = "g014b2b-results.train"
 def testFile = "g014b2b.test"
-def train = InputReader.makePSaurusReader().readFromClasspath(trainFile)
+def train = InputReader.makeDefaultFormatReader().readFromClasspath(trainFile)
 def trainG = train.findAll {it.memo == "G"}
 def trainB = train.findAll {it.memo == "B"}
 

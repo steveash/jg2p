@@ -34,7 +34,7 @@ import cc.mallet.types.TokenSequence;
  * @author Steve Ash
  */
 public class StringListToTokenSequence extends Pipe implements Serializable {
-  private static final long serialVersionUID = 123L;
+  private static final long serialVersionUID = -774913899461041501L;
 
   private final boolean updateTarget;
 

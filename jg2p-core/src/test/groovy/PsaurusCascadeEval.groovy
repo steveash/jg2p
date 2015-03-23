@@ -49,16 +49,16 @@ opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f3.dat"
 def log = LoggerFactory.getLogger("psaurus")
 log.info("Starting training with $trainFile and $testFile with opts $opts")
 
-log.info(" -- training the G file first " + trainG.size())
+log.info(" -- training the whole file first " + train.size())
 def t = new SimpleEncoderTrainer()
 //def t = new JointEncoderTrainer()
-def modelG = t.trainAndEval(trainG, null, opts)
-ReadWrite.writeTo(modelG, new File("../resources/psaur_22_xEps_ww_GB_G1.dat"))
+def modelG = t.trainAndEval(train, null, opts)
+ReadWrite.writeTo(modelG, new File("../resources/psaur_22_xEps_ww_GB_G2.dat"))
 
 log.info(" -- training the B file next " + trainB.size())
 def t2 = new SimpleEncoderTrainer()
 //def t = new JointEncoderTrainer()
 def modelB = t2.trainAndEval(trainB, null, opts)
-ReadWrite.writeTo(modelB, new File("../resources/psaur_22_xEps_ww_GB_B1.dat"))
+ReadWrite.writeTo(modelB, new File("../resources/psaur_22_xEps_ww_GB_B2.dat"))
 
 log.info("***********************************Finished*************************************")

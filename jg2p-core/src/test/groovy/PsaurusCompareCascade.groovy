@@ -42,8 +42,8 @@ import java.util.concurrent.atomic.AtomicInteger
 def file = "g014b2b-results.train"
 def inps = InputReader.makePSaurusReader().readFromClasspath(file)
 
-def enc1 = ReadWrite.readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_GB_G1.dat"))
-def enc2 = ReadWrite.readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_GB_B1.dat"))
+def enc1 = ReadWrite.readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_GB_G2.dat"))
+def enc2 = ReadWrite.readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_GB_B2.dat"))
 def seqbin = ReadWrite.readFromFile(SeqBinModel.class, new File("../resources/cmu_gb_seqbin_A.dat"))
 
 Stopwatch watch = Stopwatch.createStarted()

@@ -18,6 +18,7 @@ import com.github.steveash.jg2p.PhoneticEncoder
 import com.github.steveash.jg2p.PhoneticEncoder.Encoding
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.InputRecord
+import com.github.steveash.jg2p.util.GroovyLogger
 import com.github.steveash.jg2p.util.Histogram
 import com.github.steveash.jg2p.util.ListEditDistance
 import com.github.steveash.jg2p.util.ReadWrite
@@ -33,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * Used to play with the failing examples to try and figure out some areas for improvement
  * @author Steve Ash
  */
+out = new GroovyLogger()
 def oneEditCounts = HashMultiset.create()
 
 Closure examplePrinter = { String name, Encoding neww, InputRecord input ->
@@ -61,7 +63,7 @@ Closure examplePrinter = { String name, Encoding neww, InputRecord input ->
 def file = "g014b2b.train"
 //def file = "g014b2b.test"
 //def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
-def inps = InputReader.makePSaurusReader().readFromClasspath(file)
+def inps = InputReader.makePSaurusReader().readFromClasspath(file).take(100)
 //Collections.shuffle(inps, new Random(0xCAFEBABE))
 //inps = inps.subList(0, (int)(inps.size() / 4));
 

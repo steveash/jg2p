@@ -97,6 +97,8 @@ GParsPool.withPool {
     if (newTotal % 5000 == 0) {
       println "Completed " + newTotal + " of " + inps.size()
     }
+
+    return true;
   }
 }
 watch.stop()

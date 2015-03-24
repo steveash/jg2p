@@ -107,6 +107,7 @@ GParsPool.withPool {
 
     def isGood = neww.phones == exp
     outq << [input, isGood, neww.tagProbability()]
+    return true;
   }
 
   println "Done with everything, closing stream..."

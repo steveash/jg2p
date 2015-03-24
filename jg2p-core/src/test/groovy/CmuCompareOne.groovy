@@ -18,13 +18,12 @@ import com.github.steveash.jg2p.PhoneticEncoder
 import com.github.steveash.jg2p.PhoneticEncoder.Encoding
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.InputRecord
-import com.github.steveash.jg2p.aligntag.AlignTagModel
+import com.github.steveash.jg2p.util.Histogram
 import com.github.steveash.jg2p.util.ListEditDistance
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Stopwatch
 import com.google.common.collect.HashMultiset
-import groovy.transform.Field
-import groovy.transform.ToString
+import groovyx.gpars.GParsConfig
 import groovyx.gpars.GParsPool
 
 import java.util.concurrent.ThreadLocalRandom
@@ -67,11 +66,12 @@ def inps = InputReader.makePSaurusReader().readFromClasspath(file)
 //inps = inps.subList(0, (int)(inps.size() / 4));
 
 //def enc = ReadWrite.readFromClasspath(PhoneticEncoder.class, "cmu_all_jt_2eps_winB.model.dat")
-def enc = ReadWrite.readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_withWindow.dat"))
+def enc = ReadWrite.readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f3.dat"))
 //def alignTag = ReadWrite.readFromClasspath(AlignTagModel, "aligntag.dat")
 //def enc2 = enc.withAligner(alignTag)
 
 class Entry {
+
   AtomicInteger count = new AtomicInteger(0)
   List examples = Collections.synchronizedList([])
 
@@ -94,8 +94,18 @@ class Entry {
 }
 
 class Counts {
+
   AtomicInteger wins = new AtomicInteger(0)
   AtomicInteger total = new AtomicInteger(0)
+  // how many wrong cases where the right answer was in rank 2 and a histo of the prob dist between rank1 and rank2
+  Histogram good1rankDelta = new Histogram(0.0, 1.0, 50)
+  AtomicInteger good2rank = new AtomicInteger(0)
+  Histogram good2rankDelta = new Histogram(0.0, 1.0, 50)
+  AtomicInteger good3rank = new AtomicInteger(0)
+  Histogram good3rankDelta = new Histogram(0.0, 1.0, 50)
+  AtomicInteger good4rank = new AtomicInteger(0)
+  Histogram good4rankDelta = new Histogram(0.0, 1.0, 50)
+
   def winExamples = Collections.synchronizedList([])
   def lostRightAlign = new Entry()
   def lostWrongAlign = new Entry()
@@ -105,7 +115,7 @@ class Counts {
 
   // this closure should take 3 args: fieldName, Encoding, Input
   void eachExample(Closure c) {
-    this.getProperties().each {k,v ->
+    this.getProperties().each { k, v ->
       if (v instanceof Entry) {
         v.examples.each { c(k, it[0], it[1]) }
       }
@@ -113,7 +123,7 @@ class Counts {
   }
 
   boolean isDone() {
-	return false
+    return false
     //winExamples.size() >= 666 &&
     //        lostRightAlign.examples.size() >= 333 &&
     //        lostWrongAlignGgtP.examples.size() >= 333 &&
@@ -125,7 +135,14 @@ class Counts {
   String toString() {
     StringBuilder s = new StringBuilder()
     s.append("wins = $wins\ntotal = $total")
-    this.getProperties().each {k,v ->
+    s.append("\nGood2Rank=${good2rank.get()}")
+    s.append("\nGood3Rank=${good3rank.get()}")
+    s.append("\nGood4Rank=${good4rank.get()}")
+    s.append("\nGood1Histo=" + good1rankDelta.nonEmptyBinsAsString())
+    s.append("\nGood2Histo=" + good2rankDelta.nonEmptyBinsAsString())
+    s.append("\nGood3Histo=" + good3rankDelta.nonEmptyBinsAsString())
+    s.append("\nGood4Histo=" + good4rankDelta.nonEmptyBinsAsString())
+    this.getProperties().each { k, v ->
       if (v instanceof Entry) {
         s.append("\n").append(k).append(" = ").append(v.count)
       }
@@ -133,7 +150,9 @@ class Counts {
     return s.toString()
   }
 }
+
 def c = new Counts()
+println "Running with bestTaggings = " + enc.bestTaggings + " and bestAligns = " + enc.bestAlignments
 Stopwatch watch = Stopwatch.createStarted()
 GParsPool.withPool {
   inps.everyParallel { InputRecord input ->
@@ -153,10 +172,31 @@ GParsPool.withPool {
 
     if (neww.phones == exp) {
       int newWins = c.wins.incrementAndGet()
+      c.good1rankDelta.add(neww.tagProbability())
       if (newWins < 333) {
         c.winExamples << [neww, input]
       }
       return true;
+    }
+
+    if (ans.size() >= 2 && ans.get(1).phones == exp) {
+      c.good2rank.incrementAndGet()
+      double delta = neww.tagProbability() - ans.get(1).tagProbability()
+      synchronized (c.good2rankDelta) {
+        c.good2rankDelta.add(delta);
+      }
+    } else if (ans.size() >= 3 && ans.get(2).phones == exp) {
+      c.good3rank.incrementAndGet()
+      double delta = neww.tagProbability() - ans.get(2).tagProbability()
+      synchronized (c.good3rankDelta) {
+        c.good3rankDelta.add(delta);
+      }
+    } else if (ans.size() >= 4 && ans.get(3).phones == exp) {
+      c.good4rank.incrementAndGet()
+      double delta = neww.tagProbability() - ans.get(3).tagProbability()
+      synchronized (c.good4rankDelta) {
+        c.good4rankDelta.add(delta);
+      }
     }
 
     def expc = exp.size()
@@ -176,8 +216,10 @@ GParsPool.withPool {
       }
 
     }
+    return true;
   }
 }
+GParsConfig.shutdown()
 watch.stop()
 
 c.eachExample examplePrinter

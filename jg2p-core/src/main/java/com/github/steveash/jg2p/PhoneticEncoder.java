@@ -27,6 +27,7 @@ import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.align.AlignModel;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 
+import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,9 +44,10 @@ public class PhoneticEncoder implements Serializable {
 
   private final Aligner aligner;
   private final PhonemeCrfModel phoneTagger;
-  private final int bestAlignments;
-  private final double alignMinScore;
-  private final double tagMinScore;
+  private int bestAlignments;
+  private int bestTaggings;
+  private double alignMinScore;
+  private double tagMinScore;
 
   public static class Encoding {
     public final List<String> alignment;
@@ -75,6 +77,7 @@ public class PhoneticEncoder implements Serializable {
     this.aligner = aligner;
     this.phoneTagger = phoneTagger;
     this.bestAlignments = bestAlignments;
+    this.bestTaggings = bestAlignments;
     this.alignMinScore = alignMinScore;
     this.tagMinScore = tagMinScore;
   }
@@ -94,7 +97,7 @@ public class PhoneticEncoder implements Serializable {
       }
 
       List<String> graphemes = alignment.getAllXTokensAsList();
-      List<PhonemeCrfModel.TagResult> tagResults = phoneTagger.tag(graphemes, bestAlignments);
+      List<PhonemeCrfModel.TagResult> tagResults = phoneTagger.tag(graphemes, bestTaggings);
       for (PhonemeCrfModel.TagResult tagResult : tagResults) {
         if (!results.isEmpty() && tagResult.sequenceLogProbability() < tagMinScore) {
           continue;
@@ -117,6 +120,22 @@ public class PhoneticEncoder implements Serializable {
     return new PhoneticEncoder(aligner, this.phoneTagger, this.bestAlignments, this.alignMinScore, this.tagMinScore);
   }
 
+  public int getBestTaggings() {
+    return bestTaggings;
+  }
+
+  public void setBestTaggings(int bestTaggings) {
+    this.bestTaggings = bestTaggings;
+  }
+
+  public int getBestAlignments() {
+    return bestAlignments;
+  }
+
+  public void setBestAlignments(int bestAlignments) {
+    this.bestAlignments = bestAlignments;
+  }
+
   public Aligner getAligner() {
     return aligner;
   }
@@ -134,4 +153,11 @@ public class PhoneticEncoder implements Serializable {
           .result();
     }
   }.reverse();
+
+  private Object readResolve() throws ObjectStreamException {
+    if (bestTaggings == 0) {
+      bestTaggings = bestAlignments;
+    }
+    return this;
+   }
 }

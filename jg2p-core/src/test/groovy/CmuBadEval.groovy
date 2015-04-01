@@ -33,13 +33,18 @@ def train = InputReader.makeDefaultFormatReader().readFromClasspath(trainFile)
 def opts = new TrainOptions()
 opts.maxXGram = 2
 opts.maxYGram = 2
-opts.includeXEpsilons = true
 opts.onlyOneGrams = true
 opts.useWindowWalker = true
+opts.includeXEpsilons = true
 opts.maximizer = Maximizer.JOINT
+opts.topKAlignCandidates = 1
+opts.minAlignScore = Integer.MIN_VALUE
+opts.initCrfFromModelFile = "../resources/pe_cmubad2ka_aa_B.dat"
+opts.alignAllowedFile = new File("../resources/possible-aligns.txt")
 
 def t = new SimpleEncoderTrainer()
 //def t = new JointEncoderTrainer()
 def model = t.trainAndEval(train, null, opts)
-//ReadWrite.writeTo(model, new File("../resources/encoder.dat"))
+//ReadWrite.writeTo(model, new File("../resources/pe_cmubad2ka_aa_B.dat"))
+//ReadWrite.writeTo(t.getAlignModel(), new File("../resources/am_cmubad2kA_aa_B.dat"))
 println "Wrote model"

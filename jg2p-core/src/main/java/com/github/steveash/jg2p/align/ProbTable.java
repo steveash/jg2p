@@ -32,6 +32,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import static com.github.steveash.jg2p.util.Assert.assertProb;
@@ -69,6 +70,10 @@ public class ProbTable implements Iterable<Table.Cell<String,String,Double>>, Ex
   @Override
   public Iterator<Table.Cell<String, String, Double>> iterator() {
     return xyProb.cellSet().iterator();
+  }
+
+  public Map<String, Double> getYProbForX(String x) {
+    return xyProb.row(x);
   }
 
   public static class Marginals {
@@ -151,6 +156,14 @@ public class ProbTable implements Iterable<Table.Cell<String,String,Double>>, Ex
       result.setProb(cell.getRowKey(), cell.getColumnKey(), normalValue);
     }
     return result;
+  }
+
+  public Set<String> xRows() {
+    return xyProb.rowKeySet();
+  }
+
+  public Set<String> yCols() {
+    return xyProb.columnKeySet();
   }
 
   @Override

@@ -54,6 +54,8 @@ public class SimpleEncoderTrainer extends AbstractEncoderTrainer {
     AlignTagTrainer alignTagTrainer = new AlignTagTrainer();
 
     AlignModel model = alignTrainer.train(inputs);
+    setAlignModel(model);
+
     List<Alignment> crfExamples = makeCrfExamples(inputs, model, opts);
     AlignTagModel alignTagModel = alignTagTrainer.train(crfExamples);
 

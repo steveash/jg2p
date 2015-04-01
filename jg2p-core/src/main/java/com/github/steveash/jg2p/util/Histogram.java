@@ -192,6 +192,10 @@ public class Histogram {
         return Joiner.on(',').join(transform(iteratorNonEmptyBins(), convertBinToString));
     }
 
+    public String nonEmptyBinsAsStringLines() {
+        return Joiner.on('\n').join(transform(iteratorNonEmptyBins(), convertBinToString));
+    }
+
     @Override
     public String toString() {
         return "Histogram [histo=" + nonEmptyBinsAsString() + "]";

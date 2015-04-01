@@ -16,6 +16,9 @@
 
 package com.github.steveash.jg2p.align;
 
+import com.google.common.base.Throwables;
+import com.google.common.collect.Sets;
+
 import com.github.steveash.jg2p.Word;
 import com.github.steveash.jg2p.util.DoubleTable;
 import com.github.steveash.jg2p.util.ReadWrite;
@@ -28,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import static com.github.steveash.jg2p.util.Assert.assertProb;
 import static com.google.common.collect.Tables.immutableCell;
@@ -47,16 +51,40 @@ public class AlignerTrainer {
   private final GramOptions gramOpts;
   private final XyWalker walker;
   private ProbTable labelledProbs;
+  private final Set<Pair<String, String>> allowed;
+  private final Set<Pair<String,String>> blocked;
 
   public AlignerTrainer(TrainOptions trainOpts) {
     this.trainOpts = trainOpts;
     this.gramOpts = trainOpts.makeGramOptions();
+    XyWalker w;
     if (trainOpts.useWindowWalker) {
-      this.walker = new WindowXyWalker(gramOpts);
+      w = new WindowXyWalker(gramOpts);
     } else {
-      this.walker = new FullXyWalker(gramOpts);
+      w = new FullXyWalker(gramOpts);
     }
+    if (trainOpts.alignAllowedFile != null) {
+      try {
+        this.allowed = FilterWalkerDecorator.readFromFile(trainOpts.alignAllowedFile);
+        this.blocked = Sets.newHashSet();
+      } catch (IOException e) {
+        throw Throwables.propagate(e);
+      }
+    } else {
+      this.allowed = null;
+      this.blocked = null;
+    }
+    this.walker = w;
   }
+
+//  private static XyWalker decorateForAllowed(TrainOptions trainOpts, XyWalker w) {
+//    try {
+//      Set<Pair<String, String>> allowed = FilterWalkerDecorator.readFromFile(trainOpts.alignAllowedFile);
+//      return new FilterWalkerDecorator(w, allowed);
+//    } catch (IOException e) {
+//      throw Throwables.propagate(e);
+//    }
+//  }
 
   public AlignModel train(List<InputRecord> records) {
     return train(records, new ProbTable());
@@ -152,6 +180,7 @@ public class AlignerTrainer {
   }
 
   private double maximization() {
+    smoothCounts();
     ProbTable.Marginals marginals = counts.calculateMarginals();
     double totalChange = 0;
     double unsuperFactor = (1.0 - trainOpts.semiSupervisedFactor);
@@ -175,12 +204,52 @@ public class AlignerTrainer {
     return trainOpts.maximizer.normalize(totalChange, marginals);
   }
 
+  private void smoothCounts() {
+    if (allowed == null) return;
+
+    // do some kind of discounted smoothing where we add 0.5 * c / k * smallest entry) to every entry in the counts
+    // where c is the count of good transitions and k is the total count of transitions.  And we're just going to
+    // take half of that (arbitrarily)
+    double c = allowed.size();
+    double k = blocked.size();
+    double discount = 0.5d * c / k;
+    double toAdd = minAllowedCount() * discount;
+    for (Pair<String, String> xy : allowed) {
+      counts.addProb(xy.getLeft(), xy.getRight(), toAdd);
+    }
+    for (Pair<String, String> xy : blocked) {
+      // we're forcing the blocked ones to be this small mass, whereas we're just adding the extra to the good xy
+      counts.setProb(xy.getLeft(), xy.getRight(), toAdd);
+    }
+  }
+
+  private double minAllowedCount() {
+    double min = Double.POSITIVE_INFINITY;
+    for (Pair<String, String> xy : allowed) {
+      double p = counts.prob(xy.getLeft(), xy.getRight());
+      if (p > 0 && p < min) {
+        min = p;
+      }
+    }
+    return min;
+  }
+
   private void initCounts(List<InputRecord> records) {
+    // we init counts for any allowed transitions and collect all of the transitions that we block
     for (InputRecord record : records) {
       walker.forward(record.getLeft(), record.getRight(), new XyWalker.Visitor() {
         @Override
         public void visit(int xxBefore, int xxAfter, String xGram, int yyBefore, int yyAfter, String yGram) {
-          counts.addProb(xGram, yGram, 1.0);
+          if (allowed == null) {
+            counts.addProb(xGram, yGram, 1.0);
+            return;
+          }
+          // use allowed file to constrain the joint distribution
+          if (allowed.contains(Pair.of(xGram, yGram))) {
+            counts.addProb(xGram, yGram, 1.0);
+          } else {
+            blocked.add(Pair.of(xGram, yGram));
+          }
         }
       });
     }

@@ -6,3 +6,10 @@ cmu_crfAT_2ps.dat - this is the boundary predictor for cmu dict with 2x1 graphon
 
 ## sample models for working with CmuSampleEval etc
 cmu_crfAT_2eps - this is a crf model for predicting boundaries trained on whole CMU dict
+
+pe_*.dat are phonetic encoder models serialized
+am_*.dat are the align models serialized
+
+resources/am_cmubad2kA_A.dat - cmubad align model before any constrained allowed aligns
+resources/am_cmubad2kA_aa_A.dat - first constrained align where we just use zeroes everything else
+resources/am_cmubad2kA_aa_B.dat - second constrained align where we use discount smoothing to fill in

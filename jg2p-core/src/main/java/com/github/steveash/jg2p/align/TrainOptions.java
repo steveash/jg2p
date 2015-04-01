@@ -92,6 +92,9 @@ public class TrainOptions {
   @Option(name = "--format")
   public InputFormat format = InputFormat.TAB;
 
+  @Option(name = "--allowedAligns")
+  public File alignAllowedFile;
+
   public void afterParametersSet() {
     if (outputFile == null) {
       this.outputFile = new File(trainingFile.getAbsolutePath() + ".model.dat");

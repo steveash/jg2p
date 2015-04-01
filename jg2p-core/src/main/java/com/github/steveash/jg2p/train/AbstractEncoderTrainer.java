@@ -39,6 +39,16 @@ public abstract class AbstractEncoderTrainer {
   private List<InputRecord> train;
   private List<InputRecord> test;
 
+  private AlignModel alignModel;
+
+  public AlignModel getAlignModel() {
+    return alignModel;
+  }
+
+  protected void setAlignModel(AlignModel alignModel) {
+    this.alignModel = alignModel;
+  }
+
   public PhoneticEncoder trainNoEval(List<InputRecord> train, List<InputRecord> test, TrainOptions opts) {
     this.train = train;
     this.test = test;

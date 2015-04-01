@@ -40,7 +40,8 @@ import java.util.concurrent.atomic.AtomicInteger
  * @author Steve Ash
  */
 def file = "g014b2b-results.train"
-def inps = InputReader.makePSaurusReader().readFromClasspath(file)
+//def inps = InputReader.makePSaurusReader().readFromClasspath(file)
+def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
 
 def enc1 = ReadWrite.readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_GB_G2.dat"))
 def enc2 = ReadWrite.readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_GB_B2.dat"))
@@ -97,8 +98,7 @@ GParsPool.withPool {
     if (newTotal % 5000 == 0) {
       println "Completed " + newTotal + " of " + inps.size()
     }
-
-    return true;
+	return true;
   }
 }
 watch.stop()

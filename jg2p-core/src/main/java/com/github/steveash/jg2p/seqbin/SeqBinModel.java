@@ -31,7 +31,7 @@ import cc.mallet.types.Labeling;
  * @author Steve Ash
  */
 public class SeqBinModel implements Serializable {
-  private final long serialVersionUID = 123L;
+  private static final long serialVersionUID = 1684130217237259415L;
 
   private MaxEnt classifier;
 
@@ -40,9 +40,7 @@ public class SeqBinModel implements Serializable {
   }
 
   public Labeling classify(Word word) {
-    Instance instance = new Instance(word.getValue(), null, null, null);
-    instance = classifier.getInstancePipe().pipe(instance);
-    Classification result = classifier.classify(instance);
+    Classification result = classifier.classify(word.getValue());
     return result.getLabeling();
   }
 }

@@ -18,12 +18,14 @@ import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.InputRecord
 import com.github.steveash.jg2p.align.Maximizer
 import com.github.steveash.jg2p.align.TrainOptions
+import com.github.steveash.jg2p.train.CascadeEncoder
 import com.github.steveash.jg2p.train.CascadingTrainer
 import com.github.steveash.jg2p.train.JointEncoderTrainer
 import com.github.steveash.jg2p.train.SimpleEncoderTrainer
 import com.github.steveash.jg2p.util.ListEditDistance
 import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
+import groovyx.gpars.GParsConfig
 import groovyx.gpars.GParsPool
 import org.slf4j.LoggerFactory
 
@@ -62,9 +64,10 @@ def log = LoggerFactory.getLogger("psaurus")
 log.info("Starting training with $trainFile and $testFile with opts $opts")
 
 log.info("Training everything ...")
-def t = new CascadingTrainer()
-def ce = t.train(train, opts, gFile, bFile, sbFile)
-ReadWrite.writeTo(ce, new File("../resources/psaur_22_xEps_ww_CE_A.dat"))
+//def t = new CascadingTrainer()
+//def ce = t.train(train, opts, gFile, bFile, sbFile)
+//ReadWrite.writeTo(ce, new File("../resources/psaur_22_xEps_ww_CE_A.dat"))
+def ce = ReadWrite.readFromFile(CascadeEncoder.class, new File("../resources/psaur_22_xEps_ww_CE_A.dat"))
 
 AtomicLong wordTotal = new AtomicLong(0)
 AtomicLong wordGood = new AtomicLong(0)
@@ -86,8 +89,12 @@ GParsPool.withPool {
 
     phoneTotal.addAndGet(pp.phones.size())
     phoneGood.addAndGet(pp.phones.size() - edits)
+
+    return true;
   }
 }
+GParsConfig.shutdown()
+
 log.info("Good words " + wordGood.get() + " of " + wordTotal.get() + " " + Percent.print(wordGood.get(), wordTotal.get()))
 log.info("Good phones " + phoneGood.get() + " of " + phoneTotal.get() + " " + Percent.print(phoneGood.get(), phoneTotal.get()))
 

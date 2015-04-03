@@ -48,6 +48,18 @@ import static com.github.steveash.jg2p.train.AbstractEncoderTrainer.makeCrfExamp
 public class CascadingTrainer {
   private static final Logger log = LoggerFactory.getLogger(CascadingTrainer.class);
 
+  public CascadeEncoder train(List<InputRecord> allInputs, TrainOptions opts, CascadeEncoder previous,
+                              File seqBinFile) throws IOException, ClassNotFoundException {
+    File prevG = File.createTempFile("prevG", ".dat");
+    prevG.deleteOnExit();
+    File prevB = File.createTempFile("prevB", ".dat");
+    prevB.deleteOnExit();
+    ReadWrite.writeTo(previous.getEncoderG(), prevG);
+    ReadWrite.writeTo(previous.getEncoderB(), prevB);
+
+    return train(allInputs, opts, prevG, prevB, seqBinFile);
+  }
+
   public CascadeEncoder train(List<InputRecord> allInputs, TrainOptions opts, File crfModelG, File crfModelB,
                               File seqBinFile)
       throws IOException, ClassNotFoundException {

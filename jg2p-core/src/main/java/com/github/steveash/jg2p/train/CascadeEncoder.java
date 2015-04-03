@@ -48,6 +48,14 @@ public class CascadeEncoder implements Serializable {
     this.seqBin = seqBin;
   }
 
+  public PhoneticEncoder getEncoderG() {
+    return encoderG;
+  }
+
+  public PhoneticEncoder getEncoderB() {
+    return encoderB;
+  }
+
   public List<PhoneticEncoder.Encoding> encode(String word) {
     Word input = Word.fromNormalString(word);
     return encode(input);

@@ -45,7 +45,7 @@ def opts = new TrainOptions()
 opts.maxXGram = 2
 opts.maxYGram = 2
 opts.onlyOneGrams = true
-opts.maxCrfIterations = 100
+opts.maxCrfIterations = 30
 opts.useWindowWalker = true
 opts.includeXEpsilons = true 
 opts.maximizer = Maximizer.JOINT
@@ -53,21 +53,22 @@ opts.topKAlignCandidates = 1
 opts.minAlignScore = Integer.MIN_VALUE;
 opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f3.dat"
 
-def gFile = new File("../resources/psaur_22_xEps_ww_GB_G1.dat")
-def bFile = new File("../resources/psaur_22_xEps_ww_GB_B1.dat")
+//def gFile = new File("../resources/psaur_22_xEps_ww_GB_G1.dat")
+//def bFile = new File("../resources/psaur_22_xEps_ww_GB_B1.dat")
 def sbFile = new File("../resources/cmu_gb_seqbin_A.dat")
-assert gFile.exists()
-assert bFile.exists()
+//assert gFile.exists()
+//assert bFile.exists()
 assert sbFile.exists()
 
 def log = LoggerFactory.getLogger("psaurus")
 log.info("Starting training with $trainFile and $testFile with opts $opts")
 
 log.info("Training everything ...")
-//def t = new CascadingTrainer()
-//def ce = t.train(train, opts, gFile, bFile, sbFile)
-//ReadWrite.writeTo(ce, new File("../resources/psaur_22_xEps_ww_CE_A.dat"))
-def ce = ReadWrite.readFromFile(CascadeEncoder.class, new File("../resources/psaur_22_xEps_ww_CE_A.dat"))
+def prevCe = ReadWrite.readFromFile(CascadeEncoder.class, new File("../resources/psaur_22_xEps_ww_CE_A.dat"))
+def t = new CascadingTrainer()
+def ce = t.train(train, opts, prevCe, sbFile)
+ReadWrite.writeTo(ce, new File("../resources/psaur_22_xEps_ww_CE_B.dat"))
+//def ce = ReadWrite.readFromFile(CascadeEncoder.class, new File("../resources/psaur_22_xEps_ww_CE_A.dat"))
 
 AtomicLong wordTotal = new AtomicLong(0)
 AtomicLong wordGood = new AtomicLong(0)
@@ -75,7 +76,7 @@ AtomicLong phoneTotal = new AtomicLong(0)
 AtomicLong phoneGood = new AtomicLong(0)
 
 GParsPool.withPool {
-  test.everyParallel { InputRecord input ->
+  train.everyParallel { InputRecord input ->
     def best = ce.encode(input.left)
     def pp = best.first()
 

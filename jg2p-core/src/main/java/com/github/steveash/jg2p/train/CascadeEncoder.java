@@ -34,7 +34,7 @@ import cc.mallet.types.Labeling;
  */
 public class CascadeEncoder implements Serializable {
 
-  private static final long serialVersionID = 123L;
+  private static final long serialVersionUID = -6011185185779914214L;
 
   private final AlignModel alignModel;
   private final PhoneticEncoder encoderG;

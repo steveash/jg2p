@@ -212,7 +212,7 @@ public class AlignerTrainer {
     // take half of that (arbitrarily)
     double c = allowed.size();
     double k = blocked.size();
-    double discount = 0.5d * c / k;
+    double discount = 0.1d * c / k;
     double toAdd = minAllowedCount() * discount;
     for (Pair<String, String> xy : allowed) {
       counts.addProb(xy.getLeft(), xy.getRight(), toAdd);

@@ -75,10 +75,11 @@ public class CascadingTrainer {
     List<Alignment> allExamples = makeCrfExamples(allInputs, model, opts);
     AlignTagModel alignTagModel = alignTagTrainer.train(allExamples);
 
-    PhonemeCrfModel modelG = trainModel(allInputs, opts, crfModelG, model);
+    List<InputRecord> goodExamples = findExamples(allInputs, "G");
+    PhonemeCrfModel modelG = trainModel(goodExamples, opts, crfModelG, model);
 
     // train the "B" model just for those bad examples
-    List<InputRecord> badExamples = findBadExamples(allInputs);
+    List<InputRecord> badExamples = findExamples(allInputs, "B");
     PhonemeCrfModel modelB = trainModel(badExamples, opts, crfModelB, model);
 
     PhoneticEncoder encoderG = PhoneticEncoderFactory.make(alignTagModel, modelG);
@@ -101,10 +102,10 @@ public class CascadingTrainer {
     return crf;
   }
 
-  private List<InputRecord> findBadExamples(List<InputRecord> allInputs) {
+  private List<InputRecord> findExamples(List<InputRecord> allInputs, String memo) {
     ArrayList<InputRecord> badInputs = Lists.newArrayList();
     for (InputRecord input : allInputs) {
-      if (input.memo != null && input.memo.equalsIgnoreCase("B")) {
+      if (input.memo != null && input.memo.equalsIgnoreCase(memo)) {
         badInputs.add(input);
       }
     }

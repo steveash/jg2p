@@ -101,6 +101,9 @@ bothLost.take(50).each examplePrinter
 def outFile = new File("../resources/cmubad.3kC.txt")
 outFile.withPrintWriter { pw ->
   def ex = []
+  Collections.shuffle(oldWins)
+  Collections.shuffle(bothLost)
+  Collections.shuffle(newWins)
   ex.addAll(oldWins.take(1000))
   ex.addAll(bothLost.take(1000))
   ex.addAll(newWins.take(1000))

@@ -98,6 +98,18 @@ newWins.take(50).each examplePrinter
 println " ---- Both Lost ---- "
 bothLost.take(50).each examplePrinter
 
+def outFile = new File("../resources/cmubad.3kC.txt")
+outFile.withPrintWriter { pw ->
+  def ex = []
+  ex.addAll(oldWins.take(1000))
+  ex.addAll(bothLost.take(1000))
+  ex.addAll(newWins.take(1000))
+  ex.each { Encoding old, Encoding neww, InputRecord input ->
+    pw.println(input.xWord.asSpaceString + "\t" + input.yWord.asSpaceString)
+  }
+  println "Printed ${ex.size()} examples to $outFile"
+}
+
 println "Both win ${bothWin}"
 println "Old win ${oldWins.size()}"
 println "New win ${newWins.size()}"

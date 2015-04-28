@@ -22,7 +22,6 @@ import com.google.common.collect.Table;
 
 import com.carrotsearch.hppc.ObjectDoubleMap;
 import com.carrotsearch.hppc.ObjectDoubleOpenHashMap;
-import com.github.steveash.jg2p.seq.StringListToTokenSequence;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -30,7 +29,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -163,19 +161,19 @@ public class ProbTable implements Iterable<Table.Cell<String,String,Double>>, Ex
    * Y's for the row equal 1
    * @return
    */
-  public ProbTable makeRowNormalizedCopy() {
-    ProbTable result = new ProbTable();
-    for (String row : xRows()) {
-      Map<String, Double> yProbs = getYProbForX(row);
-      Double total = yProbs.values().stream().reduce(0.0, Double::sum);
-      if (total != 0.0) {
-        for (String y : yProbs.keySet()) {
-          result.setProb(row, y, yProbs.getOrDefault(y, 0.0) / total);
-        }
-      }
-    }
-    return result;
-  }
+//  public ProbTable makeRowNormalizedCopy() {
+//    ProbTable result = new ProbTable();
+//    for (String row : xRows()) {
+//      Map<String, Double> yProbs = getYProbForX(row);
+//      Double total = yProbs.values().stream().reduce(0.0, Double::sum);
+//      if (total != 0.0) {
+//        for (String y : yProbs.keySet()) {
+//          result.setProb(row, y, yProbs.getOrDefault(y, 0.0) / total);
+//        }
+//      }
+//    }
+//    return result;
+//  }
 
   public Set<String> xRows() {
     return xyProb.rowKeySet();

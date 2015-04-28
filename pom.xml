@@ -8,7 +8,7 @@
   <description>Java grapheme to phoneme encoder using joint-modelling and CRFs</description>
   <modules>
     <module>jg2p-core</module>
-    <module>jg2p-tagger</module>
+    <!--<module>jg2p-tagger</module>-->
   </modules>
   <packaging>pom</packaging>
 
@@ -188,8 +188,8 @@
           <version>3.2</version>
           <configuration>
             <compilerId>groovy-eclipse-compiler</compilerId>
-            <source>1.8</source>
-            <target>1.8</target>
+            <source>1.7</source>
+            <target>1.7</target>
           </configuration>
           <dependencies>
             <dependency>

@@ -136,6 +136,22 @@ public class PhoneticEncoder implements Serializable {
     this.bestAlignments = bestAlignments;
   }
 
+  public double getAlignMinScore() {
+    return alignMinScore;
+  }
+
+  public void setAlignMinScore(double alignMinScore) {
+    this.alignMinScore = alignMinScore;
+  }
+
+  public double getTagMinScore() {
+    return tagMinScore;
+  }
+
+  public void setTagMinScore(double tagMinScore) {
+    this.tagMinScore = tagMinScore;
+  }
+
   public Aligner getAligner() {
     return aligner;
   }

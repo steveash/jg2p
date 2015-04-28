@@ -59,6 +59,21 @@
       <artifactId>gpars</artifactId>
       <version>1.2.1</version>
     </dependency>
+    <!--<dependency>-->
+      <!--<groupId>de.jungblut.common</groupId>-->
+      <!--<artifactId>thomasjungblut-common</artifactId>-->
+      <!--<version>1.0-SNAPSHOT</version>-->
+    <!--</dependency>-->
+    <!--<dependency>-->
+      <!--<groupId>de.jungblut.math</groupId>-->
+      <!--<artifactId>tjungblut-math</artifactId>-->
+      <!--<version>1.2-SNAPSHOT</version>-->
+    <!--</dependency>-->
+    <dependency>
+      <groupId>com.github.steveash</groupId>
+      <artifactId>kylm</artifactId>
+      <version>20150421.1</version>
+    </dependency>
   </dependencies>
 
   <build>

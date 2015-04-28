@@ -25,14 +25,15 @@ def cmuFile = "cmudict.0.7a"
 //def cmuFile = "cmubad.2kA.txt"
 String[] args = [
     "--infile", "../resources/$cmuFile",
-    "--outfile", "../resources/am_cmudict_22_xeps_ww_A.dat",
+    "--outfile", "../resources/am_cmudict_22_xeps_ww_aa_A.dat",
     "--maxX", "2",
     "--maxY", "2",
     "--includeXEps",
     "--useWindowWalker",
     "--onlyOneGrams",
     "--format", "CMU",
-    "--topKAlignCandidates", "1"
+    "--topKAlignCandidates", "1",
+    "--allowedAligns", "../resources/possible-aligns.txt"
 ] as String[]
 def model = AlignerTrainer.trainAndSave(args)
 println "done with everything!"

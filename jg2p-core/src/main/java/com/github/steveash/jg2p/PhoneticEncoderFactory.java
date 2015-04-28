@@ -31,9 +31,10 @@ import static com.github.steveash.jg2p.util.ReadWrite.readFromClasspath;
  */
 public class PhoneticEncoderFactory {
 
-  private static final double ALIGN_MIN_SCORE = -60;
+  private static final double ALIGN_MIN_SCORE = Double.NEGATIVE_INFINITY;
 //  private static final double TAG_MIN_SCORE = -1.6094;
-  private static final double TAG_MIN_SCORE = -1.894;
+//  private static final double TAG_MIN_SCORE = -1.894;
+  private static final double TAG_MIN_SCORE = Double.NEGATIVE_INFINITY;
   private static final int BEST_ALIGNMENTS = 5;
 
   public static PhoneticEncoder makeDefault() throws IOException, ClassNotFoundException {

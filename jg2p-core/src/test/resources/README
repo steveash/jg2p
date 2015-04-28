@@ -9,7 +9,10 @@ cmu_crfAT_2eps - this is a crf model for predicting boundaries trained on whole 
 
 pe_*.dat are phonetic encoder models serialized
 am_*.dat are the align models serialized
+lm_*.dat language model files
 
 resources/am_cmubad2kA_A.dat - cmubad align model before any constrained allowed aligns
 resources/am_cmubad2kA_aa_A.dat - first constrained align where we just use zeroes everything else
 resources/am_cmubad2kA_aa_B.dat - second constrained align where we use discount smoothing to fill in
+
+psaur_22_xeps_ww_GB_B1/G1.dat B1 is the "bad" training subset for cascading, G1 is the good

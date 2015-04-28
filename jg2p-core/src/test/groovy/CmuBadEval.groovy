@@ -26,7 +26,8 @@ import com.github.steveash.jg2p.util.ReadWrite
  * overall performance by measuring the actual error rates for the overall process
  * @author Steve Ash
  */
-def trainFile = "cmubad.2kA.txt"
+def trainFile = "cmubad.3kC.txt"
+//def trainFile = "cmubad.2kA.txt"
 //def testFile = "cmudict.2kB.txt"
 def train = InputReader.makeDefaultFormatReader().readFromClasspath(trainFile)
 //def test = InputReader.makeDefaultFormatReader().readFromClasspath(testFile)
@@ -39,12 +40,12 @@ opts.includeXEpsilons = true
 opts.maximizer = Maximizer.JOINT
 opts.topKAlignCandidates = 1
 opts.minAlignScore = Integer.MIN_VALUE
-opts.initCrfFromModelFile = "../resources/pe_cmubad2ka_aa_B.dat"
+opts.initCrfFromModelFile = "../resources/pe_cmubad3kC_A.dat"
 opts.alignAllowedFile = new File("../resources/possible-aligns.txt")
 
 def t = new SimpleEncoderTrainer()
 //def t = new JointEncoderTrainer()
 def model = t.trainAndEval(train, null, opts)
-//ReadWrite.writeTo(model, new File("../resources/pe_cmubad2ka_aa_B.dat"))
+ReadWrite.writeTo(model, new File("../resources/pe_cmubad3kC_AA_A.dat"))
 //ReadWrite.writeTo(t.getAlignModel(), new File("../resources/am_cmubad2kA_aa_B.dat"))
 println "Wrote model"

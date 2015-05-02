@@ -48,6 +48,7 @@ public class PhoneticEncoder implements Serializable {
   private int bestTaggings;
   private double alignMinScore;
   private double tagMinScore;
+  private Integer bestFinal;
 
   public static class Encoding {
     public final List<String> alignment;
@@ -106,8 +107,9 @@ public class PhoneticEncoder implements Serializable {
       }
     }
     Collections.sort(results, OrderByTagScore);
-    if (results.size() > bestAlignments) {
-      return results.subList(0, bestAlignments);
+    int finalCount = (bestFinal != null ? bestFinal : bestAlignments);
+    if (results.size() > finalCount) {
+      return results.subList(0, finalCount);
     }
     return results;
   }
@@ -134,6 +136,14 @@ public class PhoneticEncoder implements Serializable {
 
   public void setBestAlignments(int bestAlignments) {
     this.bestAlignments = bestAlignments;
+  }
+
+  public Integer getBestFinal() {
+    return bestFinal;
+  }
+
+  public void setBestFinal(Integer bestFinal) {
+    this.bestFinal = bestFinal;
   }
 
   public double getAlignMinScore() {

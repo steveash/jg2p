@@ -64,8 +64,10 @@ GParsPool.withPool {
     List<Encoding> ans = enc.encode(input.xWord);
 
     def gg = ans.first()
+    def gg2 = ans[1]
     def alreadyGood = gg.phones == input.yWord.value
-	//println "Should be " + input.yWord.value
+    def already2ndGood = gg2.phones == input.yWord.value
+
     // resort by LM
     def totalPerp = 0
     def perpAndEnc = ans.collect {
@@ -78,11 +80,11 @@ GParsPool.withPool {
       [((double) it[0]) / ((double) totalPerp), it[1]]
     }
     perpAndEnc = perpAndEnc.sort {it[0]}
-	//println "LM sort: "
-	//perpAndEnc.each { println it }
-	
+
     def pp = perpAndEnc.first()
+    def pp2 = perpAndEnc.get(1)
     def lmBestGood = pp[1].phones == input.yWord.value
+    def lm2ndGood = pp2[1].phones == input.yWord.value
 	
     // now try rescoring based on the perplexity proportion
     perpAndEnc = perpAndEnc.collect {
@@ -99,6 +101,8 @@ GParsPool.withPool {
 
     if (alreadyGood) counts.add("ENC")
     if (lmBestGood) counts.add("LM")
+    if (already2ndGood) counts.add("ENC2")
+    if (lm2ndGood) counts.add("LM2")
     if (scaledLmBestGood) counts.add("SCALED")
 
     if (newTotal % 5000 == 0) {

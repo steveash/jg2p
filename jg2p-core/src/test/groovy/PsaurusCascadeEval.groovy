@@ -45,13 +45,14 @@ def opts = new TrainOptions()
 opts.maxXGram = 2
 opts.maxYGram = 2
 opts.onlyOneGrams = true
-opts.maxCrfIterations = 30
+opts.maxCrfIterations = 100
 opts.useWindowWalker = true
 opts.includeXEpsilons = true 
 opts.maximizer = Maximizer.JOINT
 opts.topKAlignCandidates = 1
 opts.minAlignScore = Integer.MIN_VALUE;
 opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f3.dat"
+opts.alignAllowedFile = new File("../resources/possible-aligns.txt")
 
 //def gFile = new File("../resources/psaur_22_xEps_ww_GB_G1.dat")
 //def bFile = new File("../resources/psaur_22_xEps_ww_GB_B1.dat")
@@ -63,11 +64,17 @@ assert sbFile.exists()
 def log = LoggerFactory.getLogger("psaurus")
 log.info("Starting training with $trainFile and $testFile with opts $opts")
 
+// A - first cascade only 100, (G + B, B)
+// B - B second up to 200 (G + B, B)
+// C - third just the last little bit with (G + B, B)
+// D - first with (G, B)
+// E - first with AA + (G, B)
+
 log.info("Training everything ...")
-def prevCe = ReadWrite.readFromFile(CascadeEncoder.class, new File("../resources/psaur_22_xEps_ww_CE_A.dat"))
+def prevCe = ReadWrite.readFromFile(CascadeEncoder.class, new File("../resources/psaur_22_xEps_ww_CE_D.dat"))
 def t = new CascadingTrainer()
 def ce = t.train(train, opts, prevCe, sbFile)
-ReadWrite.writeTo(ce, new File("../resources/psaur_22_xEps_ww_CE_B.dat"))
+ReadWrite.writeTo(ce, new File("../resources/psaur_22_xEps_ww_CE_E.dat"))
 //def ce = ReadWrite.readFromFile(CascadeEncoder.class, new File("../resources/psaur_22_xEps_ww_CE_A.dat"))
 
 AtomicLong wordTotal = new AtomicLong(0)

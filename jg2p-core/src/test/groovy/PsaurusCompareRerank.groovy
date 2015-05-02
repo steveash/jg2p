@@ -55,6 +55,7 @@ def lm = ReadWrite.readFromFile(NgramLM.class, new File("../resources/lm_6_kn.da
 Stopwatch watch = Stopwatch.createStarted()
 def counts = ConcurrentHashMultiset.create()
 def total = new AtomicInteger(0)
+println "Starting..."
 GParsPool.withPool {
   inps.everyParallel { InputRecord input ->
 
@@ -64,7 +65,7 @@ GParsPool.withPool {
 
     def gg = ans.first()
     def alreadyGood = gg.phones == input.yWord.value
-
+	//println "Should be " + input.yWord.value
     // resort by LM
     def totalPerp = 0
     def perpAndEnc = ans.collect {
@@ -77,14 +78,19 @@ GParsPool.withPool {
       [((double) it[0]) / ((double) totalPerp), it[1]]
     }
     perpAndEnc = perpAndEnc.sort {it[0]}
-
+	//println "LM sort: "
+	//perpAndEnc.each { println it }
+	
     def pp = perpAndEnc.first()
     def lmBestGood = pp[1].phones == input.yWord.value
-
+	
     // now try rescoring based on the perplexity proportion
     perpAndEnc = perpAndEnc.collect {
-      [it[0] * ((Encoding)it[1]).tagProbability(), it[1]]
+      [(1.0 - it[0]) * ((Encoding)it[1]).tagProbability(), it[1]]
     }
+	perpAndEnc = perpAndEnc.sort {it[0]}.reverse()
+	//println "scaled sort: "
+	//perpAndEnc.each { println it }
 
     def scaledLmBestGood = perpAndEnc.first()[1].phones == input.yWord.value
 

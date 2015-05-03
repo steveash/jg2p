@@ -41,7 +41,7 @@ def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
 def enc = ReadWrite.readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f3_B.dat"))
 enc.setBestAlignments(5)
 enc.setBestTaggings(5)
-enc.setBestFinal(15)
+enc.setBestFinal(5)
 enc.alignMinScore = Double.NEGATIVE_INFINITY
 enc.tagMinScore = Double.NEGATIVE_INFINITY
 
@@ -55,7 +55,7 @@ new File("../resources/psaur_rerank_out.txt").withPrintWriter { pw ->
   pw.println(
       "word\tphone\tlabel\tA\tB\tA_alignScore\tB_alignScore\tA-B_alignScore\tA_tagProb\tB_tagProb\tA-B_tagProb\tA_lmScore\tB_lmScore\tA-B_lmScore\tA_slmScore\tB_slmScore\tA-B_slmScore\tbigger\tA_dupCount\tB_dupCount\tA-B_dupCount")
   GParsPool.withPool {
-    inps.take(250).everyParallel { InputRecord input ->
+    inps.everyParallel { InputRecord input ->
 
       def newTotal = total.incrementAndGet()
 
@@ -81,7 +81,7 @@ new File("../resources/psaur_rerank_out.txt").withPrintWriter { pw ->
       def gg = ans.first()
       def gg2 = ans[1]
       def alreadyGood = gg.phones == input.yWord.value
-      def already2ndGood = gg2.phones == input.yWord.value
+      def already2ndGood = (gg2 != null ? gg2.phones == input.yWord.value : false)
 
       // resort by LM
       def totalPerp = 0
@@ -98,9 +98,9 @@ new File("../resources/psaur_rerank_out.txt").withPrintWriter { pw ->
       def lmResults = perpAndEnc
 
       def pp = perpAndEnc.first()
-      def pp2 = perpAndEnc.get(1)
+      def pp2 = perpAndEnc[1]
       def lmBestGood = pp[1].phones == input.yWord.value
-      def lm2ndGood = pp2[1].phones == input.yWord.value
+      def lm2ndGood = (pp2 != null ? pp2[1].phones == input.yWord.value : false)
 
       // now try rescoring based on the perplexity proportion
       perpAndEnc = perpAndEnc.collect {
@@ -112,9 +112,7 @@ new File("../resources/psaur_rerank_out.txt").withPrintWriter { pw ->
       //perpAndEnc.each { println it }
 
       def slm = perpAndEnc.first()
-      def slm2 = perpAndEnc.get(1)
       def scaledLmBestGood = slm[1].phones == input.yWord.value
-
 
       if (scaledLmBestGood ^ lmBestGood) {
         Encoding aa = pp[1]

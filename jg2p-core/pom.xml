@@ -60,19 +60,39 @@
       <version>1.2.1</version>
     </dependency>
     <!--<dependency>-->
-      <!--<groupId>de.jungblut.common</groupId>-->
-      <!--<artifactId>thomasjungblut-common</artifactId>-->
-      <!--<version>1.0-SNAPSHOT</version>-->
+    <!--<groupId>de.jungblut.common</groupId>-->
+    <!--<artifactId>thomasjungblut-common</artifactId>-->
+    <!--<version>1.0-SNAPSHOT</version>-->
     <!--</dependency>-->
     <!--<dependency>-->
-      <!--<groupId>de.jungblut.math</groupId>-->
-      <!--<artifactId>tjungblut-math</artifactId>-->
-      <!--<version>1.2-SNAPSHOT</version>-->
+    <!--<groupId>de.jungblut.math</groupId>-->
+    <!--<artifactId>tjungblut-math</artifactId>-->
+    <!--<version>1.2-SNAPSHOT</version>-->
     <!--</dependency>-->
     <dependency>
       <groupId>com.github.steveash</groupId>
       <artifactId>kylm</artifactId>
       <version>20150421.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+      <version>2.2.11</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-core</artifactId>
+      <version>2.2.11</version>
+    </dependency>
+    <dependency>
+        <groupId>javax.xml.bind</groupId>
+        <artifactId>jaxb-api</artifactId>
+        <version>2.2.12</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jpmml</groupId>
+      <artifactId>pmml-evaluator</artifactId>
+      <version>1.1.18</version>
     </dependency>
   </dependencies>
 

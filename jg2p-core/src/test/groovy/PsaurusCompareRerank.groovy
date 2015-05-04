@@ -17,6 +17,7 @@ import com.github.steveash.jg2p.PhoneticEncoder
 import com.github.steveash.jg2p.PhoneticEncoder.Encoding
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.InputRecord
+import com.github.steveash.jg2p.rerank.RerankModel
 import com.github.steveash.jg2p.util.Fibonacci
 import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
@@ -34,6 +35,8 @@ import java.util.concurrent.atomic.AtomicInteger
  * Used to play with the failing examples to try and figure out some areas for improvement
  * @author Steve Ash
  */
+def rr = RerankModel.from(new File("../resources/dt_rerank_1.pmml"))
+
 def file = "g014b2b-results.train"
 //def inps = InputReader.makePSaurusReader().readFromClasspath(file)
 def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
@@ -114,16 +117,46 @@ new File("../resources/psaur_rerank_out.txt").withPrintWriter { pw ->
       def slm = perpAndEnc.first()
       def scaledLmBestGood = slm[1].phones == input.yWord.value
 
+
+      Encoding aa = pp[1]
+      Encoding bb = slm[1]
+      def aalm = lmResults.find { it[1].phones == aa.phones }.get(0)
+      def bblm = lmResults.find { it[1].phones == bb.phones }.get(0)
+      def aapb = slmResults.find { it[1].phones == aa.phones }.get(0)
+      def bbpb = slmResults.find { it[1].phones == bb.phones }.get(0)
+      def bigger = (aa.phones.size() > bb.phones.size() ? "AA_BIGGER" : "BB_BIGGER")
+
+      def rrGood = false;
+      if (aa.phones == bb.phones) {
+        rrGood = aa.phones == input.yWord.value
+      } else {
+        // need to choose, run through DT
+        counts.add("RR_RUN_COUNT")
+        def v = [:]
+        v.put("A_alignScore", aa.alignScore)
+        v.put("B_alignScore", bb.alignScore)
+        v.put("A_tagProb", aa.tagProbability())
+        v.put("B_tagProb", bb.tagProbability())
+        v.put("A_lmScore", aalm)
+        v.put("B_lmScore", bblm)
+        v.put("A_slmScore", aapb)
+        v.put("B_slmScore", bbpb)
+        v.put("bigger", bigger)
+        v.put("A_dupCount", dups.count(aa.phones))
+        v.put("B_dupCount", dups.count(bb.phones))
+
+        def rrResult = rr.label(v)
+        if (rrResult == "LM") {
+          rrGood = aa.phones == input.yWord.value
+        } else {
+          assert rrResult == "SLM"
+          rrGood = bb.phones == input.yWord.value
+        }
+      }
+
+      // word\tphone\tlabel\tA\tB\tA_alignScore\tB_alignScore\tA-B_alignScore\tA_tagProb\tB_tagProb\tA-B_tagProb\tA_lmScore\tB_lmScore\tA-B_lmScore\tA_slmScore\tB_slmScore\tA-B_slmScore\tbigger\tA_dupCount\tB_dupCount\tA-B_dupCount
+
       if (scaledLmBestGood ^ lmBestGood) {
-        Encoding aa = pp[1]
-        Encoding bb = slm[1]
-        def aalm = lmResults.find { it[1].phones == aa.phones }.get(0)
-        def bblm = lmResults.find { it[1].phones == bb.phones }.get(0)
-        def aapb = slmResults.find { it[1].phones == aa.phones }.get(0)
-        def bbpb = slmResults.find { it[1].phones == bb.phones }.get(0)
-
-        // word\tphone\tlabel\tA\tB\tA_alignScore\tB_alignScore\tA-B_alignScore\tA_tagProb\tB_tagProb\tA-B_tagProb\tA_lmScore\tB_lmScore\tA-B_lmScore\tA_slmScore\tB_slmScore\tA-B_slmScore\tbigger\tA_dupCount\tB_dupCount\tA-B_dupCount
-
         def msg = input.xWord.asSpaceString + "\t" + input.yWord.value.join("|") + "\t" +
                   (lmBestGood ? "LM" : scaledLmBestGood ? "SLM" : "XXX") + "\t" +
                   aa.phones.join("|") + "\t" + bb.phones.join("|") + "\t" +
@@ -133,7 +166,7 @@ new File("../resources/psaur_rerank_out.txt").withPrintWriter { pw ->
                   (aa.tagProbability() - bb.tagProbability()) + "\t" +
                   aalm + "\t" + bblm + "\t" + (aalm - bblm) + "\t" +
                   aapb + "\t" + bbpb + "\t" + (aapb - bbpb) + "\t" +
-                  (aa.phones.size() > bb.phones.size() ? "AA_BIGGER" : "BB_BIGGER") + "\t" +
+                  bigger + "\t" +
                   dups.count(aa.phones) + "\t" + dups.count(bb.phones) + "\t" +
                   (dups.count(aa.phones) - dups.count(bb.phones)) + "\t"
 
@@ -150,6 +183,9 @@ new File("../resources/psaur_rerank_out.txt").withPrintWriter { pw ->
       }
       if (lmBestGood) {
         counts.add("LM")
+      }
+      if (rrGood) {
+        counts.add("RR")
       }
       if (already2ndGood) {
         counts.add("ENC2")

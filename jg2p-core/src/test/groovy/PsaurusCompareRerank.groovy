@@ -65,7 +65,8 @@ new File("../resources/psaur_rerank_out.bad.txt").withPrintWriter { badpw ->
 
         def newTotal = total.incrementAndGet()
 
-        List<Encoding> ans = enc.encode(input.xWord);
+        def cans = enc.complexEncode(input.xWord)
+        List<Encoding> ans = cans.overallResults;
         counts.add("output_" + Fibonacci.prevFibNumber(ans.size()))
         def dups = HashMultiset.create()
         ans.each { dups.add(it.phones) }
@@ -166,6 +167,18 @@ new File("../resources/psaur_rerank_out.bad.txt").withPrintWriter { badpw ->
           }
           rank += 1
           return false
+        }
+
+        // go through the complex result so we can get a sense of where the answers fall
+        int matchAlignCount = cans.alignResults.count {it.rankOfMatchingPhones(input.yWord.value) >= 0}
+        def matchAlignTop = cans.alignResults.any {it.rankOfMatchingPhones(input.yWord.value) == 1}
+        def anyAlign = cans.alignResults.any {it.rankOfMatchingPhones(input.yWord.value) >= 0}
+        counts.add("CANS_ALIGN_COUNT_" + matchAlignCount)
+        if (matchAlignTop) {
+          counts.add("CANS_TOP_ALIGN")
+        }
+        if (anyAlign) {
+          counts.add("IN_ANY_ALIGN")
         }
 
         Encoding aa = pp[1]

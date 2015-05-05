@@ -16,27 +16,28 @@
 
 package com.github.steveash.jg2p;
 
-import com.github.steveash.jg2p.util.Zipper;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
 
 import com.github.steveash.jg2p.align.Aligner;
 import com.github.steveash.jg2p.align.Alignment;
-import com.github.steveash.jg2p.align.AlignModel;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
+import com.github.steveash.jg2p.util.Zipper;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Steve Ash
  */
 public class PhoneticEncoder implements Serializable {
+
   private static final long serialVersionUID = 5996956897894317622L;
 
   public static final Joiner pipeJoiner = Joiner.on('|');
@@ -49,8 +50,10 @@ public class PhoneticEncoder implements Serializable {
   private double alignMinScore;
   private double tagMinScore;
   private Integer bestFinal;
+  private boolean includeOneToOne = true;
 
   public static class Encoding {
+
     public final List<String> alignment;
     public final List<String> phones;
     public final double alignScore;
@@ -88,30 +91,41 @@ public class PhoneticEncoder implements Serializable {
     return encode(input);
   }
 
-  public List<Encoding> encode(Word input) {
+  public Result complexEncode(Word input) {
+    Result result = new Result();
     List<Alignment> alignments = aligner.inferAlignments(input, bestAlignments);
-    alignments.add(makeOneToOne(input));
-    ArrayList<Encoding> results = Lists.newArrayListWithCapacity(alignments.size() + 1);
-    for (Alignment alignment : alignments) {
-      if (!results.isEmpty() && alignment.getScore() < alignMinScore) {
-        continue;
-      }
-
+    if (includeOneToOne) {
+      alignments.add(makeOneToOne(input));
+    }
+    Set<Alignment> deduped = Sets.newHashSet(alignments);
+    List<Encoding> results = Lists.newArrayListWithCapacity(alignments.size() + 1);
+    for (Alignment alignment : deduped) {
+      AlignResult ar = new AlignResult(alignment);
+      result.alignResults.add(ar);
       List<String> graphemes = alignment.getAllXTokensAsList();
       List<PhonemeCrfModel.TagResult> tagResults = phoneTagger.tag(graphemes, bestTaggings);
       for (PhonemeCrfModel.TagResult tagResult : tagResults) {
         if (!results.isEmpty() && tagResult.sequenceLogProbability() < tagMinScore) {
           continue;
         }
-        results.add(new Encoding(graphemes, tagResult.phonesNoEps(), alignment.getScore(), tagResult.sequenceLogProbability()));
+        Encoding e = new Encoding(graphemes, tagResult.phonesNoEps(), alignment.getScore(), tagResult.sequenceLogProbability());
+        results.add(e);
+        ar.encodings.add(e);
       }
+      Collections.sort(ar.encodings, OrderByTagScore);
     }
     Collections.sort(results, OrderByTagScore);
     int finalCount = (bestFinal != null ? bestFinal : bestAlignments);
     if (results.size() > finalCount) {
-      return results.subList(0, finalCount);
+      results = results.subList(0, finalCount);
     }
-    return results;
+    result.overallResults.addAll(results);
+    return result;
+  }
+
+  public List<Encoding> encode(Word input) {
+    Result result = complexEncode(input);
+    return result.overallResults;
   }
 
   private Alignment makeOneToOne(Word input) {
@@ -144,6 +158,14 @@ public class PhoneticEncoder implements Serializable {
 
   public void setBestFinal(Integer bestFinal) {
     this.bestFinal = bestFinal;
+  }
+
+  public boolean isIncludeOneToOne() {
+    return includeOneToOne;
+  }
+
+  public void setIncludeOneToOne(boolean includeOneToOne) {
+    this.includeOneToOne = includeOneToOne;
   }
 
   public double getAlignMinScore() {
@@ -185,5 +207,30 @@ public class PhoneticEncoder implements Serializable {
       bestTaggings = bestAlignments;
     }
     return this;
-   }
+  }
+
+  public static class Result {
+
+    public final List<AlignResult> alignResults = Lists.newArrayList();
+    public final List<Encoding> overallResults = Lists.newArrayList();
+  }
+
+  public static class AlignResult {
+
+    public final Alignment alignment;
+    public final List<Encoding> encodings = Lists.newArrayList();
+
+    public AlignResult(Alignment alignment) {
+      this.alignment = alignment;
+    }
+
+    public int rankOfMatchingPhones(List<String> phones) {
+      for (int i = 0; i < encodings.size(); i++) {
+        if (encodings.get(i).phones.equals(phones)) {
+          return i;
+        }
+      }
+      return -1;
+    }
+  }
 }

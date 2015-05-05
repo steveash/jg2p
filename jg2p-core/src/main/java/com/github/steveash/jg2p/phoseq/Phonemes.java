@@ -18,12 +18,45 @@ package com.github.steveash.jg2p.phoseq;
 
 import com.google.common.collect.ImmutableMap;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * @author Steve Ash
  */
 public class Phonemes {
 
+  public static boolean isVowel(String phone) {
+    String pc = get(phone);
+    switch (pc) {
+      case "M":
+      case "D":
+      case "R":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  public static boolean isConsonant(String phone) {
+    return !isVowel(phone);
+  }
+
+  private static String get(String phone) {
+    return checkNotNull(phoneClass.get(phone.toUpperCase()), "invalid phone", phone);
+  }
+
   // key is phone, value is mono, dipthong, r-color, stop, affricate, fricative, nasal, liquid, semivowels
+  // --- VOWELS ---
+  // M = monothong
+  // D = dipthong
+  // R = rcolor
+  // --- Consonants ---
+  // S = stops
+  // A = affricates
+  // F = fricatives
+  // N = nasal
+  // L = liquids
+  // I = semivowels
   private static final ImmutableMap<String, String> phoneClass = ImmutableMap.<String, String>builder()
       .put("HH", "F")
       .put("B", "S")

@@ -16,10 +16,11 @@
 
 package com.github.steveash.jg2p.util;
 
-import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+
+import com.github.steveash.jg2p.phoseq.Graphemes;
 
 import java.util.List;
 
@@ -33,10 +34,6 @@ import static com.google.common.base.CharMatcher.WHITESPACE;
  * @author Steve Ash
  */
 public class TokenSeqUtil {
-
-  private static final CharMatcher vowels = CharMatcher.anyOf("AEIOUY").precomputed();
-  private static final CharMatcher consonants = CharMatcher.inRange('A', 'Z').and(vowels.negate()).precomputed();
-  private static final CharMatcher other = CharMatcher.ANY.and(vowels.or(consonants).negate()).precomputed();
 
   @Nullable
   public static String getWindow(List<Token> ts, int current, int windowOffset, int windowWidth) {
@@ -139,9 +136,9 @@ public class TokenSeqUtil {
     StringBuilder sb = new StringBuilder(winStr.length());
     for (int i = 0; i < winStr.length(); i++) {
       char c = winStr.charAt(i);
-      if (consonants.matches(c)) {
+      if (Graphemes.consonants.matches(c)) {
         sb.append('c');
-      } else if (vowels.matches(c)) {
+      } else if (Graphemes.vowels.matches(c)) {
         sb.append('v');
       } else if (WHITESPACE.matches(c)) {
         sb.append('s');

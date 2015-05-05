@@ -37,9 +37,10 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 def rr = RerankModel.from(new File("../resources/dt_rerank_1.pmml"))
 
-def file = "g014b2b-results.train"
-//def inps = InputReader.makePSaurusReader().readFromClasspath(file)
-def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
+//def file = "g014b2b-results.train"
+def file = "g014b2b.test"
+def inps = InputReader.makePSaurusReader().readFromClasspath(file)
+//def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
 
 def enc = ReadWrite.readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f3_B.dat"))
 enc.setBestAlignments(5)

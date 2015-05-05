@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * Used to play with the failing examples to try and figure out some areas for improvement
  * @author Steve Ash
  */
-def rr = RerankModel.from(new File("../resources/dt_rerank_1.pmml"))
+def rr = RerankModel.from(new File("../resources/dt_rerank_2.pmml"))
 
 //def file = "g014b2b-results.train"
 def file = "g014b2b.test"
@@ -85,7 +85,18 @@ new File("../resources/psaur_rerank_out.txt").withPrintWriter { pw ->
       def gg = ans.first()
       def gg2 = ans[1]
       def alreadyGood = gg.phones == input.yWord.value
-      def already2ndGood = (gg2 != null ? gg2.phones == input.yWord.value : false)
+      int rank = 1;
+      def anyHad = ans.any {
+        if (it.phones == input.yWord.value) {
+          counts.add("ENCRNK_" + rank)
+          return true
+        }
+        rank += 1
+        return false
+      }
+      if (anyHad) {
+        counts.add("IN_TOP_5")
+      }
 
       // resort by LM
       def totalPerp = 0
@@ -104,7 +115,15 @@ new File("../resources/psaur_rerank_out.txt").withPrintWriter { pw ->
       def pp = perpAndEnc.first()
       def pp2 = perpAndEnc[1]
       def lmBestGood = pp[1].phones == input.yWord.value
-      def lm2ndGood = (pp2 != null ? pp2[1].phones == input.yWord.value : false)
+      rank = 1;
+      perpAndEnc.any {
+        if (it[1].phones == input.yWord.value) {
+          counts.add("LMRNK_" + rank)
+          return true
+        }
+        rank += 1
+        return false
+      }
 
       // now try rescoring based on the perplexity proportion
       perpAndEnc = perpAndEnc.collect {
@@ -117,7 +136,15 @@ new File("../resources/psaur_rerank_out.txt").withPrintWriter { pw ->
 
       def slm = perpAndEnc.first()
       def scaledLmBestGood = slm[1].phones == input.yWord.value
-
+      rank = 1;
+      perpAndEnc.any {
+        if (it[1].phones == input.yWord.value) {
+          counts.add("SLMRNK_" + rank)
+          return true
+        }
+        rank += 1
+        return false
+      }
 
       Encoding aa = pp[1]
       Encoding bb = slm[1]
@@ -187,12 +214,6 @@ new File("../resources/psaur_rerank_out.txt").withPrintWriter { pw ->
       }
       if (rrGood) {
         counts.add("RR")
-      }
-      if (already2ndGood) {
-        counts.add("ENC2")
-      }
-      if (lm2ndGood) {
-        counts.add("LM2")
       }
       if (scaledLmBestGood) {
         counts.add("SCALED")

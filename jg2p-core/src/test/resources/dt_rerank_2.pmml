@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PMML version="4.2" xmlns="http://www.dmg.org/PMML-4_2">
+  <Header copyright="steve">
+    <Application name="KNIME" version="2.11.2"/>
+  </Header>
+  <DataDictionary numberOfFields="12">
+    <DataField dataType="string" name="label" optype="categorical">
+      <Value value="SLM"/>
+      <Value value="LM"/>
+    </DataField>
+    <DataField dataType="double" name="A_alignScore" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="-20.543331185752095" rightMargin="0.0"/>
+    </DataField>
+    <DataField dataType="double" name="B_alignScore" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="-17.656170285336298" rightMargin="0.0"/>
+    </DataField>
+    <DataField dataType="double" name="A_tagProb" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.006297924597954992" rightMargin="0.9938522575037745"/>
+    </DataField>
+    <DataField dataType="double" name="B_tagProb" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.04639988609442278" rightMargin="0.9997376744181268"/>
+    </DataField>
+    <DataField dataType="double" name="A_lmScore" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0828303066981424" rightMargin="0.49997816076378276"/>
+    </DataField>
+    <DataField dataType="double" name="B_lmScore" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.09963455396459771" rightMargin="0.6008566964314207"/>
+    </DataField>
+    <DataField dataType="double" name="A_slmScore" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.005010102447439782" rightMargin="0.8660541335360634"/>
+    </DataField>
+    <DataField dataType="double" name="B_slmScore" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.03224081437104424" rightMargin="0.8770865047314947"/>
+    </DataField>
+    <DataField dataType="string" name="bigger" optype="categorical">
+      <Value value="BB_BIGGER"/>
+      <Value value="AA_BIGGER"/>
+    </DataField>
+    <DataField dataType="integer" name="A_dupCount" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="1.0" rightMargin="3.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_dupCount" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="1.0" rightMargin="4.0"/>
+    </DataField>
+  </DataDictionary>
+  <GeneralRegressionModel modelType="multinomialLogistic" functionName="classification" algorithmName="LogisticRegression" modelName="KNIME Logistic Regression" targetReferenceCategory="LM">
+    <MiningSchema>
+      <MiningField name="A_alignScore" invalidValueTreatment="asIs"/>
+      <MiningField name="B_alignScore" invalidValueTreatment="asIs"/>
+      <MiningField name="A_tagProb" invalidValueTreatment="asIs"/>
+      <MiningField name="B_tagProb" invalidValueTreatment="asIs"/>
+      <MiningField name="A_lmScore" invalidValueTreatment="asIs"/>
+      <MiningField name="B_lmScore" invalidValueTreatment="asIs"/>
+      <MiningField name="A_slmScore" invalidValueTreatment="asIs"/>
+      <MiningField name="B_slmScore" invalidValueTreatment="asIs"/>
+      <MiningField name="A_dupCount" invalidValueTreatment="asIs"/>
+      <MiningField name="B_dupCount" invalidValueTreatment="asIs"/>
+      <MiningField name="label" invalidValueTreatment="asIs" usageType="target"/>
+    </MiningSchema>
+    <ParameterList>
+      <Parameter name="p0" label="Intercept"/>
+      <Parameter name="p1" label="A_alignScore"/>
+      <Parameter name="p2" label="B_alignScore"/>
+      <Parameter name="p3" label="A_tagProb"/>
+      <Parameter name="p4" label="B_tagProb"/>
+      <Parameter name="p5" label="A_lmScore"/>
+      <Parameter name="p6" label="B_lmScore"/>
+      <Parameter name="p7" label="A_slmScore"/>
+      <Parameter name="p8" label="B_slmScore"/>
+      <Parameter name="p9" label="A_dupCount"/>
+      <Parameter name="p10" label="B_dupCount"/>
+    </ParameterList>
+    <FactorList/>
+    <CovariateList>
+      <Predictor name="A_alignScore"/>
+      <Predictor name="B_alignScore"/>
+      <Predictor name="A_tagProb"/>
+      <Predictor name="B_tagProb"/>
+      <Predictor name="A_lmScore"/>
+      <Predictor name="B_lmScore"/>
+      <Predictor name="A_slmScore"/>
+      <Predictor name="B_slmScore"/>
+      <Predictor name="A_dupCount"/>
+      <Predictor name="B_dupCount"/>
+    </CovariateList>
+    <PPMatrix>
+      <PPCell value="1" predictorName="A_alignScore" parameterName="p1"/>
+      <PPCell value="1" predictorName="B_alignScore" parameterName="p2"/>
+      <PPCell value="1" predictorName="A_tagProb" parameterName="p3"/>
+      <PPCell value="1" predictorName="B_tagProb" parameterName="p4"/>
+      <PPCell value="1" predictorName="A_lmScore" parameterName="p5"/>
+      <PPCell value="1" predictorName="B_lmScore" parameterName="p6"/>
+      <PPCell value="1" predictorName="A_slmScore" parameterName="p7"/>
+      <PPCell value="1" predictorName="B_slmScore" parameterName="p8"/>
+      <PPCell value="1" predictorName="A_dupCount" parameterName="p9"/>
+      <PPCell value="1" predictorName="B_dupCount" parameterName="p10"/>
+    </PPMatrix>
+    <ParamMatrix>
+      <PCell targetCategory="SLM" parameterName="p0" beta="-0.8130698487039993" df="1"/>
+      <PCell targetCategory="SLM" parameterName="p1" beta="-0.568449813960624" df="1"/>
+      <PCell targetCategory="SLM" parameterName="p2" beta="0.6642963962269428" df="1"/>
+      <PCell targetCategory="SLM" parameterName="p3" beta="-18.065946467792713" df="1"/>
+      <PCell targetCategory="SLM" parameterName="p4" beta="19.725772734284767" df="1"/>
+      <PCell targetCategory="SLM" parameterName="p5" beta="64.43610104994738" df="1"/>
+      <PCell targetCategory="SLM" parameterName="p6" beta="-62.89304489804604" df="1"/>
+      <PCell targetCategory="SLM" parameterName="p7" beta="17.15445666645041" df="1"/>
+      <PCell targetCategory="SLM" parameterName="p8" beta="-18.313447069578594" df="1"/>
+      <PCell targetCategory="SLM" parameterName="p9" beta="1.0079455980459424" df="1"/>
+      <PCell targetCategory="SLM" parameterName="p10" beta="-0.8851911775218749" df="1"/>
+    </ParamMatrix>
+  </GeneralRegressionModel>
+</PMML>

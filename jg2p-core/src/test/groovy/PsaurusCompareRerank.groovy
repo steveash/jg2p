@@ -38,10 +38,10 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 def rr = RerankModel.from(new File("../resources/dt_rerank_2.pmml"))
 
-def file = "g014b2b-results.train"
-//def file = "g014b2b.test"
-//def inps = InputReader.makePSaurusReader().readFromClasspath(file)
-def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
+//def file = "g014b2b-results.train"
+def file = "g014b2b.test"
+def inps = InputReader.makePSaurusReader().readFromClasspath(file)
+//def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
 
 def enc = ReadWrite.readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f3_B.dat"))
 enc.setBestAlignments(5)
@@ -61,7 +61,7 @@ new File("../resources/psaur_rerank_out.bad.txt").withPrintWriter { badpw ->
     pw.println(
         "word\tphone\tlabel\tA\tB\tA_alignScore\tB_alignScore\tA-B_alignScore\tA_tagProb\tB_tagProb\tA-B_tagProb\tA_lmScore\tB_lmScore\tA-B_lmScore\tA_slmScore\tB_slmScore\tA-B_slmScore\tbigger\tA_dupCount\tB_dupCount\tA-B_dupCount")
     GParsPool.withPool {
-      inps.take(250).everyParallel { InputRecord input ->
+      inps.everyParallel { InputRecord input ->
 
         def newTotal = total.incrementAndGet()
 

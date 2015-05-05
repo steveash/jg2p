@@ -173,6 +173,12 @@ new File("../resources/psaur_rerank_out.bad.txt").withPrintWriter { badpw ->
         int matchAlignCount = cans.alignResults.count {it.rankOfMatchingPhones(input.yWord.value) >= 0}
         def matchAlignTop = cans.alignResults.any {it.rankOfMatchingPhones(input.yWord.value) == 1}
         def anyAlign = cans.alignResults.any {it.rankOfMatchingPhones(input.yWord.value) >= 0}
+        cans.alignResults.each {
+          def rrr = it.rankOfMatchingPhones(input.yWord.value)
+          if (rrr >= 0) {
+            counts.add("CANS_MATCHED_RANK_" + rrr)
+          }
+        }
         counts.add("CANS_ALIGN_COUNT_" + matchAlignCount)
         if (matchAlignTop) {
           counts.add("CANS_TOP_ALIGN")

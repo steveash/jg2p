@@ -119,7 +119,7 @@ new File("../resources/psaur_rerank_out.bad.txt").withPrintWriter { badpw ->
           counts.add("SKETCH_${goodLabel}_${sketchLabel}")
 
           def colPre = (goodAns ? "MATCH_" : "NOMATCH_")
-          (1..3).each { len ->
+          (1..4).each { len ->
             def ps = left(phoneShape, len)
             def ws = left(wordShape, len)
             def col = colPre + (ps == ws ? "SHPGOOD" : "SHPBAD")

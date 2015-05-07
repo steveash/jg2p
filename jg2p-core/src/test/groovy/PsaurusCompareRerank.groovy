@@ -24,6 +24,7 @@ import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Stopwatch
 import com.google.common.collect.ConcurrentHashMultiset
+import com.google.common.collect.HashBasedTable
 import com.google.common.collect.HashMultiset
 import groovyx.gpars.GParsConfig
 import groovyx.gpars.GParsPool
@@ -31,6 +32,10 @@ import kylm.model.ngram.NgramLM
 import org.apache.commons.lang3.StringUtils
 
 import java.util.concurrent.atomic.AtomicInteger
+
+import static org.apache.commons.lang3.StringUtils.left
+import static org.apache.commons.lang3.StringUtils.leftPad
+import static org.apache.commons.lang3.StringUtils.rightPad
 
 /**
  * Used to play with the failing examples to try and figure out some areas for improvement
@@ -54,6 +59,7 @@ def lm = ReadWrite.readFromFile(NgramLM.class, new File("../resources/lm_7_kn.da
 
 Stopwatch watch = Stopwatch.createStarted()
 def counts = ConcurrentHashMultiset.create()
+def prefixCounts = HashBasedTable.create()
 def total = new AtomicInteger(0)
 println "Starting..."
 new File("../resources/psaur_rerank_out.bad.txt").withPrintWriter { badpw ->
@@ -83,7 +89,6 @@ new File("../resources/psaur_rerank_out.bad.txt").withPrintWriter { badpw ->
           counts.add("nonunique_mode_count_" + modeEntry.count)
         }
         ans = pruneDups(ans)
-        counts.add("dedup_output_" + Fibonacci.prevFibNumber(ans.size()))
 
         def gg = ans.first()
         def gg2 = ans[1]
@@ -112,6 +117,19 @@ new File("../resources/psaur_rerank_out.bad.txt").withPrintWriter { badpw ->
           def sketchLabel = (phoneSketch == wordSketch ? "SKTGOOD" : "SKTBAD")
           counts.add("SHAPE_${goodLabel}_${shapeLabel}")
           counts.add("SKETCH_${goodLabel}_${sketchLabel}")
+
+          def colPre = (goodAns ? "MATCH_" : "NOMATCH_")
+          (1..3).each { len ->
+            def ps = left(phoneShape, len)
+            def ws = left(wordShape, len)
+            def col = colPre + (ps == ws ? "SHPGOOD" : "SHPBAD")
+            prefixCounts.put(ps, col, (prefixCounts.get(ps, col) ?: 0) + 1)
+
+            def pk = left(phoneSketch, len)
+            def wk = left(wordSketch, len)
+            col = colPre + (pk == wk ? "SKTGOOD" : "SKTBAD")
+            prefixCounts.put(pk, col, (prefixCounts.get(pk, col) ?: 0) + 1)
+          }
 
           if (goodAns) {
             if (wordShape.startsWith("CvC")) {
@@ -274,6 +292,18 @@ new File("../resources/psaur_rerank_out.bad.txt").withPrintWriter { badpw ->
 }
 watch.stop()
 GParsConfig.shutdown()
+
+new File("../resources/prefix-counts.txt").withPrintWriter { pw ->
+  def cols = prefixCounts.columnKeySet().sort()
+  pw.println("prefix," + cols.join(","))
+  prefixCounts.rowKeySet().each { rowKey ->
+    String line = rowKey
+    cols.each { colKey ->
+      line += "," + (prefixCounts.get(rowKey, colKey) ?: 0)
+    }
+    pw.println(line)
+  }
+}
 
 def tot = total.get()
 println "Total $tot"

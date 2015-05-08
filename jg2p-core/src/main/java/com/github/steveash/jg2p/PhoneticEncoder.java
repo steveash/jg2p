@@ -192,7 +192,7 @@ public class PhoneticEncoder implements Serializable {
     return phoneTagger;
   }
 
-  private static final Ordering<Encoding> OrderByTagScore = new Ordering<Encoding>() {
+  public static final Ordering<Encoding> OrderByTagScore = new Ordering<Encoding>() {
     @Override
     public int compare(Encoding left, Encoding right) {
       return ComparisonChain.start()

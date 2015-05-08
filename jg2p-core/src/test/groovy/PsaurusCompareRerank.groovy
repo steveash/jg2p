@@ -57,6 +57,8 @@ enc.tagMinScore = Double.NEGATIVE_INFINITY
 
 def lm = ReadWrite.readFromFile(NgramLM.class, new File("../resources/lm_7_kn.dat"))
 
+def goodShapes = ["CCvC", "CCv", "CC", "vCCv", "v", "vC", "vCC", "vCCC", "vCvC", "vv", "vCv", "CCC", "CCCv" ]
+
 Stopwatch watch = Stopwatch.createStarted()
 def counts = ConcurrentHashMultiset.create()
 def prefixCounts = HashBasedTable.create()
@@ -65,7 +67,8 @@ println "Starting..."
 new File("../resources/psaur_rerank_out.bad.txt").withPrintWriter { badpw ->
   new File("../resources/psaur_rerank_out.txt").withPrintWriter { pw ->
     pw.println(
-        "word\tphone\tlabel\tA\tB\tA_alignScore\tB_alignScore\tA-B_alignScore\tA_tagProb\tB_tagProb\tA-B_tagProb\tA_lmScore\tB_lmScore\tA-B_lmScore\tA_slmScore\tB_slmScore\tA-B_slmScore\tbigger\tA_dupCount\tB_dupCount\tA-B_dupCount")
+        "seq\tword\tphone\tlabel\tA\tB\tA_alignScore\tB_alignScore\tA_tagProb\tB_tagProb\tA_lmScore\tB_lmScore" +
+        "\tA_slmScore\tB_slmScore\tA_dupCount\tB_dupCount")
     GParsPool.withPool {
       inps.everyParallel { InputRecord input ->
 
@@ -91,7 +94,6 @@ new File("../resources/psaur_rerank_out.bad.txt").withPrintWriter { badpw ->
         ans = pruneDups(ans)
 
         def gg = ans.first()
-        def gg2 = ans[1]
         def alreadyGood = gg.phones == input.yWord.value
         int rank = 1;
         def anyHad = ans.any {

@@ -60,8 +60,8 @@ Stopwatch watch = Stopwatch.createStarted()
 def total = new AtomicInteger(0)
 def skipped = new AtomicInteger(0)
 @Field Random rand = new Random(0xCAFEBABE)
-def totalPairsPerEntryToInclude = 10
-def totalEntriesToInclude = 20000
+def totalPairsPerEntryToInclude = 12
+def totalEntriesToInclude = 50000
 println "Starting..."
 
 @Field List<String> scoreHeaders = ["lmScore", "tagScore", "alignScore", "uniqueMode", "dups", "alignIndex",

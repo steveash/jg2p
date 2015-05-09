@@ -22,6 +22,7 @@ import com.github.steveash.jg2p.phoseq.Graphemes
 import com.github.steveash.jg2p.phoseq.Phonemes
 import com.github.steveash.jg2p.phoseq.WordShape
 import com.github.steveash.jg2p.rerank.RerankModel
+import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Stopwatch
 import com.google.common.collect.HashMultiset
@@ -35,15 +36,16 @@ import org.apache.commons.lang3.StringUtils
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * Used to create training data for the reranking model
+ * Used to evaluate the whole schematic with the reranking model trained from rerank2
  * @author Steve Ash
  */
 //def rr = RerankModel.from(new File("../resources/dt_rerank_2.pmml"))
+@Field RerankModel rr = RerankModel.from(new File("../resources/dt_rerank_3.pmml"))
 
-def file = "g014b2b-results.train"
-//def file = "g014b2b.test"
-//def inps = InputReader.makePSaurusReader().readFromClasspath(file)
-def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)  //.take(250)
+//def file = "g014b2b-results.train"
+def file = "g014b2b.test"
+def inps = InputReader.makePSaurusReader().readFromClasspath(file)
+//def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file) //.take(250)
 
 @Field PhoneticEncoder enc = ReadWrite.
     readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f3_B.dat"))
@@ -58,102 +60,96 @@ enc.tagMinScore = Double.NEGATIVE_INFINITY
 
 Stopwatch watch = Stopwatch.createStarted()
 def total = new AtomicInteger(0)
-def skipped = new AtomicInteger(0)
-@Field Random rand = new Random(0xCAFEBABE)
-def totalPairsPerEntryToInclude = 12
-def totalEntriesToInclude = 50000
+def right = new AtomicInteger(0)
 println "Starting..."
 
 @Field List<String> scoreHeaders = ["lmScore", "tagScore", "alignScore", "uniqueMode", "dups", "alignIndex",
                                     "overallIndex", "shapeEdit", "shapeLenDiff", "leadingConsMatch", "leadingConsMismatch"]
 scoreHeaders.addAll(goodShapes)
-def headers = ["seq", "word", "phones", "label", "A", "B"]
-scoreHeaders.each {
-  headers << "A_" + it
-  headers << "B_" + it
-}
 
-// calculate the probability of including any particular record
-double recProb = totalEntriesToInclude.toDouble() / inps.size()
-println "Using rec prob of $recProb"
-new File("../resources/psaur_rerank_train.txt").withPrintWriter { pw ->
-  pw.println(headers.join("\t"))
-  GParsPool.withPool {
-    inps.everyParallel { InputRecord input ->
+GParsPool.withPool {
+  inps.everyParallel { InputRecord input ->
 
-      if (rand.nextDouble() > recProb) {
-        // skip this record so we get close to the expected # of records
-        return true;
-      }
+    def newTotal = total.incrementAndGet()
+    def cans = enc.complexEncode(input.xWord)
+    List<Encoding> ans = cans.alignResults.collect { it.encodings }.flatten()
+    assert ans.size() > 0
+    ans.sort(PhoneticEncoder.OrderByTagScore)
+    def dups = HashMultiset.create()
+    ans.each { dups.add(it.phones) }
+    def modeEntry = dups.entrySet().max { it.count }
+    assert modeEntry != null
+    int candidatesSameAsMode = dups.entrySet().count { it.count == modeEntry.count }
+    List<String> modePhones = modeEntry.element
+    boolean uniqueMode = (candidatesSameAsMode == 1)
+    def xx = input.xWord.asSpaceString
+    def wordShape = WordShape.graphShape(input.xWord.value, false)
 
-      def newTotal = total.incrementAndGet()
-      def cans = enc.complexEncode(input.xWord)
-      List<Encoding> ans = cans.alignResults.collect {it.encodings}.flatten()
-      assert ans.size() > 0
-      ans.sort(PhoneticEncoder.OrderByTagScore)
-      def dups = HashMultiset.create()
-      ans.each { dups.add(it.phones) }
-      def modeEntry = dups.entrySet().max { it.count }
-      assert modeEntry != null
-      int candidatesSameAsMode = dups.entrySet().count { it.count == modeEntry.count }
-      List<String> modePhones = modeEntry.element
-      boolean uniqueMode = (candidatesSameAsMode == 1)
-
-      def bestAns = ans.find { input.yWord.value == it.phones }
-
-      if (bestAns == null) {
-        skipped.incrementAndGet()
-        return true; // this is a bad example so don't train on this
-      }
-
-      // need the index in the alignment set that the best answer was
-      def bestAlignIndex = -1
-      cans.alignResults.each { ar ->
-        ar.encodings.eachWithIndex { e, idx ->
-          if (e.is(bestAns)) {
-            bestAlignIndex = idx
-          }
+    // go up each align group (worst to best) to find "the best" showing preference based on the tag prob order
+    def alignWinners = [] // winners of each align group, in the same order
+    cans.alignResults.each { alignGroup ->
+      def w = null
+      for (int i = alignGroup.encodings.size(); i >= 0; i--) {
+        def c = alignGroup.encodings[i]
+        if (w == null) {
+          w = c
+          continue
         }
+        w = winner(w, c, wordShape, i, ans, modePhones, uniqueMode, dups, xx)
       }
-      assert bestAlignIndex >= 0
-      def wordShape = WordShape.graphShape(input.xWord.value, false)
-      def xx = input.xWord.asSpaceString
-      def yy = input.yWord.value.join("|")
-      def best = score(bestAns, wordShape, bestAlignIndex, modePhones, uniqueMode, dups, ans, xx)
-      def pairProb = totalPairsPerEntryToInclude.toDouble() / (ans.size() - 1)
-
-      cans.alignResults.each { alignResult ->
-        alignResult.encodings.eachWithIndex { candResult, index ->
-          if (candResult.phones == bestAns.phones) {
-            return // skip self refs
-          }
-          if (rand.nextDouble() > pairProb) {
-            return // skip this pair so we get close to the number of pairs that we want to eval
-          }
-          def cand = score(candResult, wordShape, index, modePhones, uniqueMode, dups, ans, xx)
-
-          ArrayList<String> line = makeLine(best, cand, "A", bestAns.phones, candResult.phones, newTotal, xx, yy)
-          ArrayList<String> line2 = makeLine(cand, best, "B", candResult.phones, bestAns.phones, newTotal, xx, yy)
-          pw.println(line.join("\t"))
-          pw.println(line2.join("\t"))
-        }
-      }
-
-      if (newTotal % 5000 == 0) {
-        println "Completed " + newTotal + " of " + inps.size()
-      }
-      return true;
+      alignWinners << w
     }
+
+    def w = null
+    for (int i = alignWinners.size(); i >= 0; i--) {
+      Encoding c = alignWinners[i]
+      if (w == null) {
+        w = c
+        continue
+      }
+      w = winner(w, c, wordShape, 0, ans, modePhones, uniqueMode, dups, xx)
+    }
+
+    if (w.phones == input.yWord.value) {
+      right.incrementAndGet()
+    }
+
+    if (newTotal % 1000 == 0) {
+      println "Completed " + newTotal + " of " + inps.size()
+    }
+    return true;
   }
 }
 
-private makeLine(def aa, def bb, String label, List<String> aPhones, List<String> bPhones, int newTotal, String xx, String yy) {
-  def line = [newTotal, xx, yy, label, aPhones.join("|"), bPhones.join("|")]
-  scoreHeaders.each {
-    line << aa[it]
-    line << bb[it]
+watch.stop()
+GParsConfig.shutdown()
+
+def tot = total.get()
+println "Total $tot"
+println "Right ${right.get()}"
+println "Accuracy " + Percent.print(right.get(), tot)
+println "Eval took " + watch
+
+private Encoding winner(Encoding a, Encoding b, String wordShape, int alignIndex, List<Encoding> overall, List<String> modePhones,
+                        boolean uniqueMode, Multiset<List<String>> dups, String spaceSepWord) {
+
+  def aScore = score(a, wordShape, alignIndex, modePhones, uniqueMode, dups, overall, spaceSepWord)
+  def bScore = score(b, wordShape, alignIndex, modePhones, uniqueMode, dups, overall, spaceSepWord)
+  def s = [:]
+  scoreHeaders.each { h ->
+    def aa = aScore[h]
+    def bb = bScore[h]
+    assert aa != null && bb != null
+    s.put("A_" + h, aa)
+    s.put("B_" + h, bb)
   }
-  return line
+  def label = rr.label(s)
+  if (label == "A") {
+    return a
+  } else if (label == "B") {
+    return b
+  }
+  throw new Exception("didn't get A or B got $label")
 }
 
 private score(Encoding ans, String wordShape, int alignIndex, List<String> modePhones, boolean uniqueMode,
@@ -190,11 +186,3 @@ private score(Encoding ans, String wordShape, int alignIndex, List<String> modeP
   }
   return score
 }
-
-watch.stop()
-GParsConfig.shutdown()
-
-def tot = total.get()
-println "Total $tot"
-println "Total skipped ${skipped.get()}"
-println "Eval took " + watch

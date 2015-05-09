@@ -53,7 +53,7 @@ enc.setBestFinal(5)
 enc.alignMinScore = Double.NEGATIVE_INFINITY
 enc.tagMinScore = Double.NEGATIVE_INFINITY
 
-@Field NgramLM lm = ReadWrite.readFromFile(NgramLM.class, new File("../resources/lm_7_kn.dat"))
+@Field NgramLM lm = ReadWrite.readFromFile(NgramLM.class, new File("../resources/lm_4_kn.dat"))
 @Field def goodShapes = ["CCvC", "CCv", "CC", "vCCv", "v", "vC", "vCC", "vCCC", "vCvC", "vv", "vCv", "CCC", "CCCv"]
 
 Stopwatch watch = Stopwatch.createStarted()

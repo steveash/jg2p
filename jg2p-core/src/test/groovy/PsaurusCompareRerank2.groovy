@@ -18,6 +18,8 @@ import com.github.steveash.jg2p.PhoneticEncoder
 import com.github.steveash.jg2p.PhoneticEncoder.Encoding
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.InputRecord
+import com.github.steveash.jg2p.phoseq.Graphemes
+import com.github.steveash.jg2p.phoseq.Phonemes
 import com.github.steveash.jg2p.phoseq.WordShape
 import com.github.steveash.jg2p.rerank.RerankModel
 import com.github.steveash.jg2p.util.ReadWrite
@@ -36,12 +38,12 @@ import java.util.concurrent.atomic.AtomicInteger
  * Used to play with the failing examples to try and figure out some areas for improvement
  * @author Steve Ash
  */
-def rr = RerankModel.from(new File("../resources/dt_rerank_2.pmml"))
+//def rr = RerankModel.from(new File("../resources/dt_rerank_2.pmml"))
 
-//def file = "g014b2b-results.train"
-def file = "g014b2b.test"
-def inps = InputReader.makePSaurusReader().readFromClasspath(file)
-//def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
+def file = "g014b2b-results.train"
+//def file = "g014b2b.test"
+//def inps = InputReader.makePSaurusReader().readFromClasspath(file)
+def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)  //.take(250)
 
 @Field PhoneticEncoder enc = ReadWrite.
     readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f3_B.dat"))
@@ -57,10 +59,13 @@ enc.tagMinScore = Double.NEGATIVE_INFINITY
 Stopwatch watch = Stopwatch.createStarted()
 def total = new AtomicInteger(0)
 def skipped = new AtomicInteger(0)
+@Field Random rand = new Random(0xCAFEBABE)
+def totalPairsPerEntryToInclude = 10
+def totalEntriesToInclude = 20000
 println "Starting..."
 
 @Field List<String> scoreHeaders = ["lmScore", "tagScore", "alignScore", "uniqueMode", "dups", "alignIndex",
-                                    "overallIndex", "shapeEdit", "shapeLenDiff"]
+                                    "overallIndex", "shapeEdit", "shapeLenDiff", "leadingConsMatch", "leadingConsMismatch"]
 scoreHeaders.addAll(goodShapes)
 def headers = ["seq", "word", "phones", "label", "A", "B"]
 scoreHeaders.each {
@@ -68,10 +73,18 @@ scoreHeaders.each {
   headers << "B_" + it
 }
 
+// calculate the probability of including any particular record
+double recProb = totalEntriesToInclude.toDouble() / inps.size()
+println "Using rec prob of $recProb"
 new File("../resources/psaur_rerank_train.txt").withPrintWriter { pw ->
   pw.println(headers.join("\t"))
   GParsPool.withPool {
     inps.everyParallel { InputRecord input ->
+
+      if (rand.nextDouble() > recProb) {
+        // skip this record so we get close to the expected # of records
+        return true;
+      }
 
       def newTotal = total.incrementAndGet()
       def cans = enc.complexEncode(input.xWord)
@@ -104,16 +117,20 @@ new File("../resources/psaur_rerank_train.txt").withPrintWriter { pw ->
       }
       assert bestAlignIndex >= 0
       def wordShape = WordShape.graphShape(input.xWord.value, false)
-      def best = score(bestAns, wordShape, bestAlignIndex, modePhones, uniqueMode, dups, ans)
       def xx = input.xWord.asSpaceString
       def yy = input.yWord.value.join("|")
+      def best = score(bestAns, wordShape, bestAlignIndex, modePhones, uniqueMode, dups, ans, xx)
+      def pairProb = totalPairsPerEntryToInclude.toDouble() / (ans.size() - 1)
 
       cans.alignResults.each { alignResult ->
         alignResult.encodings.eachWithIndex { candResult, index ->
           if (candResult.phones == bestAns.phones) {
             return // skip self refs
           }
-          def cand = score(candResult, wordShape, index, modePhones, uniqueMode, dups, ans)
+          if (rand.nextDouble() > pairProb) {
+            return // skip this pair so we get close to the number of pairs that we want to eval
+          }
+          def cand = score(candResult, wordShape, index, modePhones, uniqueMode, dups, ans, xx)
 
           ArrayList<String> line = makeLine(best, cand, "A", bestAns.phones, candResult.phones, newTotal, xx, yy)
           ArrayList<String> line2 = makeLine(cand, best, "B", candResult.phones, bestAns.phones, newTotal, xx, yy)
@@ -140,9 +157,21 @@ private makeLine(def aa, def bb, String label, List<String> aPhones, List<String
 }
 
 private score(Encoding ans, String wordShape, int alignIndex, List<String> modePhones, boolean uniqueMode,
-              Multiset<List<String>> dups, List<Encoding> overall) {
+              Multiset<List<String>> dups, List<Encoding> overall, String spaceSepWord) {
 
   def ansShape = WordShape.phoneShape(ans.phones, false)
+  def leadingConsMatch = false;
+  def leadingConsMismatch = false;
+  def graphChar = spaceSepWord.substring(0, 1)
+  if (Graphemes.isConsonant(graphChar) && Phonemes.isSimpleConsonantGraph(graphChar)) {
+    def phoneSymbol = ans.phones.first().substring(0, 1)
+    if (Graphemes.isConsonant(phoneSymbol) && graphChar.equalsIgnoreCase(phoneSymbol)) {
+      leadingConsMatch = true
+    } else {
+      leadingConsMismatch = true
+    }
+  }
+
   def score = [:]
   score << [lmScore: lm.getSentenceProbNormalized(ans.phones.toArray(new String[0]))]
   score << [tagScore: ans.tagProbability()]
@@ -153,6 +182,9 @@ private score(Encoding ans, String wordShape, int alignIndex, List<String> modeP
   score << [overallIndex: overall.findIndexOf { it.phones == ans.phones }]
   score << [shapeEdit: StringUtils.getLevenshteinDistance(ansShape, wordShape)]
   score << [shapeLenDiff: wordShape.length() - ansShape.length()]
+  score << [leadingConsMatch: (leadingConsMatch ? "1" : "0")]
+  score << [leadingConsMismatch: (leadingConsMismatch ? "1" : "0")]
+
   goodShapes.each { String shp ->
     score.put(shp, (wordShape.startsWith(shp) && ansShape.startsWith(shp) ? "1" : "0"))
   }

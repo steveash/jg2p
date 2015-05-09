@@ -17,6 +17,11 @@
 package com.github.steveash.jg2p.phoseq;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+
+import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -39,6 +44,10 @@ public class Phonemes {
 
   public static boolean isConsonant(String phone) {
     return !isVowel(phone);
+  }
+
+  public static boolean isSimpleConsonantGraph(String graph) {
+    return simpleConsonantGraphs.contains(graph.toUpperCase());
   }
 
   private static String get(String phone) {
@@ -99,4 +108,18 @@ public class Phonemes {
       .put("JH", "A")
       .build();
 
+  private static final ImmutableSet<String> simpleConsonantGraphs;
+  static {
+    // construct a list of "simple" consonant sounds (i.e. those that are usually 1-1 like stops and fricatives
+    ImmutableSet<String> phoneClassToInclude = ImmutableSet.of("S", "F");
+    Set<String> simpleCons = Sets.newHashSet();
+    for (Map.Entry<String, String> entry : phoneClass.entrySet()) {
+      if (phoneClassToInclude.contains(entry.getValue())) {
+        // just the first letter as that's the corresponding "simple consonant" but note that this only works because
+        // the fricative symbols above that have two chars, the leading one is the "simple cons" that I care about
+        simpleCons.add(entry.getKey().substring(0, 1));
+      }
+    }
+    simpleConsonantGraphs = ImmutableSet.copyOf(simpleCons);
+  }
 }

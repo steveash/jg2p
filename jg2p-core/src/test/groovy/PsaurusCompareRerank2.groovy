@@ -103,7 +103,7 @@ new File("../resources/psaur_rerank_train.txt").withPrintWriter { pw ->
 
       if (bestAns == null) {
         skipped.incrementAndGet()
-        return // this is a bad example so don't train on this
+        return true; // this is a bad example so don't train on this
       }
 
       // need the index in the alignment set that the best answer was

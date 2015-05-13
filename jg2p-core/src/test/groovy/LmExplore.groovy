@@ -39,7 +39,7 @@ def train = InputReader.makePSaurusReader().readFromClasspath(trainFile)
 def test = InputReader.makePSaurusReader().readFromClasspath(testFile)
 def smoother = new KNSmoother()
 smoother.setSmoothUnigrams(true)//???
-def lm = new NgramLM(4, smoother)
+def lm = new NgramLM(2, smoother)
 //lm.debug = 1
 
 def trainData = train.collect {it.right.value.toArray(new String[0])}
@@ -53,7 +53,7 @@ println "Overall sentence perplexity (train) " + perpTrain.calculate()
 println "Overall average log prob    (train) " + perpTrain.averageNormalLogProb()
 println "Overall sentence perplexity  (test) " + perpTest.calculate()
 println "Overall average log prob     (test) " + perpTest.averageNormalLogProb()
-ReadWrite.writeTo(lm, new File("../resources/lm_4_kn.dat"))
+ReadWrite.writeTo(lm, new File("../resources/lm_2_kn.dat"))
 
 
 private calcPerp(List<String[]> data, NgramLM lm) {

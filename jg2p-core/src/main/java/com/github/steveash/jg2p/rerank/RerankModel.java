@@ -19,11 +19,12 @@ package com.github.steveash.jg2p.rerank;
 import com.google.common.collect.Maps;
 
 import org.dmg.pmml.FieldName;
+import org.dmg.pmml.Model;
 import org.dmg.pmml.PMML;
-import org.jpmml.evaluator.Computable;
-import org.jpmml.evaluator.Evaluator;
 import org.jpmml.evaluator.FieldValue;
+import org.jpmml.evaluator.ModelEvaluator;
 import org.jpmml.evaluator.ModelEvaluatorFactory;
+import org.jpmml.evaluator.ProbabilityClassificationMap;
 import org.jpmml.manager.PMMLManager;
 import org.jpmml.model.ImportFilter;
 import org.jpmml.model.JAXBUtil;
@@ -44,9 +45,9 @@ import javax.xml.transform.Source;
  */
 public class RerankModel {
 
-  private final Evaluator evaluator;
+  private final ModelEvaluator<? extends Model> evaluator;
 
-  public RerankModel(Evaluator evaluator) {
+  public RerankModel(ModelEvaluator<? extends Model> evaluator) {
     this.evaluator = evaluator;
   }
 
@@ -61,11 +62,16 @@ public class RerankModel {
     }
 
     PMMLManager pmmlManager = new PMMLManager(pmml);
-    Evaluator evaluator = (Evaluator)pmmlManager.getModelManager(ModelEvaluatorFactory.getInstance());
+    ModelEvaluator<? extends Model> evaluator = (ModelEvaluator<? extends Model>)pmmlManager.getModelManager(ModelEvaluatorFactory.getInstance());
     return new RerankModel(evaluator);
   }
 
   public String label(Map<String,Object> values) {
+    ProbabilityClassificationMap label = probabilities(values);
+    return (String)label.getResult();
+  }
+
+  public ProbabilityClassificationMap probabilities(Map<String, Object> values) {
     Map<FieldName, FieldValue> inputs = Maps.newHashMap();
     for (FieldName field : evaluator.getActiveFields()) {
       Object value = values.get(field.getValue());
@@ -78,11 +84,7 @@ public class RerankModel {
     }
 
     Map<FieldName, ?> result = evaluator.evaluate(inputs);
-    Object label = result.get(evaluator.getTargetField());
-    if (label instanceof Computable) {
-      label = ((Computable) label).getResult();
-    }
-    return (String) label;
+    return (ProbabilityClassificationMap) result.get(evaluator.getTargetField());
   }
 
 }

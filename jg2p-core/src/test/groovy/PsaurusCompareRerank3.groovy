@@ -25,13 +25,17 @@ import com.github.steveash.jg2p.rerank.RerankModel
 import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Stopwatch
+import com.google.common.collect.ArrayTable
+import com.google.common.collect.HashBasedTable
 import com.google.common.collect.HashMultiset
 import com.google.common.collect.Multiset
+import com.google.common.collect.Table
 import groovy.transform.Field
 import groovyx.gpars.GParsConfig
 import groovyx.gpars.GParsPool
 import kylm.model.ngram.NgramLM
 import org.apache.commons.lang3.StringUtils
+import org.jpmml.evaluator.ProbabilityClassificationMap
 
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -42,10 +46,10 @@ import java.util.concurrent.atomic.AtomicInteger
 //def rr = RerankModel.from(new File("../resources/dt_rerank_2.pmml"))
 @Field RerankModel rr = RerankModel.from(new File("../resources/dt_rerank_3.pmml"))
 
-//def file = "g014b2b-results.train"
-def file = "g014b2b.test"
-def inps = InputReader.makePSaurusReader().readFromClasspath(file)
-//def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file) //.take(250)
+def file = "g014b2b-results.train"
+//def file = "g014b2b.test"
+//def inps = InputReader.makePSaurusReader().readFromClasspath(file)
+def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file).take(250)
 
 @Field PhoneticEncoder enc = ReadWrite.
     readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f3_B.dat"))
@@ -72,8 +76,14 @@ GParsPool.withPool {
 
     def newTotal = total.incrementAndGet()
     def cans = enc.complexEncode(input.xWord)
+    List<Integer> ansAlignIndex = cans.alignResults.collect { (0..<(it.encodings.size())).collect() }.flatten()
     List<Encoding> ans = cans.alignResults.collect { it.encodings }.flatten()
     assert ans.size() > 0
+    assert ansAlignIndex.size() == ans.size()
+    def encToAlign = new IdentityHashMap<Encoding, Integer>()
+    for (int i = 0; i < ans.size(); i++) {
+      encToAlign.put(ans.get(i), ansAlignIndex.get(i))
+    }
     ans.sort(PhoneticEncoder.OrderByTagScore)
     def dups = HashMultiset.create()
     ans.each { dups.add(it.phones) }
@@ -85,30 +95,67 @@ GParsPool.withPool {
     def xx = input.xWord.asSpaceString
     def wordShape = WordShape.graphShape(input.xWord.value, false)
 
+    /* using the "best by average odds ranking */
+
+    def graph = HashBasedTable.create()
+    for (int i = 0; i < ans.size(); i++) {
+      for (int j = 0; j < ans.size(); j++) {
+        if (i == j) continue;
+        def a = ans[i]
+        def b = ans[j]
+        def aindex = encToAlign.get(a)
+        def bindex = encToAlign.get(b)
+        def pb = probs(a, b, wordShape, aindex, bindex, modePhones, uniqueMode, dups, ans, xx)
+        def aprob = pb.getProbability("A")
+        def bprob = pb.getProbability("B")
+        graph.put(i, j, (double)(aprob / bprob))
+      }
+    }
+
+    // for each vertex calculate the overall sum of odds and see who has the max
+    def maxOdds = Double.NEGATIVE_INFINITY
+    def bestIndex = -1
+    graph.rowKeySet().each { int i ->
+      def sum = graph.row(i).values().sum()
+      if (sum > maxOdds) {
+        maxOdds = sum
+        bestIndex = i
+      }
+    }
+    def w = ans.get(bestIndex)
+
+    /*** this is the align approach ***/
+/*
     // go up each align group (worst to best) to find "the best" showing preference based on the tag prob order
     def alignWinners = [] // winners of each align group, in the same order
     cans.alignResults.each { alignGroup ->
       def w = null
+      def windex = -1;
       for (int i = alignGroup.encodings.size(); i >= 0; i--) {
         def c = alignGroup.encodings[i]
         if (w == null) {
           w = c
+          windex = i
           continue
         }
-        w = winner(w, c, wordShape, i, ans, modePhones, uniqueMode, dups, xx)
+        w = winner(w, c, wordShape, windex, i, ans, modePhones, uniqueMode, dups, xx)
       }
-      alignWinners << w
+      alignWinners << [w, windex]
     }
 
     def w = null
-    for (int i = alignWinners.size(); i >= 0; i--) {
-      Encoding c = alignWinners[i]
+    def windex = -1;
+    for (int i = alignWinners.size() - 1; i >= 0; i--) {
+      Encoding c; int cindex;
+      (c, cindex) = alignWinners[i]
       if (w == null) {
         w = c
+        windex = cindex
         continue
       }
-      w = winner(w, c, wordShape, 0, ans, modePhones, uniqueMode, dups, xx)
+      w = winner(w, c, wordShape, windex, cindex, ans, modePhones, uniqueMode, dups, xx)
     }
+    */
 
     if (w.phones == input.yWord.value) {
       right.incrementAndGet()
@@ -130,11 +177,24 @@ println "Right ${right.get()}"
 println "Accuracy " + Percent.print(right.get(), tot)
 println "Eval took " + watch
 
-private Encoding winner(Encoding a, Encoding b, String wordShape, int alignIndex, List<Encoding> overall, List<String> modePhones,
+private Encoding winner(Encoding a, Encoding b, String wordShape, int aAlignIndex, int bAlignIndex, List<Encoding> overall, List<String> modePhones,
                         boolean uniqueMode, Multiset<List<String>> dups, String spaceSepWord) {
 
-  def aScore = score(a, wordShape, alignIndex, modePhones, uniqueMode, dups, overall, spaceSepWord)
-  def bScore = score(b, wordShape, alignIndex, modePhones, uniqueMode, dups, overall, spaceSepWord)
+  ProbabilityClassificationMap probs =
+      probs(a, b, wordShape, aAlignIndex, bAlignIndex, modePhones, uniqueMode, dups, overall, spaceSepWord)
+  def label = (String) probs.getResult()
+  if (label == "A") {
+    return a
+  } else if (label == "B") {
+    return b
+  }
+  throw new Exception("didn't get A or B got $label")
+}
+
+private probs(Encoding a, Encoding b, String wordShape, int aAlignIndex, int bAlignIndex, List<String> modePhones, boolean uniqueMode,
+              Multiset<List<String>> dups, List<Encoding> overall, String spaceSepWord) {
+  def aScore = score(a, wordShape, aAlignIndex, modePhones, uniqueMode, dups, overall, spaceSepWord)
+  def bScore = score(b, wordShape, bAlignIndex, modePhones, uniqueMode, dups, overall, spaceSepWord)
   def s = [:]
   scoreHeaders.each { h ->
     def aa = aScore[h]
@@ -143,13 +203,8 @@ private Encoding winner(Encoding a, Encoding b, String wordShape, int alignIndex
     s.put("A_" + h, aa)
     s.put("B_" + h, bb)
   }
-  def label = rr.label(s)
-  if (label == "A") {
-    return a
-  } else if (label == "B") {
-    return b
-  }
-  throw new Exception("didn't get A or B got $label")
+  def probs = rr.probabilities(s)
+  return probs
 }
 
 private score(Encoding ans, String wordShape, int alignIndex, List<String> modePhones, boolean uniqueMode,

@@ -30,6 +30,7 @@ import com.google.common.collect.HashBasedTable
 import com.google.common.collect.HashMultiset
 import com.google.common.collect.Multiset
 import com.google.common.collect.Table
+import com.google.common.math.DoubleMath
 import groovy.transform.Field
 import groovyx.gpars.GParsConfig
 import groovyx.gpars.GParsPool
@@ -46,10 +47,10 @@ import java.util.concurrent.atomic.AtomicInteger
 //def rr = RerankModel.from(new File("../resources/dt_rerank_2.pmml"))
 @Field RerankModel rr = RerankModel.from(new File("../resources/dt_rerank_3.pmml"))
 
-def file = "g014b2b-results.train"
-//def file = "g014b2b.test"
-//def inps = InputReader.makePSaurusReader().readFromClasspath(file)
-def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file).take(250)
+//def file = "g014b2b-results.train"
+def file = "g014b2b.test"
+def inps = InputReader.makePSaurusReader().readFromClasspath(file)
+//def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file).take(250)
 
 @Field PhoneticEncoder enc = ReadWrite.
     readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f3_B.dat"))
@@ -59,7 +60,7 @@ enc.setBestFinal(5)
 enc.alignMinScore = Double.NEGATIVE_INFINITY
 enc.tagMinScore = Double.NEGATIVE_INFINITY
 
-@Field NgramLM lm = ReadWrite.readFromFile(NgramLM.class, new File("../resources/lm_4_kn.dat"))
+@Field NgramLM lm = ReadWrite.readFromFile(NgramLM.class, new File("../resources/lm_7_kn.dat"))
 @Field def goodShapes = ["CCvC", "CCv", "CC", "vCCv", "v", "vC", "vCC", "vCCC", "vCvC", "vv", "vCv", "CCC", "CCCv"]
 
 Stopwatch watch = Stopwatch.createStarted()
@@ -108,7 +109,8 @@ GParsPool.withPool {
         def pb = probs(a, b, wordShape, aindex, bindex, modePhones, uniqueMode, dups, ans, xx)
         def aprob = pb.getProbability("A")
         def bprob = pb.getProbability("B")
-        graph.put(i, j, (double)(aprob / bprob))
+	def logodds = DoubleMath.log2(aprob) - DoubleMath.log2(bprob)
+        graph.put(i, j, logodds)
       }
     }
 

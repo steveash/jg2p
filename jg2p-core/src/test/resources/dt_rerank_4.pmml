@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PMML version="4.2" xmlns="http://www.dmg.org/PMML-4_2">
+  <Header copyright="steve">
+    <Application name="KNIME" version="2.11.2"/>
+  </Header>
+  <DataDictionary numberOfFields="49">
+    <DataField dataType="string" name="label" optype="categorical">
+      <Value value="A"/>
+      <Value value="B"/>
+    </DataField>
+    <DataField dataType="double" name="A_lmScore" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.55533105" rightMargin="2.2056975"/>
+    </DataField>
+    <DataField dataType="double" name="B_lmScore" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.55533105" rightMargin="2.2056975"/>
+    </DataField>
+    <DataField dataType="double" name="A_tagScore" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="2.121759960956409E-6" rightMargin="0.9997538316164561"/>
+    </DataField>
+    <DataField dataType="double" name="B_tagScore" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="2.121759960956409E-6" rightMargin="0.9997538316164561"/>
+    </DataField>
+    <DataField dataType="double" name="A_alignScore" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="-21.774083709128117" rightMargin="-2.231333885660547E-6"/>
+    </DataField>
+    <DataField dataType="double" name="B_alignScore" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="-21.774083709128117" rightMargin="-2.231333885660547E-6"/>
+    </DataField>
+    <DataField dataType="integer" name="A_uniqueMode" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_uniqueMode" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_dups" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="1.0" rightMargin="5.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_dups" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="1.0" rightMargin="5.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_alignIndex" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="4.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_alignIndex" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="4.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_overallIndex" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="24.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_overallIndex" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="24.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_shapeEdit" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="8.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_shapeEdit" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="8.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_shapeLenDiff" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="-4.0" rightMargin="8.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_shapeLenDiff" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="-4.0" rightMargin="8.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_leadingConsMatch" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_leadingConsMatch" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_leadingConsMismatch" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_leadingConsMismatch" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_CCvC" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_CCvC" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_CCv" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_CCv" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_CC" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_CC" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_vCCv" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_vCCv" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_v" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_v" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_vC" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_vC" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_vCC" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_vCC" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_vCCC" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_vCCC" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_vCvC" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_vCvC" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_vv" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_vv" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_vCv" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_vCv" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_CCC" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_CCC" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="A_CCCv" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+    <DataField dataType="integer" name="B_CCCv" optype="continuous">
+      <Interval closure="closedClosed" leftMargin="0.0" rightMargin="1.0"/>
+    </DataField>
+  </DataDictionary>
+  <GeneralRegressionModel modelType="multinomialLogistic" functionName="classification" algorithmName="LogisticRegression" modelName="KNIME Logistic Regression" targetReferenceCategory="B">
+    <MiningSchema>
+      <MiningField name="A_lmScore" invalidValueTreatment="asIs"/>
+      <MiningField name="B_lmScore" invalidValueTreatment="asIs"/>
+      <MiningField name="A_tagScore" invalidValueTreatment="asIs"/>
+      <MiningField name="B_tagScore" invalidValueTreatment="asIs"/>
+      <MiningField name="A_alignScore" invalidValueTreatment="asIs"/>
+      <MiningField name="B_alignScore" invalidValueTreatment="asIs"/>
+      <MiningField name="A_uniqueMode" invalidValueTreatment="asIs"/>
+      <MiningField name="B_uniqueMode" invalidValueTreatment="asIs"/>
+      <MiningField name="A_dups" invalidValueTreatment="asIs"/>
+      <MiningField name="B_dups" invalidValueTreatment="asIs"/>
+      <MiningField name="A_alignIndex" invalidValueTreatment="asIs"/>
+      <MiningField name="B_alignIndex" invalidValueTreatment="asIs"/>
+      <MiningField name="A_overallIndex" invalidValueTreatment="asIs"/>
+      <MiningField name="B_overallIndex" invalidValueTreatment="asIs"/>
+      <MiningField name="A_shapeEdit" invalidValueTreatment="asIs"/>
+      <MiningField name="B_shapeEdit" invalidValueTreatment="asIs"/>
+      <MiningField name="A_shapeLenDiff" invalidValueTreatment="asIs"/>
+      <MiningField name="B_shapeLenDiff" invalidValueTreatment="asIs"/>
+      <MiningField name="A_leadingConsMatch" invalidValueTreatment="asIs"/>
+      <MiningField name="B_leadingConsMatch" invalidValueTreatment="asIs"/>
+      <MiningField name="A_leadingConsMismatch" invalidValueTreatment="asIs"/>
+      <MiningField name="B_leadingConsMismatch" invalidValueTreatment="asIs"/>
+      <MiningField name="A_CCvC" invalidValueTreatment="asIs"/>
+      <MiningField name="B_CCvC" invalidValueTreatment="asIs"/>
+      <MiningField name="A_CCv" invalidValueTreatment="asIs"/>
+      <MiningField name="B_CCv" invalidValueTreatment="asIs"/>
+      <MiningField name="A_CC" invalidValueTreatment="asIs"/>
+      <MiningField name="B_CC" invalidValueTreatment="asIs"/>
+      <MiningField name="A_vCCv" invalidValueTreatment="asIs"/>
+      <MiningField name="B_vCCv" invalidValueTreatment="asIs"/>
+      <MiningField name="A_v" invalidValueTreatment="asIs"/>
+      <MiningField name="B_v" invalidValueTreatment="asIs"/>
+      <MiningField name="A_vC" invalidValueTreatment="asIs"/>
+      <MiningField name="B_vC" invalidValueTreatment="asIs"/>
+      <MiningField name="A_vCC" invalidValueTreatment="asIs"/>
+      <MiningField name="B_vCC" invalidValueTreatment="asIs"/>
+      <MiningField name="A_vCCC" invalidValueTreatment="asIs"/>
+      <MiningField name="B_vCCC" invalidValueTreatment="asIs"/>
+      <MiningField name="A_vCvC" invalidValueTreatment="asIs"/>
+      <MiningField name="B_vCvC" invalidValueTreatment="asIs"/>
+      <MiningField name="A_vv" invalidValueTreatment="asIs"/>
+      <MiningField name="B_vv" invalidValueTreatment="asIs"/>
+      <MiningField name="A_vCv" invalidValueTreatment="asIs"/>
+      <MiningField name="B_vCv" invalidValueTreatment="asIs"/>
+      <MiningField name="A_CCC" invalidValueTreatment="asIs"/>
+      <MiningField name="B_CCC" invalidValueTreatment="asIs"/>
+      <MiningField name="A_CCCv" invalidValueTreatment="asIs"/>
+      <MiningField name="B_CCCv" invalidValueTreatment="asIs"/>
+      <MiningField name="label" invalidValueTreatment="asIs" usageType="target"/>
+    </MiningSchema>
+    <ParameterList>
+      <Parameter name="p0" label="Intercept"/>
+      <Parameter name="p1" label="A_lmScore"/>
+      <Parameter name="p2" label="B_lmScore"/>
+      <Parameter name="p3" label="A_tagScore"/>
+      <Parameter name="p4" label="B_tagScore"/>
+      <Parameter name="p5" label="A_alignScore"/>
+      <Parameter name="p6" label="B_alignScore"/>
+      <Parameter name="p7" label="A_uniqueMode"/>
+      <Parameter name="p8" label="B_uniqueMode"/>
+      <Parameter name="p9" label="A_dups"/>
+      <Parameter name="p10" label="B_dups"/>
+      <Parameter name="p11" label="A_alignIndex"/>
+      <Parameter name="p12" label="B_alignIndex"/>
+      <Parameter name="p13" label="A_overallIndex"/>
+      <Parameter name="p14" label="B_overallIndex"/>
+      <Parameter name="p15" label="A_shapeEdit"/>
+      <Parameter name="p16" label="B_shapeEdit"/>
+      <Parameter name="p17" label="A_shapeLenDiff"/>
+      <Parameter name="p18" label="B_shapeLenDiff"/>
+      <Parameter name="p19" label="A_leadingConsMatch"/>
+      <Parameter name="p20" label="B_leadingConsMatch"/>
+      <Parameter name="p21" label="A_leadingConsMismatch"/>
+      <Parameter name="p22" label="B_leadingConsMismatch"/>
+      <Parameter name="p23" label="A_CCvC"/>
+      <Parameter name="p24" label="B_CCvC"/>
+      <Parameter name="p25" label="A_CCv"/>
+      <Parameter name="p26" label="B_CCv"/>
+      <Parameter name="p27" label="A_CC"/>
+      <Parameter name="p28" label="B_CC"/>
+      <Parameter name="p29" label="A_vCCv"/>
+      <Parameter name="p30" label="B_vCCv"/>
+      <Parameter name="p31" label="A_v"/>
+      <Parameter name="p32" label="B_v"/>
+      <Parameter name="p33" label="A_vC"/>
+      <Parameter name="p34" label="B_vC"/>
+      <Parameter name="p35" label="A_vCC"/>
+      <Parameter name="p36" label="B_vCC"/>
+      <Parameter name="p37" label="A_vCCC"/>
+      <Parameter name="p38" label="B_vCCC"/>
+      <Parameter name="p39" label="A_vCvC"/>
+      <Parameter name="p40" label="B_vCvC"/>
+      <Parameter name="p41" label="A_vv"/>
+      <Parameter name="p42" label="B_vv"/>
+      <Parameter name="p43" label="A_vCv"/>
+      <Parameter name="p44" label="B_vCv"/>
+      <Parameter name="p45" label="A_CCC"/>
+      <Parameter name="p46" label="B_CCC"/>
+      <Parameter name="p47" label="A_CCCv"/>
+      <Parameter name="p48" label="B_CCCv"/>
+    </ParameterList>
+    <FactorList/>
+    <CovariateList>
+      <Predictor name="A_lmScore"/>
+      <Predictor name="B_lmScore"/>
+      <Predictor name="A_tagScore"/>
+      <Predictor name="B_tagScore"/>
+      <Predictor name="A_alignScore"/>
+      <Predictor name="B_alignScore"/>
+      <Predictor name="A_uniqueMode"/>
+      <Predictor name="B_uniqueMode"/>
+      <Predictor name="A_dups"/>
+      <Predictor name="B_dups"/>
+      <Predictor name="A_alignIndex"/>
+      <Predictor name="B_alignIndex"/>
+      <Predictor name="A_overallIndex"/>
+      <Predictor name="B_overallIndex"/>
+      <Predictor name="A_shapeEdit"/>
+      <Predictor name="B_shapeEdit"/>
+      <Predictor name="A_shapeLenDiff"/>
+      <Predictor name="B_shapeLenDiff"/>
+      <Predictor name="A_leadingConsMatch"/>
+      <Predictor name="B_leadingConsMatch"/>
+      <Predictor name="A_leadingConsMismatch"/>
+      <Predictor name="B_leadingConsMismatch"/>
+      <Predictor name="A_CCvC"/>
+      <Predictor name="B_CCvC"/>
+      <Predictor name="A_CCv"/>
+      <Predictor name="B_CCv"/>
+      <Predictor name="A_CC"/>
+      <Predictor name="B_CC"/>
+      <Predictor name="A_vCCv"/>
+      <Predictor name="B_vCCv"/>
+      <Predictor name="A_v"/>
+      <Predictor name="B_v"/>
+      <Predictor name="A_vC"/>
+      <Predictor name="B_vC"/>
+      <Predictor name="A_vCC"/>
+      <Predictor name="B_vCC"/>
+      <Predictor name="A_vCCC"/>
+      <Predictor name="B_vCCC"/>
+      <Predictor name="A_vCvC"/>
+      <Predictor name="B_vCvC"/>
+      <Predictor name="A_vv"/>
+      <Predictor name="B_vv"/>
+      <Predictor name="A_vCv"/>
+      <Predictor name="B_vCv"/>
+      <Predictor name="A_CCC"/>
+      <Predictor name="B_CCC"/>
+      <Predictor name="A_CCCv"/>
+      <Predictor name="B_CCCv"/>
+    </CovariateList>
+    <PPMatrix>
+      <PPCell value="1" predictorName="A_lmScore" parameterName="p1"/>
+      <PPCell value="1" predictorName="B_lmScore" parameterName="p2"/>
+      <PPCell value="1" predictorName="A_tagScore" parameterName="p3"/>
+      <PPCell value="1" predictorName="B_tagScore" parameterName="p4"/>
+      <PPCell value="1" predictorName="A_alignScore" parameterName="p5"/>
+      <PPCell value="1" predictorName="B_alignScore" parameterName="p6"/>
+      <PPCell value="1" predictorName="A_uniqueMode" parameterName="p7"/>
+      <PPCell value="1" predictorName="B_uniqueMode" parameterName="p8"/>
+      <PPCell value="1" predictorName="A_dups" parameterName="p9"/>
+      <PPCell value="1" predictorName="B_dups" parameterName="p10"/>
+      <PPCell value="1" predictorName="A_alignIndex" parameterName="p11"/>
+      <PPCell value="1" predictorName="B_alignIndex" parameterName="p12"/>
+      <PPCell value="1" predictorName="A_overallIndex" parameterName="p13"/>
+      <PPCell value="1" predictorName="B_overallIndex" parameterName="p14"/>
+      <PPCell value="1" predictorName="A_shapeEdit" parameterName="p15"/>
+      <PPCell value="1" predictorName="B_shapeEdit" parameterName="p16"/>
+      <PPCell value="1" predictorName="A_shapeLenDiff" parameterName="p17"/>
+      <PPCell value="1" predictorName="B_shapeLenDiff" parameterName="p18"/>
+      <PPCell value="1" predictorName="A_leadingConsMatch" parameterName="p19"/>
+      <PPCell value="1" predictorName="B_leadingConsMatch" parameterName="p20"/>
+      <PPCell value="1" predictorName="A_leadingConsMismatch" parameterName="p21"/>
+      <PPCell value="1" predictorName="B_leadingConsMismatch" parameterName="p22"/>
+      <PPCell value="1" predictorName="A_CCvC" parameterName="p23"/>
+      <PPCell value="1" predictorName="B_CCvC" parameterName="p24"/>
+      <PPCell value="1" predictorName="A_CCv" parameterName="p25"/>
+      <PPCell value="1" predictorName="B_CCv" parameterName="p26"/>
+      <PPCell value="1" predictorName="A_CC" parameterName="p27"/>
+      <PPCell value="1" predictorName="B_CC" parameterName="p28"/>
+      <PPCell value="1" predictorName="A_vCCv" parameterName="p29"/>
+      <PPCell value="1" predictorName="B_vCCv" parameterName="p30"/>
+      <PPCell value="1" predictorName="A_v" parameterName="p31"/>
+      <PPCell value="1" predictorName="B_v" parameterName="p32"/>
+      <PPCell value="1" predictorName="A_vC" parameterName="p33"/>
+      <PPCell value="1" predictorName="B_vC" parameterName="p34"/>
+      <PPCell value="1" predictorName="A_vCC" parameterName="p35"/>
+      <PPCell value="1" predictorName="B_vCC" parameterName="p36"/>
+      <PPCell value="1" predictorName="A_vCCC" parameterName="p37"/>
+      <PPCell value="1" predictorName="B_vCCC" parameterName="p38"/>
+      <PPCell value="1" predictorName="A_vCvC" parameterName="p39"/>
+      <PPCell value="1" predictorName="B_vCvC" parameterName="p40"/>
+      <PPCell value="1" predictorName="A_vv" parameterName="p41"/>
+      <PPCell value="1" predictorName="B_vv" parameterName="p42"/>
+      <PPCell value="1" predictorName="A_vCv" parameterName="p43"/>
+      <PPCell value="1" predictorName="B_vCv" parameterName="p44"/>
+      <PPCell value="1" predictorName="A_CCC" parameterName="p45"/>
+      <PPCell value="1" predictorName="B_CCC" parameterName="p46"/>
+      <PPCell value="1" predictorName="A_CCCv" parameterName="p47"/>
+      <PPCell value="1" predictorName="B_CCCv" parameterName="p48"/>
+    </PPMatrix>
+    <ParamMatrix>
+      <PCell targetCategory="A" parameterName="p0" beta="3.0318586060885103E-13" df="1"/>
+      <PCell targetCategory="A" parameterName="p1" beta="0.9315308422032353" df="1"/>
+      <PCell targetCategory="A" parameterName="p2" beta="-0.9315308422036419" df="1"/>
+      <PCell targetCategory="A" parameterName="p3" beta="4.080898595543123" df="1"/>
+      <PCell targetCategory="A" parameterName="p4" beta="-4.080898595543182" df="1"/>
+      <PCell targetCategory="A" parameterName="p5" beta="0.8549519759389437" df="1"/>
+      <PCell targetCategory="A" parameterName="p6" beta="-0.8549519759389412" df="1"/>
+      <PCell targetCategory="A" parameterName="p7" beta="-0.6789556239288523" df="1"/>
+      <PCell targetCategory="A" parameterName="p8" beta="0.6789556239286216" df="1"/>
+      <PCell targetCategory="A" parameterName="p9" beta="0.561516257321529" df="1"/>
+      <PCell targetCategory="A" parameterName="p10" beta="-0.5615162573214745" df="1"/>
+      <PCell targetCategory="A" parameterName="p11" beta="-0.05268858033248463" df="1"/>
+      <PCell targetCategory="A" parameterName="p12" beta="0.052688580332420895" df="1"/>
+      <PCell targetCategory="A" parameterName="p13" beta="-0.15309494266968626" df="1"/>
+      <PCell targetCategory="A" parameterName="p14" beta="0.1530949426696968" df="1"/>
+      <PCell targetCategory="A" parameterName="p15" beta="-0.044492483012575676" df="1"/>
+      <PCell targetCategory="A" parameterName="p16" beta="0.04449248301279764" df="1"/>
+      <PCell targetCategory="A" parameterName="p17" beta="-0.2833520792580023" df="1"/>
+      <PCell targetCategory="A" parameterName="p18" beta="0.2833520792578096" df="1"/>
+      <PCell targetCategory="A" parameterName="p19" beta="-196.42597947568208" df="1"/>
+      <PCell targetCategory="A" parameterName="p20" beta="196.42597947568214" df="1"/>
+      <PCell targetCategory="A" parameterName="p21" beta="-196.37463094123757" df="1"/>
+      <PCell targetCategory="A" parameterName="p22" beta="196.3746309412374" df="1"/>
+      <PCell targetCategory="A" parameterName="p23" beta="0.32139304571107263" df="1"/>
+      <PCell targetCategory="A" parameterName="p24" beta="-0.3213930457111721" df="1"/>
+      <PCell targetCategory="A" parameterName="p25" beta="0.7651092746711972" df="1"/>
+      <PCell targetCategory="A" parameterName="p26" beta="-0.7651092746706716" df="1"/>
+      <PCell targetCategory="A" parameterName="p27" beta="-0.7567321786544546" df="1"/>
+      <PCell targetCategory="A" parameterName="p28" beta="0.7567321786540536" df="1"/>
+      <PCell targetCategory="A" parameterName="p29" beta="0.6675779682616507" df="1"/>
+      <PCell targetCategory="A" parameterName="p30" beta="-0.6675779682614675" df="1"/>
+      <PCell targetCategory="A" parameterName="p31" beta="-0.05186960816393353" df="1"/>
+      <PCell targetCategory="A" parameterName="p32" beta="0.051869608163785275" df="1"/>
+      <PCell targetCategory="A" parameterName="p33" beta="0.2574261952525222" df="1"/>
+      <PCell targetCategory="A" parameterName="p34" beta="-0.2574261952524146" df="1"/>
+      <PCell targetCategory="A" parameterName="p35" beta="-0.3686829424417952" df="1"/>
+      <PCell targetCategory="A" parameterName="p36" beta="0.36868294244172695" df="1"/>
+      <PCell targetCategory="A" parameterName="p37" beta="0.2807453371466172" df="1"/>
+      <PCell targetCategory="A" parameterName="p38" beta="-0.28074533714646865" df="1"/>
+      <PCell targetCategory="A" parameterName="p39" beta="-0.24893890283152562" df="1"/>
+      <PCell targetCategory="A" parameterName="p40" beta="0.24893890283148745" df="1"/>
+      <PCell targetCategory="A" parameterName="p41" beta="-0.1973637065442128" df="1"/>
+      <PCell targetCategory="A" parameterName="p42" beta="0.1973637065444483" df="1"/>
+      <PCell targetCategory="A" parameterName="p43" beta="0.5016396382688546" df="1"/>
+      <PCell targetCategory="A" parameterName="p44" beta="-0.5016396382686945" df="1"/>
+      <PCell targetCategory="A" parameterName="p45" beta="-24.0529547042974" df="1"/>
+      <PCell targetCategory="A" parameterName="p46" beta="24.05564563679561" df="1"/>
+      <PCell targetCategory="A" parameterName="p47" beta="24.466527879486463" df="1"/>
+      <PCell targetCategory="A" parameterName="p48" beta="-24.469218811984298" df="1"/>
+    </ParamMatrix>
+  </GeneralRegressionModel>
+</PMML>

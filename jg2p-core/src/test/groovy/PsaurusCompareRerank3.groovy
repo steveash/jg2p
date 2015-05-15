@@ -77,8 +77,8 @@ GParsPool.withPool {
 
     def newTotal = total.incrementAndGet()
     def cans = enc.complexEncode(input.xWord)
-    List<Integer> ansAlignIndex = cans.alignResults.collect { (0..<(it.encodings.size())).collect() }.flatten()
-    List<Encoding> ans = cans.alignResults.collect { it.encodings }.flatten()
+    List<Integer> ansAlignIndex = cans.alignResults.collectMany { (0..<(it.encodings.size())).collect() }
+    List<Encoding> ans = cans.alignResults.collectMany { it.encodings }
     assert ans.size() > 0
     assert ansAlignIndex.size() == ans.size()
     def encToAlign = new IdentityHashMap<Encoding, Integer>()

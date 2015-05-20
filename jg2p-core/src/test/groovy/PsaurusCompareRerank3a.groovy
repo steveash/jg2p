@@ -70,12 +70,18 @@ Stopwatch watch = Stopwatch.createStarted()
 def total = new AtomicInteger(0)
 def right = new AtomicInteger(0)
 def counts = ConcurrentHashMultiset.create()
-def seenWords = Sets.newConcurrentHashSet()
 println "Starting..."
 
 @Field List<String> scoreHeaders = ["lmScore", "tagScore", "alignScore", "uniqueMode", "dups", "alignIndex",
                                     "overallIndex", "shapeEdit", "shapeLenDiff", "leadingConsMatch", "leadingConsMismatch"]
 scoreHeaders.addAll(goodShapes)
+
+
+def inputCount = HashMultiset.create()
+inps.each {
+  inputCount.add(it.xWord.asSpaceString)
+}
+def nonDupInputs = inputCount.entrySet().findAll{it.count > 1}.collect {it.element}.toSet()
 
 new File ("../resources/bad_rerank_A.txt").withPrintWriter { pw ->
   GParsPool.withPool {
@@ -130,19 +136,19 @@ new File ("../resources/bad_rerank_A.txt").withPrintWriter { pw ->
       reranked = reranked.sort {it[1]}.reverse()
       def w = ans.get(reranked[0][0])
 
-      def firstSeen = seenWords.add(input.xWord.asSpaceString)
       if (w.phones == input.yWord.value) {
         right.incrementAndGet()
       } else {
         reranked.eachWithIndex { r, i ->
           if (ans.get(r[0]).phones == input.yWord.value ) {
-            if (firstSeen) {
+            if (nonDupInputs.contains(input.xWord.asSpaceString)) {
               counts.add("RIGHT_" + i)
               synchronized (PsaurusCompareRerank3a.class) {
                 pw.println(input.xWord.asSpaceString + "," + reranked[0][0] + "," + w.phones.join("|") + "," +
                            i + "," + r[0] + "," + input.yWord.value.join("|"))
               }
             }
+            return // stop trying to find the right reranked value
           }
         }
       }

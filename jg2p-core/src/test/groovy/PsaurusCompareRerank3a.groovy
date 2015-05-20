@@ -131,12 +131,12 @@ new File ("../resources/bad_rerank_A.txt").withPrintWriter { pw ->
       if (w.phones == input.yWord.value) {
         right.incrementAndGet()
       } else {
-        reranked.each {
-          if (ans.get(it[0]).phones == input.yWord.value ) {
-            counts.add("RIGHT_" + it[0])
+        reranked.eachWithIndex { r, i ->
+          if (ans.get(r[0]).phones == input.yWord.value ) {
+            counts.add("RIGHT_" + i)
             synchronized (PsaurusCompareRerank3a.class) {
               pw.println(input.xWord.asSpaceString + "," + reranked[0][0] + "," + w.phones.join("|") + "," +
-                         it[0] + "," + input.yWord.value.join("|"))
+                         i + "," + it[0] + "," + input.yWord.value.join("|"))
             }
           }
         }

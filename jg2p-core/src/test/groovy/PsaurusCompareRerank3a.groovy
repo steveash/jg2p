@@ -82,6 +82,7 @@ inps.each {
   inputCount.add(it.xWord.asSpaceString)
 }
 def nonDupInputs = inputCount.entrySet().findAll{it.count > 1}.collect {it.element}.toSet()
+def rightWords = Sets.newConcurrentHashSet()
 
 new File ("../resources/bad_rerank_A.txt").withPrintWriter { pw ->
   GParsPool.withPool {
@@ -138,6 +139,7 @@ new File ("../resources/bad_rerank_A.txt").withPrintWriter { pw ->
 
       if (w.phones == input.yWord.value) {
         right.incrementAndGet()
+        rightWords.add(input.xWord.asSpaceString)
       } else {
         reranked.eachWithIndex { r, i ->
           if (ans.get(r[0]).phones == input.yWord.value ) {
@@ -168,6 +170,10 @@ def tot = total.get()
 println "Total $tot"
 println "Right ${right.get()}"
 println "Accuracy " + Percent.print(right.get(), tot)
+def multiWords = inputCount.entrySet().findAll{it.count > 1}.collect {it.element}.toSet()
+println "Multiword count " + multiWords.size()
+def missed = multiWords.minus(rightWords)
+println "Missed multiword count " + missed.size()
 counts.entrySet().each { Multiset.Entry e ->
   println e.element + " - " + e.count
 }

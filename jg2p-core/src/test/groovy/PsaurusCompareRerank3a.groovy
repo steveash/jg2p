@@ -136,7 +136,7 @@ new File ("../resources/bad_rerank_A.txt").withPrintWriter { pw ->
             counts.add("RIGHT_" + i)
             synchronized (PsaurusCompareRerank3a.class) {
               pw.println(input.xWord.asSpaceString + "," + reranked[0][0] + "," + w.phones.join("|") + "," +
-                         i + "," + it[0] + "," + input.yWord.value.join("|"))
+                         i + "," + r[0] + "," + input.yWord.value.join("|"))
             }
           }
         }

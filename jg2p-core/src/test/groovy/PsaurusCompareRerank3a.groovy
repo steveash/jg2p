@@ -30,6 +30,7 @@ import com.google.common.collect.ConcurrentHashMultiset
 import com.google.common.collect.HashBasedTable
 import com.google.common.collect.HashMultiset
 import com.google.common.collect.Multiset
+import com.google.common.collect.Sets
 import com.google.common.collect.Table
 import com.google.common.math.DoubleMath
 import groovy.transform.Field
@@ -69,6 +70,7 @@ Stopwatch watch = Stopwatch.createStarted()
 def total = new AtomicInteger(0)
 def right = new AtomicInteger(0)
 def counts = ConcurrentHashMultiset.create()
+def seenWords = Sets.newConcurrentHashSet()
 println "Starting..."
 
 @Field List<String> scoreHeaders = ["lmScore", "tagScore", "alignScore", "uniqueMode", "dups", "alignIndex",
@@ -128,15 +130,18 @@ new File ("../resources/bad_rerank_A.txt").withPrintWriter { pw ->
       reranked = reranked.sort {it[1]}.reverse()
       def w = ans.get(reranked[0][0])
 
+      def firstSeen = seenWords.add(input.xWord.asSpaceString)
       if (w.phones == input.yWord.value) {
         right.incrementAndGet()
       } else {
         reranked.eachWithIndex { r, i ->
           if (ans.get(r[0]).phones == input.yWord.value ) {
-            counts.add("RIGHT_" + i)
-            synchronized (PsaurusCompareRerank3a.class) {
-              pw.println(input.xWord.asSpaceString + "," + reranked[0][0] + "," + w.phones.join("|") + "," +
-                         i + "," + r[0] + "," + input.yWord.value.join("|"))
+            if (firstSeen) {
+              counts.add("RIGHT_" + i)
+              synchronized (PsaurusCompareRerank3a.class) {
+                pw.println(input.xWord.asSpaceString + "," + reranked[0][0] + "," + w.phones.join("|") + "," +
+                           i + "," + r[0] + "," + input.yWord.value.join("|"))
+              }
             }
           }
         }

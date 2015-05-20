@@ -46,7 +46,7 @@ import java.util.concurrent.atomic.AtomicInteger
  * @author Steve Ash
  */
 //def rr = RerankModel.from(new File("../resources/dt_rerank_2.pmml"))
-@Field RerankModel rr = RerankModel.from(new File("../resources/dt_rerank_5a.pmml"))
+@Field RerankModel rr = RerankModel.from(new File("../resources/dt_rerank_5b.pmml"))
 
 //def file = "g014b2b-results.train"
 def file = "g014b2b.test"

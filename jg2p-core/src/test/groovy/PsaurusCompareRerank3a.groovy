@@ -26,6 +26,7 @@ import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Stopwatch
 import com.google.common.collect.ArrayTable
+import com.google.common.collect.ConcurrentHashMultiset
 import com.google.common.collect.HashBasedTable
 import com.google.common.collect.HashMultiset
 import com.google.common.collect.Multiset
@@ -67,107 +68,85 @@ enc.tagMinScore = Double.NEGATIVE_INFINITY
 Stopwatch watch = Stopwatch.createStarted()
 def total = new AtomicInteger(0)
 def right = new AtomicInteger(0)
+def counts = ConcurrentHashMultiset.create()
 println "Starting..."
 
 @Field List<String> scoreHeaders = ["lmScore", "tagScore", "alignScore", "uniqueMode", "dups", "alignIndex",
                                     "overallIndex", "shapeEdit", "shapeLenDiff", "leadingConsMatch", "leadingConsMismatch"]
 scoreHeaders.addAll(goodShapes)
 
-GParsPool.withPool {
-  inps.everyParallel { InputRecord input ->
+new File ("../resources/bad_rerank_A.txt").withPrintWriter { pw ->
+  GParsPool.withPool {
+    inps.everyParallel { InputRecord input ->
 
-    def newTotal = total.incrementAndGet()
-    def cans = enc.complexEncode(input.xWord)
-    List<Integer> ansAlignIndex = cans.alignResults.collectMany { (0..<(it.encodings.size())).collect() }
-    List<Encoding> ans = cans.alignResults.collectMany { it.encodings }
-    assert ans.size() > 0
-    assert ansAlignIndex.size() == ans.size()
-    def encToAlign = new IdentityHashMap<Encoding, Integer>()
-    for (int i = 0; i < ans.size(); i++) {
-      encToAlign.put(ans.get(i), ansAlignIndex.get(i))
-    }
-    ans.sort(PhoneticEncoder.OrderByTagScore)
-    def dups = HashMultiset.create()
-    ans.each { dups.add(it.phones) }
-    def modeEntry = dups.entrySet().max { it.count }
-    assert modeEntry != null
-    int candidatesSameAsMode = dups.entrySet().count { it.count == modeEntry.count }
-    List<String> modePhones = modeEntry.element
-    boolean uniqueMode = (candidatesSameAsMode == 1)
-    def xx = input.xWord.asSpaceString
-    def wordShape = WordShape.graphShape(input.xWord.value, false)
-
-    /* using the "best by average odds ranking */
-
-    def graph = HashBasedTable.create()
-    for (int i = 0; i < ans.size(); i++) {
-      for (int j = 0; j < ans.size(); j++) {
-        if (i == j) continue;
-        def a = ans[i]
-        def b = ans[j]
-        def aindex = encToAlign.get(a)
-        def bindex = encToAlign.get(b)
-        def pb = probs(a, b, wordShape, aindex, bindex, modePhones, uniqueMode, dups, ans, xx)
-        def domprob = pb.getProbability("Y")
-        def ndprob = pb.getProbability("N")
-	def logodds = DoubleMath.log2(domprob) - DoubleMath.log2(ndprob)
-        graph.put(i, j, logodds)
+      def newTotal = total.incrementAndGet()
+      def cans = enc.complexEncode(input.xWord)
+      List<Integer> ansAlignIndex = cans.alignResults.collectMany { (0..<(it.encodings.size())).collect() }
+      List<Encoding> ans = cans.alignResults.collectMany { it.encodings }
+      assert ans.size() > 0
+      assert ansAlignIndex.size() == ans.size()
+      def encToAlign = new IdentityHashMap<Encoding, Integer>()
+      for (int i = 0; i < ans.size(); i++) {
+        encToAlign.put(ans.get(i), ansAlignIndex.get(i))
       }
-    }
+      ans.sort(PhoneticEncoder.OrderByTagScore)
+      def dups = HashMultiset.create()
+      ans.each { dups.add(it.phones) }
+      def modeEntry = dups.entrySet().max { it.count }
+      assert modeEntry != null
+      int candidatesSameAsMode = dups.entrySet().count { it.count == modeEntry.count }
+      List<String> modePhones = modeEntry.element
+      boolean uniqueMode = (candidatesSameAsMode == 1)
+      def xx = input.xWord.asSpaceString
+      def wordShape = WordShape.graphShape(input.xWord.value, false)
 
-    // for each vertex calculate the overall sum of odds and see who has the max
-    def maxOdds = Double.NEGATIVE_INFINITY
-    def bestIndex = -1
-    graph.rowKeySet().each { int i ->
-      def sum = graph.row(i).values().sum()
-      if (sum > maxOdds) {
-        maxOdds = sum
-        bestIndex = i
-      }
-    }
-    def w = ans.get(bestIndex)
+      /* using the "best by average odds ranking */
 
-    /*** this is the align approach ***/
-/*
-    // go up each align group (worst to best) to find "the best" showing preference based on the tag prob order
-    def alignWinners = [] // winners of each align group, in the same order
-    cans.alignResults.each { alignGroup ->
-      def w = null
-      def windex = -1;
-      for (int i = alignGroup.encodings.size(); i >= 0; i--) {
-        def c = alignGroup.encodings[i]
-        if (w == null) {
-          w = c
-          windex = i
-          continue
+      def graph = HashBasedTable.create()
+      for (int i = 0; i < ans.size(); i++) {
+        for (int j = 0; j < ans.size(); j++) {
+          if (i == j)
+            continue;
+          def a = ans[i]
+          def b = ans[j]
+          def aindex = encToAlign.get(a)
+          def bindex = encToAlign.get(b)
+          def pb = probs(a, b, wordShape, aindex, bindex, modePhones, uniqueMode, dups, ans, xx)
+          def domprob = pb.getProbability("Y")
+          def ndprob = pb.getProbability("N")
+          def logodds = DoubleMath.log2(domprob) - DoubleMath.log2(ndprob)
+          graph.put(i, j, logodds)
         }
-        w = winner(w, c, wordShape, windex, i, ans, modePhones, uniqueMode, dups, xx)
       }
-      alignWinners << [w, windex]
-    }
 
-    def w = null
-    def windex = -1;
-    for (int i = alignWinners.size() - 1; i >= 0; i--) {
-      Encoding c; int cindex;
-      (c, cindex) = alignWinners[i]
-      if (w == null) {
-        w = c
-        windex = cindex
-        continue
+      // for each vertex calculate the overall sum of odds and see who has the max
+      def reranked = new ArrayList(ans.size())
+      graph.rowKeySet().each { int i ->
+        def sum = graph.row(i).values().sum()
+        reranked << [i, sum]
       }
-      w = winner(w, c, wordShape, windex, cindex, ans, modePhones, uniqueMode, dups, xx)
-    }
-    */
+      reranked = reranked.sort {it[1]}.reverse()
+      def w = ans.get(reranked[0][0])
 
-    if (w.phones == input.yWord.value) {
-      right.incrementAndGet()
-    }
+      if (w.phones == input.yWord.value) {
+        right.incrementAndGet()
+      } else {
+        reranked.each {
+          if (ans.get(it[0]).phones == input.yWord.value ) {
+            counts.add("RIGHT_" + it[0])
+            synchronized (PsaurusCompareRerank3a.class) {
+              pw.println(input.xWord.asSpaceString + "," + reranked[0][0] + "," + w.phones.join("|") + "," +
+                         it[0] + "," + input.yWord.value.join("|"))
+            }
+          }
+        }
+      }
 
-    if (newTotal % 1000 == 0) {
-      println "Completed " + newTotal + " of " + inps.size()
+      if (newTotal % 1000 == 0) {
+        println "Completed " + newTotal + " of " + inps.size()
+      }
+      return true;
     }
-    return true;
   }
 }
 
@@ -178,21 +157,10 @@ def tot = total.get()
 println "Total $tot"
 println "Right ${right.get()}"
 println "Accuracy " + Percent.print(right.get(), tot)
-println "Eval took " + watch
-
-private Encoding winner(Encoding a, Encoding b, String wordShape, int aAlignIndex, int bAlignIndex, List<Encoding> overall, List<String> modePhones,
-                        boolean uniqueMode, Multiset<List<String>> dups, String spaceSepWord) {
-
-  ProbabilityClassificationMap probs =
-      probs(a, b, wordShape, aAlignIndex, bAlignIndex, modePhones, uniqueMode, dups, overall, spaceSepWord)
-  def label = (String) probs.getResult()
-  if (label == "A") {
-    return a
-  } else if (label == "B") {
-    return b
-  }
-  throw new Exception("didn't get A or B got $label")
+counts.entrySet().each { Multiset.Entry e ->
+  println e.element + " - " + e.count
 }
+println "Eval took " + watch
 
 private probs(Encoding a, Encoding b, String wordShape, int aAlignIndex, int bAlignIndex, List<String> modePhones, boolean uniqueMode,
               Multiset<List<String>> dups, List<Encoding> overall, String spaceSepWord) {

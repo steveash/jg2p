@@ -54,6 +54,7 @@ import java.util.concurrent.atomic.AtomicInteger
 def file = "g014b2b.test"
 def inps = InputReader.makePSaurusReader().readFromClasspath(file)
 //def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file).take(250)
+def grouped = inps.groupBy {it.xWord.asSpaceString}
 
 @Field PhoneticEncoder enc = ReadWrite.
     readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f3_B.dat"))
@@ -76,7 +77,6 @@ println "Starting..."
                                     "overallIndex", "shapeEdit", "shapeLenDiff", "leadingConsMatch", "leadingConsMismatch"]
 scoreHeaders.addAll(goodShapes)
 
-
 def inputCount = HashMultiset.create()
 inps.each {
   inputCount.add(it.xWord.asSpaceString)
@@ -86,8 +86,9 @@ def rightWords = Sets.newConcurrentHashSet()
 
 new File ("../resources/bad_rerank_A.txt").withPrintWriter { pw ->
   GParsPool.withPool {
-    inps.everyParallel { InputRecord input ->
+    grouped.values().everyParallel { Collection<InputRecord> inputs ->
 
+      def input = inputs.first()
       def newTotal = total.incrementAndGet()
       def cans = enc.complexEncode(input.xWord)
       List<Integer> ansAlignIndex = cans.alignResults.collectMany { (0..<(it.encodings.size())).collect() }
@@ -137,17 +138,18 @@ new File ("../resources/bad_rerank_A.txt").withPrintWriter { pw ->
       reranked = reranked.sort {it[1]}.reverse()
       def w = ans.get(reranked[0][0])
 
-      if (w.phones == input.yWord.value) {
+      if (inputs.any {it.yWord.value == w.phones}) {
         right.incrementAndGet()
         rightWords.add(input.xWord.asSpaceString)
       } else {
         reranked.eachWithIndex { r, i ->
-          if (ans.get(r[0]).phones == input.yWord.value ) {
+          def cand = ans.get(r[0]).phones
+          if (inputs.any {it.yWord.value == cand}) {
             if (nonDupInputs.contains(input.xWord.asSpaceString)) {
               counts.add("RIGHT_" + i)
               synchronized (PsaurusCompareRerank3a.class) {
                 pw.println(input.xWord.asSpaceString + "," + reranked[0][0] + "," + w.phones.join("|") + "," +
-                           i + "," + r[0] + "," + input.yWord.value.join("|"))
+                           i + "," + r[0] + "," + inputs.collect { it.yWord.value.join("|") }.join(" ~ "))
               }
             }
             return // stop trying to find the right reranked value

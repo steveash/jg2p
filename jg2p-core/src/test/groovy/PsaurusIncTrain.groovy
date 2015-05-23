@@ -56,7 +56,7 @@ def model = t.trainNoEval(train, test, opts)
 def trainInps = SimpleEncoderTrainer.makeCrfExamples(train, t.alignModel, opts);
 
 def iters = opts.maxCrfIterations
-while (iters < 150) {
+while (iters < 200) {
   def temp = new File("../resources/psaur_22_xEps_ww_f4A_" + iters + ".dat")
   ReadWrite.writeTo(model, temp)
   // now create new trainer initing from previous model

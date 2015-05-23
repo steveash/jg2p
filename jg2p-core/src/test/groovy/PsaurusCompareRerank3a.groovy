@@ -48,7 +48,8 @@ import java.util.concurrent.atomic.AtomicInteger
  * @author Steve Ash
  */
 //def rr = RerankModel.from(new File("../resources/dt_rerank_2.pmml"))
-@Field RerankModel rr = RerankModel.from(new File("../resources/dt_rerank_5b.pmml"))
+// 5b is the last asymm one, 4 is the last symm one, 3 is the best symm one
+@Field RerankModel rr = RerankModel.from(new File("../resources/dt_rerank_3.pmml"))
 
 //def file = "g014b2b-results.train"
 def file = "g014b2b.test"
@@ -57,7 +58,7 @@ def inps = InputReader.makePSaurusReader().readFromClasspath(file)
 def grouped = inps.groupBy {it.xWord.asSpaceString}
 
 @Field PhoneticEncoder enc = ReadWrite.
-    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f3_B.dat"))
+    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f4A_175.dat"))
 enc.setBestAlignments(5)
 enc.setBestTaggings(5)
 enc.setBestFinal(5)
@@ -122,8 +123,8 @@ new File ("../resources/bad_rerank_A.txt").withPrintWriter { pw ->
           def aindex = encToAlign.get(a)
           def bindex = encToAlign.get(b)
           def pb = probs(a, b, wordShape, aindex, bindex, modePhones, uniqueMode, dups, ans, xx)
-          def domprob = pb.getProbability("Y")
-          def ndprob = pb.getProbability("N")
+          def domprob = pb.getProbability("A")
+          def ndprob = pb.getProbability("B")
           def logodds = DoubleMath.log2(domprob) - DoubleMath.log2(ndprob)
           graph.put(i, j, logodds)
         }
@@ -204,7 +205,7 @@ private score(Encoding ans, String wordShape, int alignIndex, List<String> modeP
   def leadingConsMatch = false;
   def leadingConsMismatch = false;
   def graphChar = spaceSepWord.substring(0, 1)
-  if (Graphemes.isConsonant(graphChar) && Phonemes.isSimpleConsonantGraph(graphChar)) {
+  if (Graphemes.isConsonant(graphChar) && Phonemes.isSimpleConsonantGraph(graphChar) && !ans.phones.empty) {
     def phoneSymbol = ans.phones.first().substring(0, 1)
     if (Graphemes.isConsonant(phoneSymbol) && graphChar.equalsIgnoreCase(phoneSymbol)) {
       leadingConsMatch = true

@@ -137,7 +137,7 @@ public class PhonemeCrfTrainer {
 //    CRFTrainerByLabelLikelihood trainer = makeNewTrainerSingleThreaded(crf);
     this.lastTrainer = trainer;
 
-    trainer.train(examples, opts.maxIterations);
+    trainer.train(examples, opts.maxCrfIterations);
 //    trainer.train(examples, 8, 250, new double[]{0.15, 1.0});
 //    trainer.train(examples, 8, new double[]{0.15, 1.0});
     trainer.shutdown(); // just closes the pool; next call to train will create a new one

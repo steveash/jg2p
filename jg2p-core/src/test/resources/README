@@ -10,6 +10,7 @@ cmu_crfAT_2eps - this is a crf model for predicting boundaries trained on whole 
 pe_*.dat are phonetic encoder models serialized
 am_*.dat are the align models serialized
 lm_*.dat language model files
+dt_*.dat/pmml reranking models (dt was originally decision tree but logistic regression is nicer)
 
 resources/am_cmubad2kA_A.dat - cmubad align model before any constrained allowed aligns
 resources/am_cmubad2kA_aa_A.dat - first constrained align where we just use zeroes everything else
@@ -23,3 +24,6 @@ psaur_22_xeps_ww_CE_E.dat - first with AA + (G, B)
 psaur_22_xeps_ww_GB_B1/G1.dat B1 is the "bad" training subset for cascading, G1 is the good
 psaur_22_xeps_ww_f3_100.dat is the g+b crf phoneticEncoder pulled out of psaur_22_xeps_ww_CE_A that im going to use to start overfit testing
 psaur_22_xeps_ww_f4_100.dat is the simple trainer, no cascades, no AA with f4 features for first 100 iterations
+
+dt_reranker2_1.dat - this is the log reg RR model trained off the psaur_rerank_train_50k.txt file (with the 7 order LM)
+dt_reranker2_2.dat - this is the log reg RR model trained off the psaur_rerank_train_50k_LM2.txt file (with the 2 order LM)

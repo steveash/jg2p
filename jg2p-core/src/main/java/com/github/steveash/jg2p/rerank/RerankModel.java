@@ -43,7 +43,7 @@ import javax.xml.transform.Source;
 /**
  * @author Steve Ash
  */
-public class RerankModel {
+public class RerankModel implements Reranker {
 
   private final ModelEvaluator<? extends Model> evaluator;
 
@@ -71,6 +71,7 @@ public class RerankModel {
     return (String)label.getResult();
   }
 
+  @Override
   public ProbabilityClassificationMap probabilities(Map<String, Object> values) {
     Map<FieldName, FieldValue> inputs = Maps.newHashMap();
     for (FieldName field : evaluator.getActiveFields()) {

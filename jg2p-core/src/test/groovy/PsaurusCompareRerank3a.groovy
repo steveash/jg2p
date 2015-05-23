@@ -21,7 +21,9 @@ import com.github.steveash.jg2p.align.InputRecord
 import com.github.steveash.jg2p.phoseq.Graphemes
 import com.github.steveash.jg2p.phoseq.Phonemes
 import com.github.steveash.jg2p.phoseq.WordShape
+import com.github.steveash.jg2p.rerank.Rerank2Model
 import com.github.steveash.jg2p.rerank.RerankModel
+import com.github.steveash.jg2p.rerank.Reranker
 import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Stopwatch
@@ -50,6 +52,8 @@ import java.util.concurrent.atomic.AtomicInteger
 //def rr = RerankModel.from(new File("../resources/dt_rerank_2.pmml"))
 // 5b is the last asymm one, 4 is the last symm one, 3 is the best symm one
 @Field RerankModel rr = RerankModel.from(new File("../resources/dt_rerank_3.pmml"))
+@Field Reranker rr2 = ReadWrite.readFromFile(Rerank2Model.class, new File("../resources/dt_rerank2_1.dat"))
+@Field boolean useRr2 = true
 
 //def file = "g014b2b-results.train"
 def file = "g014b2b.test"
@@ -194,8 +198,11 @@ private probs(Encoding a, Encoding b, String wordShape, int aAlignIndex, int bAl
     s.put("A_" + h, aa)
     s.put("B_" + h, bb)
   }
-  def probs = rr.probabilities(s)
-  return probs
+  if (useRr2) {
+    return rr2.probabilities(s)
+  } else {
+    return rr.probabilities(s)
+  }
 }
 
 private score(Encoding ans, String wordShape, int alignIndex, List<String> modePhones, boolean uniqueMode,

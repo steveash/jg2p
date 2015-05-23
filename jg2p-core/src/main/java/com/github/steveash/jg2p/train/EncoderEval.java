@@ -42,6 +42,7 @@ import static com.google.common.collect.Multisets.copyHighestCountFirst;
  * @author Steve Ash
  */
 public class EncoderEval {
+
   private static final Logger log = LoggerFactory.getLogger(EncoderEval.class);
   private static final Joiner spaceJoin = Joiner.on(' ');
   private static final Joiner pipeJoin = Joiner.on('|');
@@ -49,7 +50,7 @@ public class EncoderEval {
   private static final int EXAMPLE_COUNT = 100;
   private static final int MAX_EXAMPLE_TO_PRINT = 15;
 
-  public enum PrintOpts { ALL, SIMPLE }
+  public enum PrintOpts {ALL, SIMPLE}
 
   private final PhoneticEncoder encoder;
   private final boolean collectExamples;
@@ -60,7 +61,9 @@ public class EncoderEval {
   private long noCodes;
   private final Multiset<Integer> phoneEditHisto = HashMultiset.create();
   private final Multiset<Integer> rightAnswerInTop = HashMultiset.create();
-  private final ListMultimap<Integer,Pair<InputRecord,List<PhoneticEncoder.Encoding>>> examples = ArrayListMultimap.create();
+  private final ListMultimap<Integer, Pair<InputRecord, List<PhoneticEncoder.Encoding>>>
+      examples =
+      ArrayListMultimap.create();
   private final Random rand = new Random(0xFEEDFEED);
 
   public EncoderEval(PhoneticEncoder encoder) {
@@ -72,8 +75,26 @@ public class EncoderEval {
     this.collectExamples = collectExamples;
   }
 
-  public void evalAndPrint(List<InputRecord> inputs, PrintOpts opts) {
+  public void mergeFrom(EncoderEval that) {
+    this.totalPhones += that.totalPhones;
+    this.totalRightPhones += that.totalRightPhones;
+    this.totalWords += that.totalWords;
+    this.totalRightWords += that.totalRightWords;
+    this.noCodes += that.noCodes;
+    this.phoneEditHisto.addAll(that.phoneEditHisto);
+    this.rightAnswerInTop.addAll(that.rightAnswerInTop);
+    this.examples.putAll(that.examples);
+  }
 
+  public void evalAndPrint(List<InputRecord> inputs, PrintOpts opts) {
+    doWork(inputs, true, opts);
+  }
+
+  public void evalNoPrint(List<InputRecord> inputs) {
+    doWork(inputs, false, null);
+  }
+
+  private void doWork(List<InputRecord> inputs, boolean shouldPrint, PrintOpts opts) {
     totalPhones = 0;
     totalRightPhones = 0;
     totalWords = 0;
@@ -115,7 +136,7 @@ public class EncoderEval {
       }
       if (collectExamples && phonesDiff > 0) {
         Pair<InputRecord, List<PhoneticEncoder.Encoding>> example = Pair.of(input, encodings);
-        List<Pair<InputRecord,List<PhoneticEncoder.Encoding>>> examples = this.examples.get(phonesDiff);
+        List<Pair<InputRecord, List<PhoneticEncoder.Encoding>>> examples = this.examples.get(phonesDiff);
         if (examples.size() < EXAMPLE_COUNT) {
           examples.add(example);
         } else {
@@ -126,17 +147,21 @@ public class EncoderEval {
         }
       }
 
-      if (totalWords % 500 == 0 && opts != PrintOpts.SIMPLE) {
-        log.info("Processed " + totalWords + " ...");
-        if (totalWords % 10_000 == 0) {
-          printStats(opts);
+      if (shouldPrint) {
+        if (totalWords % 500 == 0 && opts != PrintOpts.SIMPLE) {
+          log.info("Processed " + totalWords + " ...");
+          if (totalWords % 10_000 == 0) {
+            printStats(opts);
+          }
         }
       }
     }
-    printStats(opts);
+    if (shouldPrint) {
+      printStats(opts);
+    }
   }
 
-  private void printStats(PrintOpts opts) {
+  public void printStats(PrintOpts opts) {
     if (opts != PrintOpts.SIMPLE) {
       if (collectExamples) {
         printExamples();

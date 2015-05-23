@@ -35,6 +35,9 @@ def testFile = "g014b2b.test"
 def train = InputReader.makePSaurusReader().readFromClasspath(trainFile)
 def test = InputReader.makePSaurusReader().readFromClasspath(testFile)
 def opts = new TrainOptions()
+def startingIter = 175
+def maxIter = 400
+
 opts.maxXGram = 2
 opts.maxYGram = 2
 opts.onlyOneGrams = true
@@ -44,7 +47,7 @@ opts.includeXEpsilons = true
 opts.maximizer = Maximizer.JOINT
 opts.topKAlignCandidates = 1
 opts.minAlignScore = Integer.MIN_VALUE
-//opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f3_100.dat"
+opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f4A_175.dat"
 //opts.alignAllowedFile = new File("../resources/possible-aligns.txt")
 def log = LoggerFactory.getLogger("psaurus")
 log.info("Starting training with $trainFile and $testFile with opts $opts")
@@ -55,8 +58,8 @@ def model = t.trainNoEval(train, test, opts)
 
 def trainInps = SimpleEncoderTrainer.makeCrfExamples(train, t.alignModel, opts);
 
-def iters = opts.maxCrfIterations
-while (iters < 200) {
+def iters = opts.maxCrfIterations + startingIter
+while (iters < maxIter) {
   def temp = new File("../resources/psaur_22_xEps_ww_f4A_" + iters + ".dat")
   ReadWrite.writeTo(model, temp)
   // now create new trainer initing from previous model
@@ -68,5 +71,8 @@ while (iters < 200) {
 
   iters += opts.maxCrfIterations
 }
+
+def temp = new File("../resources/psaur_22_xEps_ww_f4A_" + iters + ".dat")
+ReadWrite.writeTo(model, temp)
 
 log.info("***********************************Finished*************************************")

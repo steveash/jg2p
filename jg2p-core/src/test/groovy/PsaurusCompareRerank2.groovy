@@ -21,6 +21,7 @@ import com.github.steveash.jg2p.align.InputRecord
 import com.github.steveash.jg2p.phoseq.Graphemes
 import com.github.steveash.jg2p.phoseq.Phonemes
 import com.github.steveash.jg2p.phoseq.WordShape
+import com.github.steveash.jg2p.rerank.Rerank2Model
 import com.github.steveash.jg2p.rerank.RerankModel
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Stopwatch
@@ -64,20 +65,11 @@ def totalPairsPerEntryToInclude = 12
 def totalEntriesToInclude = 50000
 println "Starting..."
 
-@Field List<String> scoreHeaders = ["lmScore", "tagScore", "alignScore", "uniqueMode", "dups", "alignIndex",
-                                    "overallIndex", "shapeEdit", "shapeLenDiff", "leadingConsMatch", "leadingConsMismatch"]
-scoreHeaders.addAll(goodShapes)
-def headers = ["seq", "word", "phones", "label", "A", "B"]
-scoreHeaders.each {
-  headers << "A_" + it
-  headers << "B_" + it
-}
-
 // calculate the probability of including any particular record
 double recProb = totalEntriesToInclude.toDouble() / inps.size()
 println "Using rec prob of $recProb"
 new File("../resources/psaur_rerank_train.txt").withPrintWriter { pw ->
-  pw.println(headers.join("\t"))
+  pw.println(Rerank2Model.csvHeaders.join("\t"))
   GParsPool.withPool {
     inps.everyParallel { InputRecord input ->
 
@@ -149,7 +141,7 @@ new File("../resources/psaur_rerank_train.txt").withPrintWriter { pw ->
 
 private makeLine(def aa, def bb, String label, List<String> aPhones, List<String> bPhones, int newTotal, String xx, String yy) {
   def line = [newTotal, xx, yy, label, aPhones.join("|"), bPhones.join("|")]
-  scoreHeaders.each {
+  Rerank2Model.scoreHeaders.each {
     line << aa[it]
     line << bb[it]
   }

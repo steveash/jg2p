@@ -15,4 +15,11 @@ resources/am_cmubad2kA_A.dat - cmubad align model before any constrained allowed
 resources/am_cmubad2kA_aa_A.dat - first constrained align where we just use zeroes everything else
 resources/am_cmubad2kA_aa_B.dat - second constrained align where we use discount smoothing to fill in
 
+psaur_22_xeps_ww_CE_A.dat - A first cascade only 100, (G + B, B)
+psaur_22_xeps_ww_CE_B.dat - B second up to 200 (G + B, B)
+psaur_22_xeps_ww_CE_C.dat - third just the last little bit with (G + B, B)
+psaur_22_xeps_ww_CE_D.dat - first with (G, B)
+psaur_22_xeps_ww_CE_E.dat - first with AA + (G, B)
 psaur_22_xeps_ww_GB_B1/G1.dat B1 is the "bad" training subset for cascading, G1 is the good
+psaur_22_xeps_ww_f3_100.dat is the g+b crf phoneticEncoder pulled out of psaur_22_xeps_ww_CE_A that im going to use to start overfit testing
+psaur_22_xeps_ww_f4_100.dat is the simple trainer, no cascades, no AA with f4 features for first 100 iterations

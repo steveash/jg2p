@@ -243,10 +243,13 @@ public class AlignTagTrainer {
     return ImmutableList.of(
         new TokenWindow(1, 1),
         new TokenWindow(1, 2),
+        new TokenWindow(2, 1),
         new TokenWindow(1, 3),
+        new TokenWindow(4, 1),
         new TokenWindow(-1, 1),
         new TokenWindow(-2, 2),
-        new TokenWindow(-3, 3)
+        new TokenWindow(-3, 3),
+        new TokenWindow(-4, 1)
     );
   }
 }

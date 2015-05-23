@@ -72,8 +72,8 @@ public class Rerank2Model implements Reranker, Serializable {
 
   @Override
   public Map<String, Double> probabilities(Map<String, Object> values) {
-    Instance inst = new Instance(values, null, null, null);
-    Classification classify = model.classify(inst);
+
+    Classification classify = model.classify(values);
     LabelVector lv = classify.getLabelVector();
     Labeling labeling = classify.getLabeling();
     HashMap<String, Double> result = Maps.newHashMapWithExpectedSize(labeling.numLocations());

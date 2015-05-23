@@ -40,15 +40,27 @@ public class FeatureMapToFeatureVector extends Pipe {
     this.featureNames = featureNames;
   }
 
+  private double getVal(Object val) {
+    if (val == null) {
+      return 0;
+    }
+
+    if (val instanceof String) {
+      return Double.parseDouble((String)val);
+    }
+    if (val instanceof Number) {
+      return ((Number) val).doubleValue();
+    }
+    throw new IllegalStateException("Dont know how to get value out of type " + val.getClass() + " val " + val);
+  }
+
   @Override
   public Instance pipe(Instance inst) {
     Map<String, Object> map = (Map<String, Object>) inst.getData();
     int nonZeroCount = 0;
     for (String feature : featureNames) {
-      String val = (String) map.get(feature);
-      if (val == null) continue;
-
-      double dblVal = Double.parseDouble(val);
+      Object maybe = map.get(feature);
+      double dblVal = getVal(maybe);
       if (dblVal != 0) {
         nonZeroCount += 1;
       }
@@ -58,10 +70,7 @@ public class FeatureMapToFeatureVector extends Pipe {
     double[] vals = new double[nonZeroCount];
     int i = 0;
     for (String feature : featureNames) {
-      String val = (String) map.get(feature);
-      if (val == null) continue;
-
-      double dblVal = Double.parseDouble(val);
+      double dblVal = getVal(map.get(feature));
       if (dblVal != 0) {
         keys[i] = feature;
         vals[i] = dblVal;

@@ -27,3 +27,5 @@ psaur_22_xeps_ww_f4_100.dat is the simple trainer, no cascades, no AA with f4 fe
 
 dt_reranker2_1.dat - this is the log reg RR model trained off the psaur_rerank_train_50k.txt file (with the 7 order LM)
 dt_reranker2_2.dat - this is the log reg RR model trained off the psaur_rerank_train_50k_LM2.txt file (with the 2 order LM)
+dt_reranker2_3.dat - logregRR, psaur_rerank_train_50k.txt, log xform of alignscore, GausPrior=3
+dt_reranker2_4.dat - logregRR, psaur_rerank_train_50k.txt, log xform of alignscore, GausPrior=10

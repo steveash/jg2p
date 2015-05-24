@@ -35,13 +35,14 @@ def testFile = "g014b2b.test"
 def train = InputReader.makePSaurusReader().readFromClasspath(trainFile)
 def test = InputReader.makePSaurusReader().readFromClasspath(testFile)
 def opts = new TrainOptions()
-def startingIter = 175
-def maxIter = 400
+def startingIter = 0
+def maxIter = 300
+def outPrefix = "../resources/psaur_22_xEps_ww_f4B_"
 
 opts.maxXGram = 2
 opts.maxYGram = 2
 opts.onlyOneGrams = true
-opts.maxCrfIterations = 25
+opts.maxCrfIterations = 50
 opts.useWindowWalker = true
 opts.includeXEpsilons = true 
 opts.maximizer = Maximizer.JOINT
@@ -60,7 +61,7 @@ def trainInps = SimpleEncoderTrainer.makeCrfExamples(train, t.alignModel, opts);
 
 def iters = opts.maxCrfIterations + startingIter
 while (iters < maxIter) {
-  def temp = new File("../resources/psaur_22_xEps_ww_f4A_" + iters + ".dat")
+  def temp = new File(outPrefix + iters + ".dat")
   ReadWrite.writeTo(model, temp)
   // now create new trainer initing from previous model
   opts.initCrfFromModelFile = temp.canonicalPath
@@ -72,7 +73,7 @@ while (iters < maxIter) {
   iters += opts.maxCrfIterations
 }
 
-def temp = new File("../resources/psaur_22_xEps_ww_f4A_" + iters + ".dat")
+def temp = new File(outPrefix + iters + ".dat")
 ReadWrite.writeTo(model, temp)
 
 log.info("***********************************Finished*************************************")

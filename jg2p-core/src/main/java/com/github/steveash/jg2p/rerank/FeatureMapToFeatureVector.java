@@ -33,6 +33,7 @@ import cc.mallet.types.Instance;
  */
 public class FeatureMapToFeatureVector extends Pipe {
 
+  private static final long serialVersionUID = 7276013509730277986L;
   private final List<String> featureNames;
 
   public FeatureMapToFeatureVector(Alphabet dataDict, Alphabet targetDict, List<String> featureNames) {
@@ -73,7 +74,8 @@ public class FeatureMapToFeatureVector extends Pipe {
       double dblVal = getVal(map.get(feature));
       if (dblVal != 0) {
         keys[i] = feature;
-        vals[i] = dblVal;
+        vals[i] = special(feature, dblVal);
+
         i += 1;
       }
     }
@@ -83,5 +85,12 @@ public class FeatureMapToFeatureVector extends Pipe {
 
     inst.setData(new FeatureVector(this.getDataAlphabet(), keys, vals));
     return inst;
+  }
+
+  private double special(String feature, double val) {
+    if (feature.equals("A_alignScore") || feature.equals("B_alignScore")) {
+      return Math.pow(2.0, val);
+    }
+    return val;
   }
 }

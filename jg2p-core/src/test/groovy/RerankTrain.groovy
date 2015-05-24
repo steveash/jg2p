@@ -25,7 +25,7 @@ import com.google.common.collect.Maps
  */
 //def filePath = "../resources/psaur_rerank_train.txt"
 def filePath = "/home/steve/Downloads/psaur_rerank_train_50k.txt"
-def outPath = "../resources/dt_rerank2_1.dat"
+def outPath = "../resources/dt_rerank2_3.dat"
 
 new File(filePath).withReader { r ->
   def header = r.readLine().split("\t")

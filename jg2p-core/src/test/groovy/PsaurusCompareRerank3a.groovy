@@ -127,8 +127,8 @@ new File ("../resources/bad_rerank_A.txt").withPrintWriter { pw ->
           def aindex = encToAlign.get(a)
           def bindex = encToAlign.get(b)
           def pb = probs(a, b, wordShape, aindex, bindex, modePhones, uniqueMode, dups, ans, xx)
-          def domprob = pb.getProbability("A")
-          def ndprob = pb.getProbability("B")
+          def domprob = pb.get("A")
+          def ndprob = pb.get("B")
           def logodds = DoubleMath.log2(domprob) - DoubleMath.log2(ndprob)
           graph.put(i, j, logodds)
         }

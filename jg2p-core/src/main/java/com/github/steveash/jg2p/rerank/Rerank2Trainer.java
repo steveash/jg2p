@@ -55,7 +55,7 @@ public class Rerank2Trainer {
 
   public Rerank2Model trainFor(Collection<? extends Map<String, Object>> trainingData) {
     InstanceList instances = convert(trainingData);
-    MaxEntTrainer trainer = new MaxEntTrainer(2.0);
+    MaxEntTrainer trainer = new MaxEntTrainer(3.0);
     MaxEnt model = trainer.train(instances);
     Trial trial = new Trial(model, instances);
     log.info("Trained reranker. Final accuracy on itself: " + trial.getAccuracy());

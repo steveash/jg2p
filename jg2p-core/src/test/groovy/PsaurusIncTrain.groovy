@@ -37,7 +37,7 @@ def test = InputReader.makePSaurusReader().readFromClasspath(testFile)
 def opts = new TrainOptions()
 def startingIter = 0
 def maxIter = 300
-def outPrefix = "../resources/psaur_22_xEps_ww_f4B_"
+def outPrefix = "../resources/psaur_22_xEps_ww_f4C_"
 
 opts.maxXGram = 2
 opts.maxYGram = 2
@@ -48,7 +48,7 @@ opts.includeXEpsilons = true
 opts.maximizer = Maximizer.JOINT
 opts.topKAlignCandidates = 1
 opts.minAlignScore = Integer.MIN_VALUE
-opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f4A_175.dat"
+opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f4B_200.dat"
 //opts.alignAllowedFile = new File("../resources/possible-aligns.txt")
 def log = LoggerFactory.getLogger("psaurus")
 log.info("Starting training with $trainFile and $testFile with opts $opts")

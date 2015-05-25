@@ -89,83 +89,94 @@ inps.each {
 def nonDupInputs = inputCount.entrySet().findAll{it.count > 1}.collect {it.element}.toSet()
 def rightWords = Sets.newConcurrentHashSet()
 
-new File ("../resources/bad_rerank_A.txt").withPrintWriter { pw ->
-  GParsPool.withPool {
-    grouped.values().everyParallel { Collection<InputRecord> inputs ->
+new File ("../resources/bad_rerank_wrongorder.txt").withPrintWriter { pwWrong ->
+  new File("../resources/bad_rerank_missed.txt").withPrintWriter { pwMissing ->
+    GParsPool.withPool {
+      grouped.values().everyParallel { Collection<InputRecord> inputs ->
 
-      def input = inputs.first()
-      def newTotal = total.incrementAndGet()
-      def cans = enc.complexEncode(input.xWord)
-      List<Integer> ansAlignIndex = cans.alignResults.collectMany { (0..<(it.encodings.size())).collect() }
-      List<Encoding> ans = cans.alignResults.collectMany { it.encodings }
-      assert ans.size() > 0
-      assert ansAlignIndex.size() == ans.size()
-      def encToAlign = new IdentityHashMap<Encoding, Integer>()
-      for (int i = 0; i < ans.size(); i++) {
-        encToAlign.put(ans.get(i), ansAlignIndex.get(i))
-      }
-      ans.sort(PhoneticEncoder.OrderByTagScore)
-      def dups = HashMultiset.create()
-      ans.each { dups.add(it.phones) }
-      def modeEntry = dups.entrySet().max { it.count }
-      assert modeEntry != null
-      int candidatesSameAsMode = dups.entrySet().count { it.count == modeEntry.count }
-      List<String> modePhones = modeEntry.element
-      boolean uniqueMode = (candidatesSameAsMode == 1)
-      def xx = input.xWord.asSpaceString
-      def wordShape = WordShape.graphShape(input.xWord.value, false)
-
-      /* using the "best by average odds ranking */
-
-      def graph = HashBasedTable.create()
-      for (int i = 0; i < ans.size(); i++) {
-        for (int j = 0; j < ans.size(); j++) {
-          if (i == j)
-            continue;
-          def a = ans[i]
-          def b = ans[j]
-          def aindex = encToAlign.get(a)
-          def bindex = encToAlign.get(b)
-          def pb = probs(a, b, wordShape, aindex, bindex, modePhones, uniqueMode, dups, ans, xx)
-          def domprob = pb.get("A")
-          def ndprob = pb.get("B")
-          def logodds = DoubleMath.log2(domprob) - DoubleMath.log2(ndprob)
-          graph.put(i, j, logodds)
+        def input = inputs.first()
+        def newTotal = total.incrementAndGet()
+        def cans = enc.complexEncode(input.xWord)
+        List<Integer> ansAlignIndex = cans.alignResults.collectMany { (0..<(it.encodings.size())).collect() }
+        List<Encoding> ans = cans.alignResults.collectMany { it.encodings }
+        assert ans.size() > 0
+        assert ansAlignIndex.size() == ans.size()
+        def encToAlign = new IdentityHashMap<Encoding, Integer>()
+        for (int i = 0; i < ans.size(); i++) {
+          encToAlign.put(ans.get(i), ansAlignIndex.get(i))
         }
-      }
+        ans.sort(PhoneticEncoder.OrderByTagScore)
+        def dups = HashMultiset.create()
+        ans.each { dups.add(it.phones) }
+        def modeEntry = dups.entrySet().max { it.count }
+        assert modeEntry != null
+        int candidatesSameAsMode = dups.entrySet().count { it.count == modeEntry.count }
+        List<String> modePhones = modeEntry.element
+        boolean uniqueMode = (candidatesSameAsMode == 1)
+        def xx = input.xWord.asSpaceString
+        def wordShape = WordShape.graphShape(input.xWord.value, false)
 
-      // for each vertex calculate the overall sum of odds and see who has the max
-      def reranked = new ArrayList(ans.size())
-      graph.rowKeySet().each { int i ->
-        def sum = graph.row(i).values().sum()
-        reranked << [i, sum]
-      }
-      reranked = reranked.sort {it[1]}.reverse()
-      def w = ans.get(reranked[0][0])
+        /* using the "best by average odds ranking */
 
-      if (inputs.any {it.yWord.value == w.phones}) {
-        right.incrementAndGet()
-        rightWords.add(input.xWord.asSpaceString)
-      } else {
-        reranked.eachWithIndex { r, i ->
-          def cand = ans.get(r[0]).phones
-          if (inputs.any {it.yWord.value == cand}) {
-            if (nonDupInputs.contains(input.xWord.asSpaceString)) {
-              counts.add("RIGHT_" + i)
-              synchronized (PsaurusCompareRerank3a.class) {
-                pw.println(input.xWord.asSpaceString + "," + reranked[0][0] + "," + w.phones.join("|") + "," +
-                           i + "," + r[0] + "," + inputs.collect { it.yWord.value.join("|") }.join(" ~ "))
-              }
-            }
-            return // stop trying to find the right reranked value
+        def graph = HashBasedTable.create()
+        for (int i = 0; i < ans.size(); i++) {
+          for (int j = 0; j < ans.size(); j++) {
+            if (i == j)
+              continue;
+            def a = ans[i]
+            def b = ans[j]
+            def aindex = encToAlign.get(a)
+            def bindex = encToAlign.get(b)
+            def pb = probs(a, b, wordShape, aindex, bindex, modePhones, uniqueMode, dups, ans, xx)
+            def domprob = pb.get("A")
+            def ndprob = pb.get("B")
+            def logodds = DoubleMath.log2(domprob) - DoubleMath.log2(ndprob)
+            graph.put(i, j, logodds)
           }
         }
-      }
 
-      if (newTotal % 1000 == 0) {
-        println "Completed " + newTotal + " of " + inps.size()
+        // for each vertex calculate the overall sum of odds and see who has the max
+        def reranked = new ArrayList(ans.size())
+        graph.rowKeySet().each { int i ->
+          def sum = graph.row(i).values().sum()
+          reranked << [i, sum]
+        }
+        reranked = reranked.sort { it[1] }.reverse()
+        def w = ans.get(reranked[0][0])
+
+        if (inputs.any { it.yWord.value == w.phones }) {
+          right.incrementAndGet()
+          rightWords.add(input.xWord.asSpaceString)
+        } else {
+          boolean printed = false
+          int i = 0
+          reranked.any { r ->
+            def cand = ans.get(r[0]).phones
+            if (inputs.any { it.yWord.value == cand }) {
+              if (nonDupInputs.contains(input.xWord.asSpaceString)) {
+                counts.add("RIGHT_" + i)
+                synchronized (PsaurusCompareRerank3a.class) {
+                  pwWrong.println(input.xWord.asSpaceString + "," + reranked[0][0] + "," + w.phones.join("|") + "," +
+                                  i + "," + r[0] + "," + inputs.collect { it.yWord.value.join("|") }.join(" ~ "))
+                  printed = true
+                }
+              }
+              return true // stop trying to find the right reranked value
+            }
+            i += 1
+            return false
+          }
+          if (!printed) {
+            pwMissing.println(input.xWord.asSpaceString + "," + reranked[0][0] + "," + w.phones.join("|") + "," +
+                              inputs.collect { it.yWord.value.join("|") }.join(" ~ "))
+          }
+        }
+
+        if (newTotal % 1000 == 0) {
+          println "Completed " + newTotal + " of " + inps.size()
+        }
+        return true;
       }
-      return true;
     }
   }
 }

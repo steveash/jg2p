@@ -24,6 +24,7 @@ import com.github.steveash.jg2p.phoseq.WordShape
 import com.github.steveash.jg2p.rerank.Rerank2Model
 import com.github.steveash.jg2p.rerank.RerankModel
 import com.github.steveash.jg2p.rerank.Reranker
+import com.github.steveash.jg2p.rerank.VowelReplacer
 import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Stopwatch
@@ -88,6 +89,7 @@ inps.each {
 }
 def nonDupInputs = inputCount.entrySet().findAll{it.count > 1}.collect {it.element}.toSet()
 def rightWords = Sets.newConcurrentHashSet()
+def vowelReplacer = new VowelReplacer()
 
 new File ("../resources/bad_rerank_wrongorder.txt").withPrintWriter { pwWrong ->
   new File("../resources/bad_rerank_missed.txt").withPrintWriter { pwMissing ->
@@ -97,15 +99,9 @@ new File ("../resources/bad_rerank_wrongorder.txt").withPrintWriter { pwWrong ->
         def input = inputs.first()
         def newTotal = total.incrementAndGet()
         def cans = enc.complexEncode(input.xWord)
-        List<Integer> ansAlignIndex = cans.alignResults.collectMany { (0..<(it.encodings.size())).collect() }
-        List<Encoding> ans = cans.alignResults.collectMany { it.encodings }
+        List<Encoding> ans = vowelReplacer.updateResults(cans.overallResults)
+
         assert ans.size() > 0
-        assert ansAlignIndex.size() == ans.size()
-        def encToAlign = new IdentityHashMap<Encoding, Integer>()
-        for (int i = 0; i < ans.size(); i++) {
-          encToAlign.put(ans.get(i), ansAlignIndex.get(i))
-        }
-        ans.sort(PhoneticEncoder.OrderByTagScore)
         def dups = HashMultiset.create()
         ans.each { dups.add(it.phones) }
         def modeEntry = dups.entrySet().max { it.count }
@@ -125,9 +121,7 @@ new File ("../resources/bad_rerank_wrongorder.txt").withPrintWriter { pwWrong ->
               continue;
             def a = ans[i]
             def b = ans[j]
-            def aindex = encToAlign.get(a)
-            def bindex = encToAlign.get(b)
-            def pb = probs(a, b, wordShape, aindex, bindex, modePhones, uniqueMode, dups, ans, xx)
+            def pb = probs(a, b, wordShape, modePhones, uniqueMode, dups, xx)
             def domprob = pb.get("A")
             def ndprob = pb.get("B")
             def logodds = DoubleMath.log2(domprob) - DoubleMath.log2(ndprob)
@@ -197,10 +191,10 @@ counts.entrySet().each { Multiset.Entry e ->
 }
 println "Eval took " + watch
 
-private probs(Encoding a, Encoding b, String wordShape, int aAlignIndex, int bAlignIndex, List<String> modePhones, boolean uniqueMode,
-              Multiset<List<String>> dups, List<Encoding> overall, String spaceSepWord) {
-  def aScore = score(a, wordShape, aAlignIndex, modePhones, uniqueMode, dups, overall, spaceSepWord)
-  def bScore = score(b, wordShape, bAlignIndex, modePhones, uniqueMode, dups, overall, spaceSepWord)
+private probs(Encoding a, Encoding b, String wordShape, List<String> modePhones, boolean uniqueMode,
+              Multiset<List<String>> dups, String spaceSepWord) {
+  def aScore = score(a, wordShape, modePhones, uniqueMode, dups, spaceSepWord)
+  def bScore = score(b, wordShape, modePhones, uniqueMode, dups, spaceSepWord)
   def s = [:]
   scoreHeaders.each { h ->
     def aa = aScore[h]
@@ -216,8 +210,8 @@ private probs(Encoding a, Encoding b, String wordShape, int aAlignIndex, int bAl
   }
 }
 
-private score(Encoding ans, String wordShape, int alignIndex, List<String> modePhones, boolean uniqueMode,
-              Multiset<List<String>> dups, List<Encoding> overall, String spaceSepWord) {
+private score(Encoding ans, String wordShape, List<String> modePhones, boolean uniqueMode,
+              Multiset<List<String>> dups, String spaceSepWord) {
 
   def ansShape = WordShape.phoneShape(ans.phones, false)
   def leadingConsMatch = false;
@@ -238,8 +232,8 @@ private score(Encoding ans, String wordShape, int alignIndex, List<String> modeP
   score << [alignScore: ans.alignScore]
   score << [uniqueMode: (uniqueMode && ans.phones == modePhones ? "1" : "0")]
   score << [dups: (dups.count(ans.phones))]
-  score << [alignIndex: alignIndex]
-  score << [overallIndex: overall.findIndexOf { it.phones == ans.phones }]
+  score << [alignIndex: ans.alignRank]
+  score << [overallIndex: ans.rank]
   score << [shapeEdit: StringUtils.getLevenshteinDistance(ansShape, wordShape)]
   score << [shapeLenDiff: wordShape.length() - ansShape.length()]
   score << [leadingConsMatch: (leadingConsMatch ? "1" : "0")]

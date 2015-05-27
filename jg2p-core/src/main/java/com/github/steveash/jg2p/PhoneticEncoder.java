@@ -29,6 +29,7 @@ import com.github.steveash.jg2p.util.Zipper;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -58,17 +59,38 @@ public class PhoneticEncoder implements Serializable {
     public final List<String> phones;
     public final double alignScore;
     public final double tagScore;
+    public final boolean isPostProcessed;
+    public int rank;      // what order overall was this coming out of the encoder
+    public int alignRank; // what order did this come out for the particular align group
+
 
     public Encoding(List<String> alignment, List<String> phones, double alignScore, double tagScore) {
+      this(alignment, phones, alignScore, tagScore, false);
+    }
+
+    public Encoding(List<String> alignment, List<String> phones,
+                    double alignScore, double tagScore,
+                    boolean isPostProcessed) {
       this.alignment = alignment;
       this.phones = phones;
       this.alignScore = alignScore;
       this.tagScore = tagScore;
+      this.isPostProcessed = isPostProcessed;
     }
 
     public double tagProbability() {
       return Math.exp(tagScore);
     }
+
+    public Encoding withReplacedPhoneme(int index, String newPhoneme) {
+      ArrayList<String> newPhones = Lists.newArrayList(this.phones);
+      newPhones.set(index, newPhoneme);
+      Encoding result = new Encoding(this.alignment, newPhones, alignScore, tagScore, true);
+      result.rank = this.rank;
+      result.alignRank = this.alignRank;
+      return result;
+    }
+
 
     @Override
     public String toString() {
@@ -113,11 +135,19 @@ public class PhoneticEncoder implements Serializable {
         ar.encodings.add(e);
       }
       Collections.sort(ar.encodings, OrderByTagScore);
+      // set the align ranks
+      for (int i = 0; i < ar.encodings.size(); i++) {
+        ar.encodings.get(i).alignRank = i;
+      }
     }
     Collections.sort(results, OrderByTagScore);
     int finalCount = (bestFinal != null ? bestFinal : bestAlignments);
     if (results.size() > finalCount) {
       results = results.subList(0, finalCount);
+    }
+    // set the overall ranks
+    for (int i = 0; i < results.size(); i++) {
+      results.get(i).rank = i;
     }
     result.overallResults.addAll(results);
     return result;
@@ -198,6 +228,7 @@ public class PhoneticEncoder implements Serializable {
       return ComparisonChain.start()
           .compare(left.tagScore, right.tagScore)
           .compare(left.alignScore, right.alignScore)
+          .compare(left.isPostProcessed, right.isPostProcessed)
           .result();
     }
   }.reverse();

@@ -13,31 +13,69 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
-
-import com.github.steveash.jg2p.PhoneticEncoder
-import com.github.steveash.jg2p.align.InputReader
-import com.github.steveash.jg2p.train.EncoderEval
-import com.github.steveash.jg2p.util.ReadWrite
+import com.github.steveash.jg2p.phoseq.Phonemes
+import com.github.steveash.jg2p.util.ListEditDistance
+import com.google.common.collect.HashMultiset
+import com.google.common.collect.Lists
+import com.google.common.collect.Multisets
 
 /**
  * Used to play with the failing examples to try and figure out some areas for improvement
  * @author Steve Ash
  */
-def trainFile = "cmudict.5kA.txt"
-def testFile = "cmudict.5kB.txt"
-def train = InputReader.makeDefaultFormatReader().readFromClasspath(trainFile)
-def test = InputReader.makeDefaultFormatReader().readFromClasspath(testFile)
-def enc = ReadWrite.readFromClasspath(PhoneticEncoder.class, "encoder.dat")
+def counts = HashMultiset.create()
 
-def eval = new EncoderEval(enc, true)
-eval.evalAndPrint(train, com.github.steveash.jg2p.train.EncoderEval.PrintOpts.ALL)
-println "Examples"
-eval.examples.asMap().entrySet().each { entry ->
-  println " --- Examples at edit " + entry.key + " --- "
-  entry.value.take(10).each {
-    println "  " + it.left.xWord.asSpaceString + " -> " + it.right.first().phones.join(" ") + " expected " +
-            it.left.yWord.asSpaceString + " align " + it.right.first().alignment.join("|")
+new File("../resources/bad_rerank_missed.txt").eachLine { line ->
+  def fields = line.split(",")
+  def cand = Lists.newArrayList(fields[2].split("\\|"))
+  def possibleAnswers = fields[3].split(" ~ ")
+  def rank = fields[1] as int
+  counts.add("__total")
+
+  // find one candidate that fits (if possible)
+  def candCons = stampVowels(cand);
+  possibleAnswers.any { maybe ->
+    def ans = Lists.newArrayList(maybe.split("\\|"))
+    def ansCons = stampVowels(ans);
+    if (candCons == ansCons) {
+      counts.add("__structure_match")
+      def edits = ListEditDistance.editDistance(cand, ans, 256)
+      
+      counts.add("__vowel_edits_" + edits)
+      def vowelsHit = 0
+      for (int i = 0; i < cand.size(); i++) {
+        if (cand[i] != ans[i]) {
+          counts.add("Vowel: " + cand[i] + " -> " + ans[i])
+          if (edits == 1) {
+            counts.add("__1edit_vowelsPosition_" + vowelsHit)
+            int reportedRank = rank
+            if (reportedRank > 5) reportedRank = 6
+            counts.add("__1edit_rank_" + reportedRank)
+          }
+        }
+        if (Phonemes.isVowel(cand[i])) {
+          vowelsHit += 1
+        }
+      }
+      return true
+    }
+    return false
+  }
+}
+counts.entrySet().sort { it.element }.each {
+  println it.element + " = " + it.count
+}
+Multisets.copyHighestCountFirst(counts).entrySet().each {
+  println it.element + " = " + it.count
+}
+println "done"
+
+List<String> stampVowels(ArrayList<String> phones) {
+  phones.collect {
+    if (Phonemes.isVowel(it)) {
+      "VV"
+    } else {
+      it
+    };
   }
 }

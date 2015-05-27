@@ -44,18 +44,17 @@ import java.util.concurrent.atomic.AtomicInteger
 def file = "g014b2b-results.train"
 //def file = "g014b2b.test"
 //def inps = InputReader.makePSaurusReader().readFromClasspath(file)
-def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)  //.take(250)
+def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file).take(250)
 
 @Field PhoneticEncoder enc = ReadWrite.
-    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f3_B.dat"))
+    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f4C_250.dat"))
 enc.setBestAlignments(5)
 enc.setBestTaggings(5)
-enc.setBestFinal(5)
+enc.setBestFinal(25)
 enc.alignMinScore = Double.NEGATIVE_INFINITY
 enc.tagMinScore = Double.NEGATIVE_INFINITY
 
-@Field NgramLM lm = ReadWrite.readFromFile(NgramLM.class, new File("../resources/lm_2_kn.dat"))
-@Field def goodShapes = ["CCvC", "CCv", "CC", "vCCv", "v", "vC", "vCC", "vCCC", "vCvC", "vv", "vCv", "CCC", "CCCv"]
+@Field NgramLM lm = ReadWrite.readFromFile(NgramLM.class, new File("../resources/lm_7_kn.dat"))
 
 Stopwatch watch = Stopwatch.createStarted()
 def total = new AtomicInteger(0)
@@ -80,6 +79,7 @@ new File("../resources/psaur_rerank_train.txt").withPrintWriter { pw ->
 
       def newTotal = total.incrementAndGet()
       def cans = enc.complexEncode(input.xWord)
+      cans.overallResults
       List<Encoding> ans = cans.alignResults.collect {it.encodings}.flatten()
       assert ans.size() > 0
       ans.sort(PhoneticEncoder.OrderByTagScore)

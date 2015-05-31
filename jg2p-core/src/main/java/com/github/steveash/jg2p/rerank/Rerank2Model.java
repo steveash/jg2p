@@ -43,6 +43,8 @@ public class Rerank2Model implements Reranker, Serializable {
   public static final ImmutableList<String> scoreHeaders;
   public static final ImmutableList<String> csvHeaders;
   public static final ImmutableList<String> featureHeaders;
+  public static final int minGoodShape;
+  public static final int maxGoodShape;
 
   static {
     List<String> distinct = Lists.newArrayList("lmScore", "tagScore", "alignScore", "uniqueMode", "dups",
@@ -62,6 +64,14 @@ public class Rerank2Model implements Reranker, Serializable {
     }
     csvHeaders = csv.build();
     featureHeaders = feature.build();
+
+    int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
+    for (String goodShape : goodShapes) {
+      min = Math.min(min, goodShape.length());
+      max = Math.max(max, goodShape.length());
+    }
+    minGoodShape = min;
+    maxGoodShape = max;
   }
 
   private final MaxEnt model;

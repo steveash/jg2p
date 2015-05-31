@@ -27,6 +27,9 @@ import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 import com.github.steveash.jg2p.util.Zipper;
 
+import net.sf.jsefa.csv.annotation.CsvDataType;
+import net.sf.jsefa.csv.annotation.CsvField;
+
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -53,16 +56,27 @@ public class PhoneticEncoder implements Serializable {
   private Integer bestFinal;
   private boolean includeOneToOne = true;
 
+  @CsvDataType
   public static class Encoding {
 
-    public final List<String> alignment;
-    public final List<String> phones;
-    public final double alignScore;
-    public final double tagScore;
-    public final boolean isPostProcessed;
+    @CsvField(pos = 1)
+    public List<String> alignment;
+    @CsvField(pos = 2)
+    public List<String> phones;
+    @CsvField(pos = 3)
+    public double alignScore;
+    @CsvField(pos = 4)
+    public double tagScore;
+    @CsvField(pos = 5)
+    public boolean isPostProcessed;
+    @CsvField(pos = 6)
     public int rank;      // what order overall was this coming out of the encoder
+    @CsvField(pos = 7)
     public int alignRank; // what order did this come out for the particular align group
 
+    public Encoding() {
+      // no arg constructor for the CSV serialization library
+    }
 
     public Encoding(List<String> alignment, List<String> phones, double alignScore, double tagScore) {
       this(alignment, phones, alignScore, tagScore, false);

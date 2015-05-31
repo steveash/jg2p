@@ -22,7 +22,9 @@ import com.github.steveash.jg2p.phoseq.Graphemes
 import com.github.steveash.jg2p.phoseq.Phonemes
 import com.github.steveash.jg2p.phoseq.WordShape
 import com.github.steveash.jg2p.rerank.Rerank2Model
-import com.github.steveash.jg2p.rerank.RerankModel
+import com.github.steveash.jg2p.rerank.RerankExample
+import com.github.steveash.jg2p.rerank.VowelReplacer
+import com.github.steveash.jg2p.util.CsvFactory
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Stopwatch
 import com.google.common.collect.HashMultiset
@@ -37,6 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Used to create training data for the reranking model
+ * this will use the extra generated candidates (with vowelReplacer) but will use a fairly large feature set
  * @author Steve Ash
  */
 //def rr = RerankModel.from(new File("../resources/dt_rerank_2.pmml"))
@@ -66,9 +69,12 @@ println "Starting..."
 
 // calculate the probability of including any particular record
 double recProb = totalEntriesToInclude.toDouble() / inps.size()
+def vr = new VowelReplacer()
 println "Using rec prob of $recProb"
 new File("../resources/psaur_rerank_train.txt").withPrintWriter { pw ->
-  pw.println(Rerank2Model.csvHeaders.join("\t"))
+  def serial = CsvFactory.make().createSerializer()
+  serial.open(pw)
+
   GParsPool.withPool {
     inps.everyParallel { InputRecord input ->
 
@@ -79,10 +85,9 @@ new File("../resources/psaur_rerank_train.txt").withPrintWriter { pw ->
 
       def newTotal = total.incrementAndGet()
       def cans = enc.complexEncode(input.xWord)
-      cans.overallResults
-      List<Encoding> ans = cans.alignResults.collect {it.encodings}.flatten()
+      def ans = vr.updateResults(cans.overallResults)
+
       assert ans.size() > 0
-      ans.sort(PhoneticEncoder.OrderByTagScore)
       def dups = HashMultiset.create()
       ans.each { dups.add(it.phones) }
       def modeEntry = dups.entrySet().max { it.count }
@@ -98,36 +103,34 @@ new File("../resources/psaur_rerank_train.txt").withPrintWriter { pw ->
         return true; // this is a bad example so don't train on this
       }
 
-      // need the index in the alignment set that the best answer was
-      def bestAlignIndex = -1
-      cans.alignResults.each { ar ->
-        ar.encodings.eachWithIndex { e, idx ->
-          if (e.is(bestAns)) {
-            bestAlignIndex = idx
-          }
-        }
-      }
-      assert bestAlignIndex >= 0
-      def wordShape = WordShape.graphShape(input.xWord.value, false)
-      def xx = input.xWord.asSpaceString
-      def yy = input.yWord.value.join("|")
-      def best = score(bestAns, wordShape, bestAlignIndex, modePhones, uniqueMode, dups, ans, xx)
+      def bestDupCount = dups.count(bestAns.phones)
+      def bestUniqueMode = uniqueMode && bestAns.phones == modePhones
+      def bestLm = lm.getSentenceProbNormalized(bestAns.phones.toArray(new String[0]))
       def pairProb = totalPairsPerEntryToInclude.toDouble() / (ans.size() - 1)
 
-      cans.alignResults.each { alignResult ->
-        alignResult.encodings.eachWithIndex { candResult, index ->
-          if (candResult.phones == bestAns.phones) {
-            return // skip self refs
-          }
-          if (rand.nextDouble() > pairProb) {
-            return // skip this pair so we get close to the number of pairs that we want to eval
-          }
-          def cand = score(candResult, wordShape, index, modePhones, uniqueMode, dups, ans, xx)
+      ans.each { cand ->
+        if (cand.phones == bestAns.phones) {
+          return // skip self refs
+        }
 
-          ArrayList<String> line = makeLine(best, cand, "A", bestAns.phones, candResult.phones, newTotal, xx, yy)
-          ArrayList<String> line2 = makeLine(cand, best, "B", candResult.phones, bestAns.phones, newTotal, xx, yy)
-          pw.println(line.join("\t"))
-          pw.println(line2.join("\t"))
+        if (rand.nextDouble() > pairProb) {
+          return // skip this pair so we get close to the number of pairs that we want to eval
+        }
+
+        def rr = new RerankExample()
+        rr.dupCountA = bestDupCount
+        rr.dupCountB = dups.count(cand.phones)
+        rr.encodingA = bestAns
+        rr.encodingB = cand
+        rr.languageModelScoreA = bestLm
+        rr.languageModelScoreB = lm.getSentenceProbNormalized(cand.phones.toArray(new String[0]))
+        rr.uniqueMatchingModeA = bestUniqueMode
+        rr.uniqueMatchingModeB = uniqueMode && cand.phones == modePhones
+        rr.wordGraphs = input.left.value
+        rr.label = RerankExample.A
+
+        synchronized (serial) {
+          serial.write(rr);
         }
       }
 
@@ -137,50 +140,10 @@ new File("../resources/psaur_rerank_train.txt").withPrintWriter { pw ->
       return true;
     }
   }
-}
 
-private makeLine(def aa, def bb, String label, List<String> aPhones, List<String> bPhones, int newTotal, String xx, String yy) {
-  def line = [newTotal, xx, yy, label, aPhones.join("|"), bPhones.join("|")]
-  Rerank2Model.scoreHeaders.each {
-    line << aa[it]
-    line << bb[it]
+  synchronized (serial) {
+    serial.close(false)
   }
-  return line
-}
-
-private score(Encoding ans, String wordShape, int alignIndex, List<String> modePhones, boolean uniqueMode,
-              Multiset<List<String>> dups, List<Encoding> overall, String spaceSepWord) {
-
-  def ansShape = WordShape.phoneShape(ans.phones, false)
-  def leadingConsMatch = false;
-  def leadingConsMismatch = false;
-  def graphChar = spaceSepWord.substring(0, 1)
-  if (Graphemes.isConsonant(graphChar) && Phonemes.isSimpleConsonantGraph(graphChar)) {
-    def phoneSymbol = ans.phones.first().substring(0, 1)
-    if (Graphemes.isConsonant(phoneSymbol) && graphChar.equalsIgnoreCase(phoneSymbol)) {
-      leadingConsMatch = true
-    } else {
-      leadingConsMismatch = true
-    }
-  }
-
-  def score = [:]
-  score << [lmScore: lm.getSentenceProbNormalized(ans.phones.toArray(new String[0]))]
-  score << [tagScore: ans.tagProbability()]
-  score << [alignScore: ans.alignScore]
-  score << [uniqueMode: (uniqueMode && ans.phones == modePhones ? "1" : "0")]
-  score << [dups: (dups.count(ans.phones))]
-  score << [alignIndex: alignIndex]
-  score << [overallIndex: overall.findIndexOf { it.phones == ans.phones }]
-  score << [shapeEdit: StringUtils.getLevenshteinDistance(ansShape, wordShape)]
-  score << [shapeLenDiff: wordShape.length() - ansShape.length()]
-  score << [leadingConsMatch: (leadingConsMatch ? "1" : "0")]
-  score << [leadingConsMismatch: (leadingConsMismatch ? "1" : "0")]
-
-  goodShapes.each { String shp ->
-    score.put(shp, (wordShape.startsWith(shp) && ansShape.startsWith(shp) ? "1" : "0"))
-  }
-  return score
 }
 
 watch.stop()

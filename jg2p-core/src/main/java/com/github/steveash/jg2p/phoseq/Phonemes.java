@@ -16,6 +16,7 @@
 
 package com.github.steveash.jg2p.phoseq;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -49,6 +50,13 @@ public class Phonemes {
   public static boolean isSimpleConsonantGraph(String graph) {
     return simpleConsonantGraphs.contains(graph.toUpperCase());
   }
+
+  public static final Predicate<String> whereOnlyVowels = new Predicate<String>() {
+    @Override
+    public boolean apply(String input) {
+      return isVowel(input);
+    }
+  };
 
   private static String get(String phone) {
     return checkNotNull(phoneClass.get(phone.toUpperCase()), "invalid phone", phone);

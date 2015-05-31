@@ -53,7 +53,13 @@ public class Rerank2Trainer {
     pipe = makePipe();
   }
 
-  public Rerank2Model trainFor(Collection<? extends Map<String, Object>> trainingData) {
+  /**
+   * Takes "one-sided" rerank examples and will create the "flip" side and then train on both (so we dont learn to
+   * just prefer one side over the other
+   * @param trainingData
+   * @return
+   */
+  public Rerank2Model trainFor(Collection<RerankExample> trainingData) {
     InstanceList instances = convert(trainingData);
     MaxEntTrainer trainer = new MaxEntTrainer(10.0);
     MaxEnt model = trainer.train(instances);
@@ -63,11 +69,13 @@ public class Rerank2Trainer {
     return new Rerank2Model(model);
   }
 
-  private InstanceList convert(Collection<? extends Map<String, Object>> trainingData) {
+  private InstanceList convert(Collection<RerankExample> trainingData) {
     InstanceList instances = new InstanceList(pipe, trainingData.size());
     int count = 0;
-    for (Map<String, Object> data : trainingData) {
-      instances.addThruPipe(new Instance(data, checkNotNull(data.get("label")), null, null));
+    for (RerankExample data : trainingData) {
+      instances.addThruPipe(new Instance(data, checkNotNull(data.getLabel()), null, null));
+      RerankExample flip = data.flip();
+      instances.addThruPipe(new Instance(flip, checkNotNull(flip.getLabel()), null, null));
       count += 1;
 
       if (count % 10000 == 0) {
@@ -80,11 +88,21 @@ public class Rerank2Trainer {
 
   private static Pipe makePipe() {
     Alphabet alpha = new Alphabet();
-    Target2Label labelPipe = new Target2Label();
-    LabelAlphabet labelAlpha = (LabelAlphabet) labelPipe.getTargetAlphabet();
+    LabelAlphabet labelAlpha = new LabelAlphabet();
+    Target2Label labelPipe = new Target2Label(alpha, labelAlpha);
 
     return new SerialPipes(ImmutableList.of(
-        new FeatureMapToFeatureVector(alpha, labelAlpha, Rerank2Model.featureHeaders),
+        new LoadExamplePipe(alpha, labelAlpha),
+        new DupsPipe(alpha, labelAlpha),
+        new ModePipe(alpha, labelAlpha),
+        new PrefixPipe(alpha, labelAlpha),
+        new RanksPipe(alpha, labelAlpha),
+        new ScoresPipe(alpha, labelAlpha),
+        new ShapePipe(alpha, labelAlpha),
+        new ShapePrefixPipe(alpha, labelAlpha),
+        new VowelBigramPipe(alpha, labelAlpha),
+        new VowelPatternPipe(alpha, labelAlpha),
+        new ExampleToFeatureVectorPipe(alpha, labelAlpha),
         labelPipe
     ));
 

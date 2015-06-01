@@ -80,10 +80,9 @@ public class Rerank2Model implements Reranker, Serializable {
     this.model = model;
   }
 
-  @Override
-  public Map<String, Double> probabilities(Map<String, Object> values) {
+  public Map<String, Double> probabilities(RerankExample ex) {
 
-    Classification classify = model.classify(values);
+    Classification classify = model.classify(ex);
     Labeling labeling = classify.getLabeling();
     HashMap<String, Double> result = Maps.newHashMapWithExpectedSize(labeling.numLocations());
     for (int i = 0; i < labeling.numLocations(); i++) {
@@ -92,5 +91,10 @@ public class Rerank2Model implements Reranker, Serializable {
       result.put(label, prob);
     }
     return result;
+  }
+
+  @Override
+  public Map<String, Double> probabilities(Map<String, Object> values) {
+    throw new IllegalStateException("not implemented");
   }
 }

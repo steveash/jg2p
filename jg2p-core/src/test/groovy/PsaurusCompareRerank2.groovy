@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger
 def file = "g014b2b-results.train"
 //def file = "g014b2b.test"
 //def inps = InputReader.makePSaurusReader().readFromClasspath(file)
-def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file).take(250)
+def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
 
 @Field PhoneticEncoder enc = ReadWrite.
     readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f4C_250.dat"))

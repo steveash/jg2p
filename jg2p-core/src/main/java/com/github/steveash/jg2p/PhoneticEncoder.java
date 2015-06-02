@@ -108,7 +108,19 @@ public class PhoneticEncoder implements Serializable {
 
     @Override
     public String toString() {
-      return pipeJoiner.join(alignment) + " -> " + spaceJoiner.join(phones);
+      StringBuilder sb = new StringBuilder();
+      if (alignment != null) {
+        sb.append(pipeJoiner.join(alignment));
+      } else {
+        sb.append("<null>");
+      }
+      sb.append(" -> ");
+      if (phones != null) {
+        sb.append(spaceJoiner.join(phones));
+      } else {
+        sb.append("<null>");
+      }
+      return sb.toString();
     }
   }
 

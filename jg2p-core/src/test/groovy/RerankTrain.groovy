@@ -1,5 +1,6 @@
 import com.github.steveash.jg2p.rerank.Rerank2Model
 import com.github.steveash.jg2p.rerank.Rerank2Trainer
+import com.github.steveash.jg2p.rerank.RerankExample
 import com.github.steveash.jg2p.util.CsvFactory
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.collect.Lists
@@ -34,7 +35,12 @@ new File(filePath).withReader { r ->
   def count = 0;
   deser.open(r)
   while (deser.hasNext()) {
-    exs.add(deser.next())
+    RerankExample ex = deser.next()
+    if (ex.encodingA.phones == null || ex.encodingB.phones == null || ex.encodingA.phones.isEmpty() || ex.encodingB.phones.isEmpty()) {
+      println "Problem with example on line $count got $ex skipping..."
+    } else {
+      exs.add(ex)
+    }
 
     count += 1
     if (count % 5000 == 0) {

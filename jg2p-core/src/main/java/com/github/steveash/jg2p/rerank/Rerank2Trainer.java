@@ -94,14 +94,14 @@ public class Rerank2Trainer {
     return new SerialPipes(ImmutableList.of(
         new LoadExamplePipe(alpha, labelAlpha),
         new DupsPipe(alpha, labelAlpha),
-        new ModePipe(alpha, labelAlpha),
+//        new ModePipe(alpha, labelAlpha),
         new PrefixPipe(alpha, labelAlpha),
         new RanksPipe(alpha, labelAlpha),
         new ScoresPipe(alpha, labelAlpha),
         new ShapePipe(alpha, labelAlpha),
         new ShapePrefixPipe(alpha, labelAlpha),
-        new VowelBigramPipe(alpha, labelAlpha),
-        new VowelPatternPipe(alpha, labelAlpha),
+//        new VowelBigramPipe(alpha, labelAlpha),
+//        new VowelPatternPipe(alpha, labelAlpha),
         new ExampleToFeatureVectorPipe(alpha, labelAlpha),
         labelPipe
     ));

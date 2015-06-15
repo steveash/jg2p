@@ -16,6 +16,8 @@
 
 package com.github.steveash.jg2p.util;
 
+import com.google.common.primitives.Doubles;
+
 /**
  * @author Steve Ash
  */
@@ -29,7 +31,7 @@ public class Scaler {
       return 0.0;
     }
     double result = Math.log10(val) / Math.log10(base);
-    if (!Double.isFinite(result)) {
+    if (Doubles.isFinite(result)) {
       throw new IllegalArgumentException("problem with " + val + " and base " + base);
     }
     return result;

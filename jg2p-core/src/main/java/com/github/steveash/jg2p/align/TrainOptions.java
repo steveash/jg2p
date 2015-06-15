@@ -25,7 +25,7 @@ import java.io.File;
  *
  * @author Steve Ash
  */
-public class TrainOptions {
+public class TrainOptions implements Cloneable {
 
   public enum InputFormat { TAB, CMU }
 
@@ -68,6 +68,9 @@ public class TrainOptions {
   @Option(name = "--initCrfFromModel")
   public String initCrfFromModelFile = null;
 
+  @Option(name = "--initSeqVowFromModel")
+  public String initSeqVowFromFile = null;
+
   @Option(name = "--semiSupervisedFactor")
   public double semiSupervisedFactor = 0.6;
 
@@ -95,6 +98,9 @@ public class TrainOptions {
   @Option(name = "--allowedAligns")
   public File alignAllowedFile;
 
+  @Option(name = "--useRetagger")
+  public boolean useRetagger = false;
+
   public void afterParametersSet() {
     if (outputFile == null) {
       this.outputFile = new File(trainingFile.getAbsolutePath() + ".model.dat");
@@ -111,6 +117,15 @@ public class TrainOptions {
       return InputReader.makeCmuReader();
 
     return InputReader.makeDefaultFormatReader();
+  }
+
+  @Override
+  public TrainOptions clone() {
+    try {
+      return (TrainOptions) super.clone();
+    } catch (CloneNotSupportedException e) {
+      throw new IllegalStateException();
+    }
   }
 
   @Override

@@ -25,6 +25,7 @@ psaur_22_xeps_ww_GB_B1/G1.dat B1 is the "bad" training subset for cascading, G1 
 psaur_22_xeps_ww_f3_100.dat is the g+b crf phoneticEncoder pulled out of psaur_22_xeps_ww_CE_A that im going to use to start overfit testing
 psaur_22_xeps_ww_f4_100.dat is the simple trainer, no cascades, no AA with f4 features for first 100 iterations
 psaur_22_xeps_ww_f4B* - F4B features is the same as F4A except + surrounding(2,2) and surrounding_shape(3,3)
+psaur_22_xeos_ww_f4C* - F4C features are F4 features + a few more surrounding char permutations
 
 dt_reranker2_1.dat - this is the log reg RR model trained off the psaur_rerank_train_50k.txt file (with the 7 order LM)
 dt_reranker2_2.dat - this is the log reg RR model trained off the psaur_rerank_train_50k_LM2.txt file (with the 2 order LM)

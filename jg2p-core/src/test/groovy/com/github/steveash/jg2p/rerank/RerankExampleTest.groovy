@@ -31,8 +31,8 @@ class RerankExampleTest extends GroovyTestCase {
 
   void testCsvInOut() {
     def abc = ImmutableList.of("A", "B", "C")
-    def encA = new PhoneticEncoder.Encoding(abc, abc, 2.123, 3.456, true)
-    def encB = new PhoneticEncoder.Encoding(abc, abc, 2.123, 3.456, true)
+    def encA = new PhoneticEncoder.Encoding(abc, abc, 2.123, 3.456)
+    def encB = new PhoneticEncoder.Encoding(abc, abc, 2.123, 3.456)
 
     def ex = new RerankExample(encA, true, 1, encB, true, 2, abc, "A")
 

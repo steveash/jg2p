@@ -17,13 +17,12 @@
 package com.github.steveash.jg2p.seq;
 
 import com.google.common.base.Predicate;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+
+import com.github.steveash.jg2p.util.GramBuilder;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import cc.mallet.fst.CRF;
@@ -37,38 +36,6 @@ import cc.mallet.types.Sequence;
 public class PhonemeCrfModel implements Serializable {
   //  private static final long serialVersionUID = -6696520265858560431L;
   private static final long serialVersionUID = 1888858574145460221L;
-
-  private static final Splitter split =com.google.common.base.Splitter.on(' ');
-
-  public static class TagResult {
-    private final List<String> phones;
-    private final double logScore;
-
-    public TagResult(List<String> phones, double logScore) {
-      this.phones = phones;
-      this.logScore = logScore;
-    }
-
-    public double sequenceLogProbability() { return logScore; }
-    public double sequenceProbability() {
-      return Math.exp(logScore);
-    }
-
-    public List<String> phonesNoEps() {
-      return Lists.newArrayList(Iterables.filter(phones, isNotEps));
-    }
-
-    public boolean isEqualTo(Iterable<String> expected) {
-      Iterator<String> iter = expected.iterator();
-      for (int i = 0; i < phones.size(); i++) {
-        if (!iter.hasNext()) return false;
-        String next = iter.next();
-        if (!phones.get(i).equals(next)) return false;
-      }
-      // got through all of the phones, make sure that the iterator is empty too
-      return !iter.hasNext();
-    }
-  }
 
   private final Transducer tduc;
 
@@ -87,36 +54,44 @@ public class PhonemeCrfModel implements Serializable {
     double z = tduc.getSumLatticeFactory().newSumLattice(tduc, inSeq).getTotalWeight();
     for (Sequence<Object> outSeq : outSeqs) {
       double score = tduc.getSumLatticeFactory().newSumLattice(tduc, inSeq, outSeq).getTotalWeight();
-      results.add(new TagResult(makePhones(outSeq), score - z));
+      results.add(makeTagResult(outSeq, score - z));
     }
 
     return results;
   }
 
-  private List<String> makePhones(Sequence<?> labels) {
-    ArrayList<String> phones = Lists.newArrayListWithCapacity(labels.size());
+  private TagResult makeTagResult(Sequence<?> labels, double logScore) {
+    ArrayList<String> phones = Lists.newArrayListWithExpectedSize(labels.size());
+    ArrayList<String> graphones = Lists.newArrayListWithCapacity(labels.size());
     for (int i = 0; i < labels.size(); i++) {
       // if our CRF can predict two phonemes at once then we need to unpack them here
       String predicted = labels.get(i).toString();
       if (predicted.contains(" ")) {
-        for (String singlePhone : split.split(predicted)) {
-          phones.add(singlePhone);
+        for (String singlePhone : GramBuilder.SPLITTER.split(predicted)) {
+          addIfPhone(phones, singlePhone);
         }
       } else {
-        phones.add(predicted);
+        addIfPhone(phones, predicted);
       }
+      graphones.add(predicted);
     }
-    return phones;
+    return new TagResult(graphones, phones, logScore);
+  }
+
+  private void addIfPhone(ArrayList<String> phones, String predicted) {
+    if (isNotEps.apply(predicted)) {
+      phones.add(predicted);
+    }
   }
 
   public CRF getCrf() {
     return (CRF) tduc;
   }
 
-  private static final Predicate<String> isNotEps = new Predicate<String>() {
+  public static final Predicate<String> isNotEps = new Predicate<String>() {
     @Override
     public boolean apply(String input) {
-      return !input.equalsIgnoreCase(PhonemeCrfTrainer.EPS);
+      return !input.equalsIgnoreCase(GramBuilder.EPS);
     }
   };
 }

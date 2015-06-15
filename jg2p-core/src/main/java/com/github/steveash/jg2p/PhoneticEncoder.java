@@ -25,6 +25,9 @@ import com.google.common.collect.Sets;
 import com.github.steveash.jg2p.align.Aligner;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
+import com.github.steveash.jg2p.seq.TagResult;
+import com.github.steveash.jg2p.seqvow.PartialPhones;
+import com.github.steveash.jg2p.seqvow.RetaggingModel;
 import com.github.steveash.jg2p.util.Zipper;
 
 import net.sf.jsefa.csv.annotation.CsvDataType;
@@ -55,6 +58,7 @@ public class PhoneticEncoder implements Serializable {
   private double tagMinScore;
   private Integer bestFinal;
   private boolean includeOneToOne = true;
+  private RetaggingModel retagger = null;
 
   @CsvDataType
   public static class Encoding {
@@ -73,23 +77,28 @@ public class PhoneticEncoder implements Serializable {
     public int rank;      // what order overall was this coming out of the encoder
     @CsvField(pos = 7)
     public int alignRank; // what order did this come out for the particular align group
+    @CsvField(pos = 8)
+    public List<String> graphones;
+        // the exact phones that came out of the CRF.  This is 1-1 with alignment i.e. alignment - split phones make
+        // up the graphones of the word
 
     public Encoding() {
       // no arg constructor for the CSV serialization library
     }
 
-    public Encoding(List<String> alignment, List<String> phones, double alignScore, double tagScore) {
-      this(alignment, phones, alignScore, tagScore, false);
-    }
-
-    public Encoding(List<String> alignment, List<String> phones,
-                    double alignScore, double tagScore,
-                    boolean isPostProcessed) {
+    private Encoding(List<String> alignment, List<String> phones, List<String> graphones, double alignScore, double tagScore) {
       this.alignment = alignment;
       this.phones = phones;
+      this.graphones = graphones;
       this.alignScore = alignScore;
       this.tagScore = tagScore;
-      this.isPostProcessed = isPostProcessed;
+    }
+
+    public static Encoding createEncoding(List<String> alignment, List<String> phones, List<String> graphones,
+                                          double alignScore, double tagScore) {
+
+      Encoding encoding = new Encoding(alignment, phones, graphones, alignScore, tagScore);
+      return encoding;
     }
 
     public double tagProbability() {
@@ -99,7 +108,8 @@ public class PhoneticEncoder implements Serializable {
     public Encoding withReplacedPhoneme(int index, String newPhoneme) {
       ArrayList<String> newPhones = Lists.newArrayList(this.phones);
       newPhones.set(index, newPhoneme);
-      Encoding result = new Encoding(this.alignment, newPhones, alignScore, tagScore, true);
+      Encoding result = createEncoding(this.alignment, newPhones, this.graphones, alignScore, tagScore);
+      result.isPostProcessed = true;
       result.rank = this.rank;
       result.alignRank = this.alignRank;
       return result;
@@ -151,12 +161,17 @@ public class PhoneticEncoder implements Serializable {
       AlignResult ar = new AlignResult(alignment);
       result.alignResults.add(ar);
       List<String> graphemes = alignment.getAllXTokensAsList();
-      List<PhonemeCrfModel.TagResult> tagResults = phoneTagger.tag(graphemes, bestTaggings);
-      for (PhonemeCrfModel.TagResult tagResult : tagResults) {
+      List<TagResult> tagResults = phoneTagger.tag(graphemes, bestTaggings);
+      for (TagResult tagResult : tagResults) {
         if (!results.isEmpty() && tagResult.sequenceLogProbability() < tagMinScore) {
           continue;
         }
-        Encoding e = new Encoding(graphemes, tagResult.phonesNoEps(), alignment.getScore(), tagResult.sequenceLogProbability());
+        double initialLogProb = tagResult.sequenceLogProbability();
+        if (retagger != null) {
+          tagResult = retag(graphemes, tagResult);
+        }
+        Encoding e = Encoding.createEncoding(graphemes, tagResult.phones(), tagResult.phoneGrams(), alignment.getScore(),
+                                             initialLogProb);
         results.add(e);
         ar.encodings.add(e);
       }
@@ -177,6 +192,18 @@ public class PhoneticEncoder implements Serializable {
     }
     result.overallResults.addAll(results);
     return result;
+  }
+
+  private TagResult retag(List<String> graphemes, TagResult tagResult) {
+    if (!PartialPhones.doesAnyGramContainPartialPhone(tagResult.phoneGrams())) {
+      // nothing to retag
+      return tagResult;
+    }
+    List<TagResult> retagged = retagger.tag(graphemes, tagResult.phoneGrams(), 1);
+    if (retagged.isEmpty()) {
+      throw new IllegalArgumentException("cant retag " + graphemes + " -> " + tagResult);
+    }
+    return retagged.get(0);
   }
 
   public List<Encoding> encode(Word input) {
@@ -246,6 +273,14 @@ public class PhoneticEncoder implements Serializable {
 
   public PhonemeCrfModel getPhoneTagger() {
     return phoneTagger;
+  }
+
+  public RetaggingModel getRetagger() {
+    return retagger;
+  }
+
+  public void setRetagger(RetaggingModel retagger) {
+    this.retagger = retagger;
   }
 
   public static final Ordering<Encoding> OrderByTagScore = new Ordering<Encoding>() {

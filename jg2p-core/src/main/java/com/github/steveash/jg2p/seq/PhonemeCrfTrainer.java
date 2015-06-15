@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableList;
 import com.github.steveash.jg2p.PhoneticEncoder;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.align.TrainOptions;
+import com.github.steveash.jg2p.seqvow.PartialPhones;
+import com.github.steveash.jg2p.util.GramBuilder;
 import com.github.steveash.jg2p.util.ReadWrite;
 
 import org.slf4j.Logger;
@@ -61,7 +63,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class PhonemeCrfTrainer {
 
   private static final Logger log = LoggerFactory.getLogger(PhonemeCrfTrainer.class);
-  public static final String EPS = "<EPS>";
 
   public static PhonemeCrfTrainer open(TrainOptions opts) {
     Pipe pipe = makePipe();
@@ -123,7 +124,7 @@ public class PhonemeCrfTrainer {
   }
 
   public void trainFor(Collection<Alignment> inputs) {
-    InstanceList examples = makeExamplesFromAligns(inputs, pipe);
+    InstanceList examples = makeExamplesFromAligns(inputs);
     trainForInstances(examples);
   }
 
@@ -156,7 +157,7 @@ public class PhonemeCrfTrainer {
   }
 
   public double accuracyFor(Collection<Alignment> inputs) {
-    InstanceList examples = makeExamplesFromAligns(inputs, pipe);
+    InstanceList examples = makeExamplesFromAligns(inputs);
     return accuracyFor(examples);
   }
 
@@ -213,12 +214,15 @@ public class PhonemeCrfTrainer {
     log.info("Wrote for whole data");
   }
 
-  private static InstanceList makeExamplesFromAligns(Iterable<Alignment> alignsToTrain, Pipe pipe) {
+  private InstanceList makeExamplesFromAligns(Iterable<Alignment> alignsToTrain) {
     int count = 0;
     InstanceList instances = new InstanceList(pipe);
     for (Alignment align : alignsToTrain) {
       List<String> phones = align.getAllYTokensAsList();
       updateEpsilons(phones);
+      if (opts.useRetagger) {
+        phones = PartialPhones.phoneGramsToPartialPhoneGrams(phones);
+      }
       Instance ii = new Instance(align.getAllXTokensAsList(), phones, null, null);
       instances.addThruPipe(ii);
       count += 1;
@@ -242,13 +246,13 @@ public class PhonemeCrfTrainer {
   }
 
   private static void updateEpsilons(List<String> phones) {
-    String last = EPS;
+    String last = GramBuilder.EPS;
     int blankCount = 0;
     for (int i = 0; i < phones.size(); i++) {
       String p = phones.get(i);
       if (isBlank(p)) {
 //        phones.set(i, last + "_" + blankCount);
-        phones.set(i, EPS);
+        phones.set(i, GramBuilder.EPS);
         blankCount += 1;
       } else {
         last = p;
@@ -270,9 +274,9 @@ public class PhonemeCrfTrainer {
         new SurroundingTokenFeature2(false, 1, 1),
         new SurroundingTokenFeature2(true, 1, 1),
         new SurroundingTokenFeature2(false, 2, 2),
-        new SurroundingTokenFeature2(false, 3, 2),
-        new SurroundingTokenFeature2(true, 3, 3),
-        new SurroundingTokenFeature2(true, 4, 4),
+//        new SurroundingTokenFeature2(false, 3, 2),
+//        new SurroundingTokenFeature2(true, 3, 3),
+//        new SurroundingTokenFeature2(true, 4, 4),
         new LeadingTrailingFeature(),
         new TokenSequenceToFeature(),                       // convert the strings in the text to features
         new TokenSequence2FeatureVectorSequence(alpha, true, true),
@@ -303,13 +307,13 @@ public class PhonemeCrfTrainer {
         new TokenWindow(3, 1),
         new TokenWindow(4, 1),
         new TokenWindow(1, 2),
-              new TokenWindow(1, 3),
+//              new TokenWindow(1, 3),
         new TokenWindow(-1, 1),
         new TokenWindow(-2, 1),
         new TokenWindow(-3, 1),
         new TokenWindow(-4, 1),
-        new TokenWindow(-2, 2),
-        new TokenWindow(-3, 3)
+        new TokenWindow(-2, 2)
+//        new TokenWindow(-3, 3)
 //        new TokenWindow(-4, 4),
     );
   }

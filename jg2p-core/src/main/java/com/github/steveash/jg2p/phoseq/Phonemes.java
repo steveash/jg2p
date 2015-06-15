@@ -19,7 +19,10 @@ package com.github.steveash.jg2p.phoseq;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Sets;
+
+import com.github.steveash.jg2p.util.GramBuilder;
 
 import java.util.Map;
 import java.util.Set;
@@ -31,8 +34,16 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class Phonemes {
 
+  public enum PhoneClasses {
+    M, D, R, S, A, F, N, L, I;
+
+    public String code() {
+      return name();
+    }
+  }
+
   public static boolean isVowel(String phone) {
-    String pc = get(phone);
+    String pc = getClassForPhone(phone);
     switch (pc) {
       case "M":
       case "D":
@@ -58,8 +69,12 @@ public class Phonemes {
     }
   };
 
-  private static String get(String phone) {
-    return checkNotNull(phoneClass.get(phone.toUpperCase()), "invalid phone", phone);
+  public static String getClassForPhone(String phone) {
+    return checkNotNull(phoneToPhoneClass.get(phone.toUpperCase()), "invalid phone", phone);
+  }
+
+  public static ImmutableSet<String> getPhonesForClass(String phoneClass) {
+    return checkNotNull(phoneClassToPhone.get(phoneClass), "invalid phone class", phoneClass);
   }
 
   // key is phone, value is mono, dipthong, r-color, stop, affricate, fricative, nasal, liquid, semivowels
@@ -74,7 +89,7 @@ public class Phonemes {
   // N = nasal
   // L = liquids
   // I = semivowels
-  private static final ImmutableMap<String, String> phoneClass = ImmutableMap.<String, String>builder()
+  private static final ImmutableMap<String, String> phoneToPhoneClass = ImmutableMap.<String, String>builder()
       .put("HH", "F")
       .put("B", "S")
       .put("D", "S")
@@ -116,18 +131,22 @@ public class Phonemes {
       .put("JH", "A")
       .build();
 
+  private static final ImmutableSetMultimap<String,String> phoneClassToPhone;
   private static final ImmutableSet<String> simpleConsonantGraphs;
   static {
     // construct a list of "simple" consonant sounds (i.e. those that are usually 1-1 like stops and fricatives
+    ImmutableSetMultimap.Builder<String, String> classBuilder = ImmutableSetMultimap.builder();
     ImmutableSet<String> phoneClassToInclude = ImmutableSet.of("S", "F");
     Set<String> simpleCons = Sets.newHashSet();
-    for (Map.Entry<String, String> entry : phoneClass.entrySet()) {
+    for (Map.Entry<String, String> entry : phoneToPhoneClass.entrySet()) {
       if (phoneClassToInclude.contains(entry.getValue())) {
         // just the first letter as that's the corresponding "simple consonant" but note that this only works because
         // the fricative symbols above that have two chars, the leading one is the "simple cons" that I care about
         simpleCons.add(entry.getKey().substring(0, 1));
       }
+      classBuilder.put(entry.getValue(), entry.getKey());
     }
     simpleConsonantGraphs = ImmutableSet.copyOf(simpleCons);
+    phoneClassToPhone = classBuilder.build();
   }
 }

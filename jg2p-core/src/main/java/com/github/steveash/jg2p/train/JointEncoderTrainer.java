@@ -33,6 +33,7 @@ import com.github.steveash.jg2p.align.TrainOptions;
 import com.github.steveash.jg2p.aligntag.AlignTagTrainer;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 import com.github.steveash.jg2p.seq.PhonemeCrfTrainer;
+import com.github.steveash.jg2p.seq.TagResult;
 import com.github.steveash.jg2p.util.Zipper;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -182,7 +183,7 @@ public class JointEncoderTrainer extends AbstractEncoderTrainer {
                                 Set<Alignment> goodExamples) {
     int goodAlignCount = 0;
     for (Alignment crfExample : crfExamples) {
-      List<PhonemeCrfModel.TagResult> predicts = crfModel.tag(crfExample.getAllXTokensAsList(), 1);
+      List<TagResult> predicts = crfModel.tag(crfExample.getAllXTokensAsList(), 1);
       if (predicts.size() > 0) {
         if (predicts.get(0).isEqualTo(crfExample.getYTokens())) {
           // good example, let's increment all of its transitions

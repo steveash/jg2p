@@ -18,6 +18,7 @@ import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.Maximizer
 import com.github.steveash.jg2p.align.TrainOptions
 import com.github.steveash.jg2p.train.JointEncoderTrainer
+import com.github.steveash.jg2p.train.RetaggingEncoderTrainer
 import com.github.steveash.jg2p.train.SimpleEncoderTrainer
 import com.github.steveash.jg2p.util.ReadWrite
 import org.slf4j.LoggerFactory
@@ -41,14 +42,16 @@ opts.includeXEpsilons = true
 opts.maximizer = Maximizer.JOINT
 opts.topKAlignCandidates = 1
 opts.minAlignScore = Integer.MIN_VALUE
-opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f3_100.dat"
+opts.useRetagger = true
+opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f4B_250.dat"
 //opts.alignAllowedFile = new File("../resources/possible-aligns.txt")
 def log = LoggerFactory.getLogger("psaurus")
 log.info("Starting training with $trainFile and $testFile with opts $opts")
 
-def t = new SimpleEncoderTrainer()
+//def t = new SimpleEncoderTrainer()
+def t = new RetaggingEncoderTrainer()
 //def t = new JointEncoderTrainer()
 def model = t.trainAndEval(train, test, opts)
-ReadWrite.writeTo(model, new File("../resources/psaur_22_xEps_ww_f4_100.dat"))
+ReadWrite.writeTo(model, new File("../resources/psaur_22_xEps_ww_F4D_RT1.dat"))
 
 log.info("***********************************Finished*************************************")

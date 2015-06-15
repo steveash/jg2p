@@ -236,7 +236,7 @@ public class PartialPhones {
     // its a multi-gram graphone
     GramBuilder sb = new GramBuilder();
     for (String s : GramBuilder.SPLITTER.split(finalPhoneGram)) {
-      if (isPartialPhone(s)) {
+      if (isPhoneEligibleAsPartial(s)) {
         sb.append(partialPhoneForPhone(s));
       } else {
         sb.append(s);

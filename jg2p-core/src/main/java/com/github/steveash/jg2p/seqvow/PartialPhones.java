@@ -266,7 +266,7 @@ public class PartialPhones {
     }
     GramBuilder sb = new GramBuilder();
     for (String s : GramBuilder.SPLITTER.split(gram)) {
-      if (Phonemes.isVowel(s) || isPartialPhone(s)) {
+      if (isPartialPhone(s) || Phonemes.isVowel(s)) {
         sb.append(s);
       }
     }

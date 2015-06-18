@@ -22,15 +22,15 @@ import com.github.steveash.jg2p.align.TrainOptions
 import com.github.steveash.jg2p.seqvow.PartialTagging
 import com.github.steveash.jg2p.seqvow.PartialPhones
 import com.github.steveash.jg2p.seqvow.RetaggerTrainer
+import com.github.steveash.jg2p.train.RetaggingEncoderTrainer
+import com.github.steveash.jg2p.train.SimpleEncoderTrainer
 import com.github.steveash.jg2p.util.ReadWrite
+import org.slf4j.LoggerFactory
 
-/**
- * @author Steve Ash
- */
 def trainFile = "g014b2b.train"
 def testFile = "g014b2b.test"
 def train = InputReader.makePSaurusReader().readFromClasspath(trainFile)
-//def test = InputReader.makePSaurusReader().readFromClasspath(testFile)
+def test = InputReader.makePSaurusReader().readFromClasspath(testFile)
 def opts = new TrainOptions()
 opts.maxXGram = 2
 opts.maxYGram = 2
@@ -41,37 +41,16 @@ opts.includeXEpsilons = true
 opts.maximizer = Maximizer.JOINT
 opts.topKAlignCandidates = 1
 opts.minAlignScore = Integer.MIN_VALUE
-//opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f3_100.dat"
+opts.useRetagger = true
+opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f4B_250.dat"
+//opts.alignAllowedFile = new File("../resources/possible-aligns.txt")
+def log = LoggerFactory.getLogger("psaurus")
+log.info("Starting training with $trainFile and $testFile with opts $opts")
 
-def model = ReadWrite.readFromFile(AlignModel, new File("../resources/am_cmudict_22_xeps_ww_A.dat"))
-// training the align model
+//def t = new SimpleEncoderTrainer()
+def t = new RetaggingEncoderTrainer()
+//def t = new JointEncoderTrainer()
+def model = t.train(train, opts)
+ReadWrite.writeTo(model, new File("../resources/psaur_22_xEps_ww_F5_retagonly1.dat"))
 
-int count = 0;
-def partials = train.collect { InputRecord rec ->
-  count += 1;
-  if (count % 1024 == 0) {
-    println "Read $count..."
-  }
-  def aligns = model.align(rec.left, rec.right, 1)
-  if (aligns.isEmpty()) return null
-
-  def align = aligns.first()
-  try {
-    def graphonePhones = align.allYTokensAsList
-    if (!PartialPhones.doesAnyGramContainPhoneEligibleAsPartial(graphonePhones)) {
-      return null;
-    }
-    return PartialTagging.createFromGraphsAndFinalPhoneGrams(align.allXTokensAsList, graphonePhones)
-  } catch (Exception e) {
-    throw new IllegalArgumentException("Problem trying to make example from $align", e)
-  }
-
-}.findAll { it != null }
-println "Got " + partials.size() + " inputs to train on"
-
-def trainer = RetaggerTrainer.open(opts)
-trainer.printEval = false;
-trainer.trainFor(partials)
-trainer.writeModel(new File("../resources/sv_A.dat"))
-double selfAccuracy = trainer.accuracyFor(partials)
-println "Got accuracy $selfAccuracy"
+log.info("***********************************Finished*************************************")

@@ -61,7 +61,11 @@ public abstract class AbstractEncoderTrainer {
     this.test = test;
 
     PhoneticEncoder encoder = train(train, opts);
-    eval(encoder, "FINAL", EncoderEval.PrintOpts.ALL);
+    try {
+      eval(encoder, "FINAL", EncoderEval.PrintOpts.ALL);
+    } catch (Exception e) {
+      log.warn("Problem during evaluation, just skipping the rest...", e);
+    }
     return encoder;
   }
 

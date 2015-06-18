@@ -46,4 +46,9 @@ public class GramBuilder {
   public String make() {
     return sb.toString();
   }
+
+  @Override
+  public String toString() {
+    return sb.toString();
+  }
 }

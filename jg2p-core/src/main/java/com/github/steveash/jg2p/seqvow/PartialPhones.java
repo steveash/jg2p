@@ -93,7 +93,7 @@ public class PartialPhones {
         sb.append(s);
       }
     }
-    return sb.toString();
+    return sb.make();
   }
 
   /**
@@ -118,7 +118,7 @@ public class PartialPhones {
         sb.append(s);
       }
     }
-    return sb.toString();
+    return sb.make();
   }
 
   /**
@@ -142,7 +142,7 @@ public class PartialPhones {
         sb.append(s);
       }
     }
-    return sb.toString();
+    return sb.make();
   }
 
   public static boolean isPartialPhone(String maybePartial) {

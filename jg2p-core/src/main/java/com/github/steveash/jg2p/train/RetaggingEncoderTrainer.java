@@ -16,18 +16,22 @@
 
 package com.github.steveash.jg2p.train;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
 import com.github.steveash.jg2p.PhoneticEncoder;
 import com.github.steveash.jg2p.align.AlignModel;
+import com.github.steveash.jg2p.align.AlignerTrainer;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.align.InputRecord;
 import com.github.steveash.jg2p.align.TrainOptions;
 import com.github.steveash.jg2p.seqvow.PartialPhones;
 import com.github.steveash.jg2p.seqvow.PartialTagging;
-import com.github.steveash.jg2p.seqvow.RetaggingModel;
 import com.github.steveash.jg2p.seqvow.RetaggerTrainer;
+import com.github.steveash.jg2p.seqvow.RetaggingModel;
+import com.github.steveash.jg2p.util.ReadWrite;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -42,12 +46,21 @@ public class RetaggingEncoderTrainer extends AbstractEncoderTrainer {
     if (!opts.useRetagger) {
       throw new IllegalArgumentException("cant use retagging encoder trainer without the --useRetagger option");
     }
-    SimpleEncoderTrainer simple = new SimpleEncoderTrainer(true);
-    PhoneticEncoder simpleEncoder = simple.train(inputs, opts);
+    AlignerTrainer alignTrainer = new AlignerTrainer(opts);
+    AlignModel model = alignTrainer.train(inputs);
+
+    PhoneticEncoder simpleEncoder;
+    try {
+      simpleEncoder = ReadWrite.readFromFile(PhoneticEncoder.class, new File(opts.initCrfFromModelFile));
+    } catch (Exception e) {
+      throw Throwables.propagate(e);
+    }
+//    SimpleEncoderTrainer simple = new SimpleEncoderTrainer(true);
+//    PhoneticEncoder simpleEncoder = simple.train(inputs, opts);
 
     TrainOptions clone = opts.clone();
     clone.topKAlignCandidates = 1;  // for retagging we only train with 1
-    List<PartialTagging> trainingInput = makeRetaggerInputs(inputs, simple.getAlignModel(), clone);
+    List<PartialTagging> trainingInput = makeRetaggerInputs(inputs, model, clone);
     RetaggerTrainer trainer = RetaggerTrainer.open(clone);
     trainer.trainFor(trainingInput);
     RetaggingModel retagger = trainer.buildModel();

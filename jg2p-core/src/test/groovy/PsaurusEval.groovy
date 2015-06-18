@@ -48,10 +48,10 @@ opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f4B_250.dat"
 def log = LoggerFactory.getLogger("psaurus")
 log.info("Starting training with $trainFile and $testFile with opts $opts")
 
-//def t = new SimpleEncoderTrainer()
-def t = new RetaggingEncoderTrainer()
+def t = new SimpleEncoderTrainer()
+//def t = new RetaggingEncoderTrainer()
 //def t = new JointEncoderTrainer()
-def model = t.trainAndEval(train, test, opts)
-ReadWrite.writeTo(model, new File("../resources/psaur_22_xEps_ww_F4D_RT1.dat"))
+def model = t.train(train, opts)
+ReadWrite.writeTo(model, new File("../resources/psaur_22_xEps_ww_F5_crfonly1.dat"))
 
 log.info("***********************************Finished*************************************")

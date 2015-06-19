@@ -66,4 +66,13 @@ public class TagResult {
     // got through all of the phones, make sure that the iterator is empty too
     return !iter.hasNext();
   }
+
+  @Override
+  public String toString() {
+    return "TagResult{" +
+           "phones=" + phones +
+           ", graphonePhones=" + graphonePhones +
+           ", logScore=" + logScore +
+           '}';
+  }
 }

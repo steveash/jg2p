@@ -30,6 +30,8 @@ import cc.mallet.fst.Transducer;
 import cc.mallet.types.Instance;
 import cc.mallet.types.Sequence;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 /**
  * @author Steve Ash
  */
@@ -79,7 +81,7 @@ public class PhonemeCrfModel implements Serializable {
   }
 
   private void addIfPhone(ArrayList<String> phones, String predicted) {
-    if (isNotEps.apply(predicted)) {
+    if (isNotEps.apply(predicted) && isNotBlank(predicted)) {
       phones.add(predicted);
     }
   }

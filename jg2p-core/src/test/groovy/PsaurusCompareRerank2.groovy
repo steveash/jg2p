@@ -49,7 +49,7 @@ import java.util.concurrent.atomic.AtomicInteger
 def file = "g014b2b-results.train"
 //def file = "g014b2b.test"
 //def inps = InputReader.makePSaurusReader().readFromClasspath(file)
-def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file).take(250)
+def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
 
 @Field PhoneticEncoder enc = ReadWrite.
     readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_F5_pe1.dat"))
@@ -119,13 +119,19 @@ new File("../resources/psaur_rerank_train.txt").withPrintWriter { pw ->
           return // skip this pair so we get close to the number of pairs that we want to eval
         }
 
+        double sentProb = lm.getSentenceProbNormalized(cand.phones.toArray(new String[0]))
+        if (!Double.isFinite(sentProb)) {
+          println "Got bad lm score from " + cand.phones.join("|") + " for " + input.left.asSpaceString
+          return
+        }
         def rr = new RerankExample()
         rr.dupCountA = bestDupCount
         rr.dupCountB = dups.count(cand.phones)
         rr.encodingA = bestAns
         rr.encodingB = cand
         rr.languageModelScoreA = bestLm
-        rr.languageModelScoreB = lm.getSentenceProbNormalized(cand.phones.toArray(new String[0]))
+
+        rr.languageModelScoreB = sentProb
         rr.uniqueMatchingModeA = bestUniqueMode
         rr.uniqueMatchingModeB = uniqueMode && cand.phones == modePhones
         rr.wordGraphs = input.left.value

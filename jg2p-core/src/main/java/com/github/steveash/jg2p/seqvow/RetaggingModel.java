@@ -31,6 +31,8 @@ import cc.mallet.fst.CRF;
 import cc.mallet.types.Instance;
 import cc.mallet.types.Sequence;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 /**
  * Model that takes graphones that represent a partial tagging of the graphones and returns a re-tagged version
  * with the final phones
@@ -97,7 +99,7 @@ public class RetaggingModel implements Serializable {
   }
 
   private void addIfPhone(List<String> phones, String predicted) {
-    if (PhonemeCrfModel.isNotEps.apply(predicted)) {
+    if (PhonemeCrfModel.isNotEps.apply(predicted) && isNotBlank(predicted)) {
       phones.add(predicted);
     }
   }

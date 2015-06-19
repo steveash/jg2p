@@ -17,6 +17,7 @@
 package com.github.steveash.jg2p;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
@@ -196,7 +197,10 @@ public class PhoneticEncoder implements Serializable {
 
   private TagResult retag(List<String> graphemes, TagResult tagResult) {
     if (!PartialPhones.doesAnyGramContainPartialPhone(tagResult.phoneGrams())) {
-      // nothing to retag
+      // nothing to retag -- but make sure no vowels are coming through in tagResult...otherwise the crf is
+      // sending the wrong stuff
+      Preconditions.checkArgument(!PartialPhones.doesAnyGramContainPhoneEligibleAsPartial(tagResult.phoneGrams()),
+                                  "crf sent vowels throw when it shouldve sent partialPhones", tagResult);
       return tagResult;
     }
     List<TagResult> retagged = retagger.tag(graphemes, tagResult.phoneGrams(), 1);

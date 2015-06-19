@@ -22,6 +22,7 @@ import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Stopwatch
 import com.google.common.collect.HashMultiset
+import com.google.common.util.concurrent.RateLimiter
 import groovy.transform.Field
 import groovyx.gpars.GParsConfig
 import groovyx.gpars.GParsPool
@@ -37,17 +38,18 @@ import java.util.concurrent.atomic.AtomicInteger
 
 //def file = "g014b2b-results.train"
 def file = "g014b2b.test"
-def inps = InputReader.makePSaurusReader().readFromClasspath(file).take(250)
+def inps = InputReader.makePSaurusReader().readFromClasspath(file)
 //def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
 
 @Field PhoneticEncoder enc = ReadWrite.
-    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_F5_retagonly1.dat"))
+    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_F5_pe1.dat"))
 enc.setBestAlignments(5)
 enc.setBestTaggings(5)
 enc.setBestFinal(25)
 enc.alignMinScore = Double.NEGATIVE_INFINITY
 enc.tagMinScore = Double.NEGATIVE_INFINITY
 
+def limiter = RateLimiter.create(1.0 / 5.0)
 Stopwatch watch = Stopwatch.createStarted()
 def total = new AtomicInteger(0)
 def correct = new AtomicInteger(0)
@@ -64,10 +66,17 @@ GParsPool.withPool {
 
     if (ans[0].phones == input.yWord.value) {
       correct.incrementAndGet()
+    } else {
+      if (newTotal < 10) {
+        println "Got " + ans[0].phones.join("|") + " for " + input.left.asSpaceString + " but wanted " +
+                input.yWord.value.join("|")
+      }
     }
 
-    if (newTotal % 5000 == 0) {
-      println "Completed " + newTotal + " of " + inps.size()
+    if (newTotal % 64 == 0) {
+      if (limiter.tryAcquire()) {
+        println "Completed " + newTotal + " of " + inps.size() + " " + Percent.print(newTotal, inps.size())
+      }
     }
     return true;
   }

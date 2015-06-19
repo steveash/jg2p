@@ -25,10 +25,12 @@ import com.github.steveash.jg2p.rerank.Rerank2Model
 import com.github.steveash.jg2p.rerank.RerankExample
 import com.github.steveash.jg2p.rerank.VowelReplacer
 import com.github.steveash.jg2p.util.CsvFactory
+import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Stopwatch
 import com.google.common.collect.HashMultiset
 import com.google.common.collect.Multiset
+import com.google.common.util.concurrent.RateLimiter
 import groovy.transform.Field
 import groovyx.gpars.GParsConfig
 import groovyx.gpars.GParsPool
@@ -47,10 +49,10 @@ import java.util.concurrent.atomic.AtomicInteger
 def file = "g014b2b-results.train"
 //def file = "g014b2b.test"
 //def inps = InputReader.makePSaurusReader().readFromClasspath(file)
-def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
+def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file).take(250)
 
 @Field PhoneticEncoder enc = ReadWrite.
-    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f4C_250.dat"))
+    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_F5_pe1.dat"))
 enc.setBestAlignments(5)
 enc.setBestTaggings(5)
 enc.setBestFinal(25)
@@ -59,6 +61,7 @@ enc.tagMinScore = Double.NEGATIVE_INFINITY
 
 @Field NgramLM lm = ReadWrite.readFromFile(NgramLM.class, new File("../resources/lm_7_kn.dat"))
 
+def limiter = RateLimiter.create(1.0 / 5.0)
 Stopwatch watch = Stopwatch.createStarted()
 def total = new AtomicInteger(0)
 def skipped = new AtomicInteger(0)
@@ -69,7 +72,6 @@ println "Starting..."
 
 // calculate the probability of including any particular record
 double recProb = totalEntriesToInclude.toDouble() / inps.size()
-def vr = new VowelReplacer()
 println "Using rec prob of $recProb"
 new File("../resources/psaur_rerank_train.txt").withPrintWriter { pw ->
   def serial = CsvFactory.make().createSerializer()
@@ -85,7 +87,7 @@ new File("../resources/psaur_rerank_train.txt").withPrintWriter { pw ->
 
       def newTotal = total.incrementAndGet()
       def cans = enc.complexEncode(input.xWord)
-      def ans = vr.updateResults(cans.overallResults)
+      def ans = cans.overallResults
 
       assert ans.size() > 0
       def dups = HashMultiset.create()
@@ -134,9 +136,11 @@ new File("../resources/psaur_rerank_train.txt").withPrintWriter { pw ->
         }
       }
 
-      if (newTotal % 5000 == 0) {
-        println "Completed " + newTotal + " of " + inps.size()
-      }
+      if (newTotal % 256 == 0) {
+            if (limiter.tryAcquire()) {
+              println "Completed " + newTotal + " of " + inps.size() + " " + Percent.print(newTotal, inps.size())
+            }
+          }
       return true;
     }
   }

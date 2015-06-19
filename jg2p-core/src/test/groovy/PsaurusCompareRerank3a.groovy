@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Used to evaluate the whole schematic with the reranking model trained from rerank2
- * using the "asymmetric" reranking model
+ * using the mallet reranking model
  * @author Steve Ash
  */
 //def rr = RerankModel.from(new File("../resources/dt_rerank_2.pmml"))
@@ -51,7 +51,7 @@ def inps = InputReader.makePSaurusReader().readFromClasspath(file)
 def grouped = inps.groupBy { it.xWord.asSpaceString }
 
 @Field PhoneticEncoder enc = ReadWrite.
-    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f4C_250.dat"))
+    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f5_pe1.dat"))
 enc.setBestAlignments(5)
 enc.setBestTaggings(5)
 enc.setBestFinal(25)

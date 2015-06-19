@@ -51,7 +51,7 @@ def inps = InputReader.makePSaurusReader().readFromClasspath(file)
 def grouped = inps.groupBy { it.xWord.asSpaceString }
 
 @Field PhoneticEncoder enc = ReadWrite.
-    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_f5_pe1.dat"))
+    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_F5_pe1.dat"))
 enc.setBestAlignments(5)
 enc.setBestTaggings(5)
 enc.setBestFinal(25)

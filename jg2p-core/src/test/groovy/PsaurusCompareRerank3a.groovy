@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger
 //def rr = RerankModel.from(new File("../resources/dt_rerank_2.pmml"))
 // 5b is the last asymm one, 4 is the last symm one, 3 is the best symm one
 //@Field RerankModel rr = RerankModel.from(new File("../resources/dt_rerank_3.pmml"))
-@Field Rerank2Model rr2 = ReadWrite.readFromFile(Rerank2Model.class, new File("../resources/dt_rerank3_1.dat"))
+@Field Rerank2Model rr2 = ReadWrite.readFromFile(Rerank2Model.class, new File("../resources/dt_rerank6_1.dat"))
 @Field boolean useRr2 = true
 
 //def file = "g014b2b-results.train"
@@ -67,7 +67,6 @@ def counts = ConcurrentHashMultiset.create()
 println "Starting..."
 
 def rightWords = Sets.newConcurrentHashSet()
-def vowelReplacer = new VowelReplacer()
 
 new File("../resources/bad_rerank_wrongorder.txt").withPrintWriter { pwWrong ->
   new File("../resources/bad_rerank_missed.txt").withPrintWriter { pwMissing ->
@@ -77,7 +76,7 @@ new File("../resources/bad_rerank_wrongorder.txt").withPrintWriter { pwWrong ->
         def input = inputs.first()
         def newTotal = total.incrementAndGet()
         def cans = enc.complexEncode(input.xWord)
-        List<Encoding> ans = vowelReplacer.updateResults(cans.overallResults)
+        def ans = cans.overallResults.findAll {it.phones != null && !it.phones.isEmpty()}
 
         assert ans.size() > 0
         def dups = HashMultiset.create()

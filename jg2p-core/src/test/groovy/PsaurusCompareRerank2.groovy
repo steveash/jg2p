@@ -111,6 +111,11 @@ new File("../resources/psaur_rerank_train.txt").withPrintWriter { pw ->
       def pairProb = totalPairsPerEntryToInclude.toDouble() / (ans.size() - 1)
 
       ans.each { cand ->
+        if (cand.phones == null || cand.phones.isEmpty()) {
+          println "Got bad cand for " + input.left.asSpaceString
+          skipped.incrementAndGet()
+          return
+        }
         if (cand.phones == bestAns.phones) {
           return // skip self refs
         }

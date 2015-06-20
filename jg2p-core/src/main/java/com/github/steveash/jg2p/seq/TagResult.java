@@ -29,6 +29,7 @@ public class TagResult {
   // contains a list of the graphone's phoneme's part so there can be EPS and 1+ phones
   private final List<String> graphonePhones;
   private final double logScore;
+  private volatile double logScore2 = 0.0; // if this was retagged then put that score here
 
   public TagResult(List<String> graphonePhones, List<String> phones, double logScore) {
     this.graphonePhones = graphonePhones;
@@ -50,6 +51,16 @@ public class TagResult {
 
   public List<String> phoneGrams() {
     return graphonePhones;
+  }
+
+  public double getLogScore2() {
+    return logScore2;
+  }
+
+  public double getLogScore2Probability() { return Math.exp(logScore2); }
+
+  public void setLogScore2(double logScore2) {
+    this.logScore2 = logScore2;
   }
 
   public boolean isEqualTo(Iterable<String> expected) {

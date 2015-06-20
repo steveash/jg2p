@@ -70,6 +70,7 @@ public class SimpleEncoderTrainer extends AbstractEncoderTrainer {
       crfModel = hmmTrainer.buildModel();
     }
     PhoneticEncoder encoder = PhoneticEncoderFactory.make(alignTagModel, crfModel);
+    encoder.setAlignModel(model);
     return encoder;
   }
 

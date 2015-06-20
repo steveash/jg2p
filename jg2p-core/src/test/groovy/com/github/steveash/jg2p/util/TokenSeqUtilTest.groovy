@@ -27,14 +27,8 @@ import static com.github.steveash.jg2p.util.TokenSeqUtil.getWindow
 class TokenSeqUtilTest {
 
   @Test
-  public void shouldMakeCrossingWindow() throws Exception {
-    def t = make("ST", "E", "VE", "Y")
-    assert getWindow(t, 1, -1, 2) == "T"
-  }
-
-  @Test
   public void shouldMakeBackwardsWindow() throws Exception {
-    def t = make("ST", "E", "VE")
+    def t = make("S T", "E", "V E")
     assert getWindow(t, 1, -1, 1) == "T"
     assert getWindow(t, 1, -2, 1) == "S"
     assert getWindow(t, 1, -2, 2) == "ST"
@@ -46,7 +40,7 @@ class TokenSeqUtilTest {
 
   @Test
   public void shouldMakeForwardsWindow() throws Exception {
-    def t = make("ST", "E", "VE")
+    def t = make("S T", "E", "V E")
     assert getWindow(t, 1, 1, 1) == "V"
     assert getWindow(t, 1, 2, 1) == "E"
     assert getWindow(t, 0, 2, 2) == "VE"

@@ -74,14 +74,16 @@ public class TokenSeqUtil {
         strIndex = str.length() - 1;
       }
 
+      char c = str.charAt(strIndex);
+      strIndex -= 1;
+      if (c == ' ') continue;
+
       if (eaten >= start) {
-        char c = str.charAt(strIndex);
         sb.append(c);
         if (sb.length() == windowWidth) {
           return sb.reverse().toString();
         }
       }
-      strIndex -= 1;
       eaten += 1;
     }
   }
@@ -112,14 +114,16 @@ public class TokenSeqUtil {
         strIndex = 0;
       }
 
+      char c = str.charAt(strIndex);
+      strIndex += 1;
+      if (c == ' ') continue;
+
       if (eaten >= start) {
-        char c = str.charAt(strIndex);
         sb.append(c);
         if (sb.length() == windowWidth) {
           return sb.toString();
         }
       }
-      strIndex += 1;
       eaten += 1;
     }
   }

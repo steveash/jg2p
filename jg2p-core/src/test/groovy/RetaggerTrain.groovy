@@ -1,4 +1,7 @@
+import com.github.steveash.jg2p.PhoneticEncoder
 import com.github.steveash.jg2p.align.AlignModel
+import com.github.steveash.jg2p.align.Aligner
+import com.github.steveash.jg2p.align.Alignment
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.InputRecord
 import com.github.steveash.jg2p.align.Maximizer
@@ -7,6 +10,7 @@ import com.github.steveash.jg2p.seqvow.PartialTagging
 import com.github.steveash.jg2p.seqvow.PartialPhones
 import com.github.steveash.jg2p.seqvow.RetaggerTrainer
 import com.github.steveash.jg2p.util.ReadWrite
+import com.github.steveash.jg2p.util.Zipper
 
 /*
  * Copyright 2015 Steve Ash
@@ -27,10 +31,12 @@ import com.github.steveash.jg2p.util.ReadWrite
 /**
  * @author Steve Ash
  */
-def trainFile = "g014b2b.train"
+//def trainFile = "g014b2b.train"
 def testFile = "g014b2b.test"
-def train = InputReader.makePSaurusReader().readFromClasspath(trainFile)
-//def test = InputReader.makePSaurusReader().readFromClasspath(testFile)
+//def inps = InputReader.makePSaurusReader().readFromClasspath(trainFile)
+def inps = InputReader.makePSaurusReader().readFromClasspath(testFile)
+
+//inps = inps.findAll {it.left.asSpaceString == "A F F L U E N T"}
 def opts = new TrainOptions()
 opts.maxXGram = 2
 opts.maxYGram = 2
@@ -44,9 +50,11 @@ opts.minAlignScore = Integer.MIN_VALUE
 //opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f3_100.dat"
 
 def model = ReadWrite.readFromFile(AlignModel, new File("../resources/am_cmudict_22_xeps_ww_A.dat"))
+def pe = ReadWrite.readFromFile(PhoneticEncoder, new File("../resources/psaur_22_xEps_ww_F5_pe1.dat"))
+//def model = pe.aligner
 // training the align model
 
-def partials = train.collect { InputRecord rec ->
+def partials = inps.collect { InputRecord rec ->
 
   def aligns = model.align(rec.left, rec.right, 1)
   if (aligns.isEmpty()) return null
@@ -68,6 +76,6 @@ println "Got " + partials.size() + " inputs to train on"
 def trainer = RetaggerTrainer.open(opts)
 trainer.printEval = false;
 trainer.trainFor(partials)
-trainer.writeModel(new File("../resources/sv_A.dat"))
+//trainer.writeModel(new File("../resources/sv_A.dat"))
 double selfAccuracy = trainer.accuracyFor(partials)
 println "Got accuracy $selfAccuracy"

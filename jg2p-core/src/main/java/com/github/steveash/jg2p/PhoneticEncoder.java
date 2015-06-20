@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 
+import com.github.steveash.jg2p.align.AlignModel;
 import com.github.steveash.jg2p.align.Aligner;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
@@ -60,6 +61,7 @@ public class PhoneticEncoder implements Serializable {
   private Integer bestFinal;
   private boolean includeOneToOne = true;
   private RetaggingModel retagger = null;
+  private AlignModel alignModel = null;
 
   @CsvDataType
   public static class Encoding {
@@ -207,7 +209,10 @@ public class PhoneticEncoder implements Serializable {
     if (retagged.isEmpty()) {
       throw new IllegalArgumentException("cant retag " + graphemes + " -> " + tagResult);
     }
-    return retagged.get(0);
+    TagResult retaggedResult = retagged.get(0);
+    TagResult updatedResult = new TagResult(retaggedResult.phoneGrams(), retaggedResult.phones(), tagResult.sequenceLogProbability());
+    updatedResult.setLogScore2(retaggedResult.getLogScore2());
+    return updatedResult;
   }
 
   public List<Encoding> encode(Word input) {
@@ -285,6 +290,14 @@ public class PhoneticEncoder implements Serializable {
 
   public void setRetagger(RetaggingModel retagger) {
     this.retagger = retagger;
+  }
+
+  public AlignModel getAlignModel() {
+    return alignModel;
+  }
+
+  public void setAlignModel(AlignModel alignModel) {
+    this.alignModel = alignModel;
   }
 
   public static final Ordering<Encoding> OrderByTagScore = new Ordering<Encoding>() {

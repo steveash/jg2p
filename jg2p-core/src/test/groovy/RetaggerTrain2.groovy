@@ -74,10 +74,12 @@ GParsPool.withPool {
 
     if (bestAns != null) {
       topContainsRight.incrementAndGet()
-      // this is what the model is already getting right
-      def pt = PartialTagging.createFromGraphsAndFinalPhoneGrams(bestAns.alignment, bestAns.graphones)
-      pt.setOriginalPredictedGrams(bestAns.graphones)
-      exs.add(pt)
+      if (PartialPhones.doesAnyGramContainPartialPhone(bestAns.graphones)) {
+        // this is what the model is already getting right
+        def pt = PartialTagging.createFromGraphsAndFinalPhoneGrams(bestAns.alignment, bestAns.graphones)
+        pt.setOriginalPredictedGrams(bestAns.graphones)
+        exs.add(pt)
+      }
     } else {
       def rightPartial = PartialPhones.phoneGramsToPartialPhoneGrams(input.yWord.value)
       def matchingPartial = ans.find {PartialPhones.doesAnyGramContainPhoneEligibleAsPartial(it.graphones) &&

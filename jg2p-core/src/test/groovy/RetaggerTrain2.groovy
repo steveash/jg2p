@@ -80,7 +80,8 @@ GParsPool.withPool {
       exs.add(pt)
     } else {
       def rightPartial = PartialPhones.phoneGramsToPartialPhoneGrams(input.yWord.value)
-      def matchingPartial = ans.find {PartialPhones.phoneGramsToPartialPhoneGrams(it.graphones) == rightPartial}
+      def matchingPartial = ans.find {PartialPhones.doesAnyGramContainPhoneEligibleAsPartial(it.graphones) &&
+                                      PartialPhones.phoneGramsToPartialPhoneGrams(it.graphones) == rightPartial}
       if (matchingPartial != null) {
         topContainsRightPartials.incrementAndGet()
         def partial = PartialPhones.phoneGramsToPartialPhoneGrams(matchingPartial.graphones)

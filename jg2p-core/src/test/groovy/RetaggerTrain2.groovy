@@ -110,13 +110,6 @@ GParsPool.withPool {
 watch.stop()
 GParsConfig.shutdown()
 
-println "Total ${total.get()}"
-println "Total top contained good ${topContainsRight.get()}"
-println "Total top contains right partial ${topContainsRightPartials.get()}"
-println "Not covered ${notCovered.get()}"
-println "Eval took " + watch
-
-println "Got " + exs.size() + " inputs to train on"
 
 def opts = new TrainOptions()
 opts.maxXGram = 2
@@ -134,5 +127,13 @@ trainer.trainFor(exs)
 enc.setRetagger(trainer.buildModel());
 ReadWrite.writeTo(enc, new File("../resources/psaur_22_xEps_ww_F7_retag_pe1.dat"))
 
-double selfAccuracy = trainer.accuracyFor(partials)
+double selfAccuracy = trainer.accuracyFor(exs)
 println "Got accuracy $selfAccuracy"
+
+println "Total ${total.get()}"
+println "Total top contained good ${topContainsRight.get()}"
+println "Total top contains right partial ${topContainsRightPartials.get()}"
+println "Not covered ${notCovered.get()}"
+println "Eval took " + watch
+
+println "Got " + exs.size() + " inputs to train on"

@@ -66,8 +66,8 @@ Stopwatch watch = Stopwatch.createStarted()
 def total = new AtomicInteger(0)
 def skipped = new AtomicInteger(0)
 @Field Random rand = new Random(0xCAFEBABE)
-def totalPairsPerEntryToInclude = 12
-def totalEntriesToInclude = 50000
+def totalPairsPerEntryToInclude = 18
+def totalEntriesToInclude = 75000
 println "Starting..."
 
 // calculate the probability of including any particular record

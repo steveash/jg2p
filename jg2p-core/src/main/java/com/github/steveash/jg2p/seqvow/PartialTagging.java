@@ -56,6 +56,7 @@ public class PartialTagging {
   // invariant is that these two are equal length
   private final List<String> graphemeGrams;
   private final List<String> partialPhoneGrams;
+  @Nullable private List<String> originalPredictedGrams;
   // which indexes in the phones list need prediction (i.e. have a vowel)
   private final List<Integer> predictionIndexes;
   // null unless this is a training example for supervised learning; if != null then invariant is expectedPhonesGrams.size() == phones.size()
@@ -103,6 +104,17 @@ public class PartialTagging {
     Preconditions.checkNotNull(expectedPhonesGrams, "only call this if you want this to be a training example");
     this.expectedPhonesGrams = expectedPhonesGrams;
     Preconditions.checkArgument(expectedPhonesGrams.size() == partialPhoneGrams.size());
+  }
+
+  @Nullable
+  public List<String> getOriginalPredictedGrams() {
+    return originalPredictedGrams;
+  }
+
+  public void setOriginalPredictedGrams(List<String> originalPredictedGrams) {
+    this.originalPredictedGrams = originalPredictedGrams;
+    Preconditions.checkArgument(originalPredictedGrams.size() == this.partialPhoneGrams.size());
+    Preconditions.checkArgument(originalPredictedGrams.size() == this.graphemeGrams.size());
   }
 
   public void addFeature(int phoneGramIndex, String feature) {

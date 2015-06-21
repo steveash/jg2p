@@ -218,21 +218,24 @@ public class RetaggerTrainer {
         new Neighbor(false, 4, 1),
 
         new Neighbor(false, -2, 2),
-//        new Neighbor(false, -3, 3),
-//        new Neighbor(false, -4, 4),
+        new Neighbor(false, -3, 3),
+        new Neighbor(false, -4, 4),
         new Neighbor(false, 1, 2),
-//        new Neighbor(false, 1, 3),
+        new Neighbor(false, 1, 3),
 //        new Neighbor(false, 1, 4),
         new Neighbor(true, -2, 2),
-//        new Neighbor(true, -3, 3),
+        new Neighbor(true, -3, 3),
         new Neighbor(true, 1, 2),
 //        new Neighbor(true, 1, 3),
 
         new Current(),
+        new OriginPrediction(),
         new NearVowel(-1),
         new NearVowel(-2),
+        new NearVowel(-3),
         new NearVowel(1),
-        new NearVowel(2)
+        new NearVowel(2),
+        new NearVowel(3)
     ));
   }
 }

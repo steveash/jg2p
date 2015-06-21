@@ -56,7 +56,7 @@ public class NearVowel implements RetaggerPipe, Serializable {
       }
     }
     // if we're here then there isn't a sibling that satisfies
-    tagging.addFeature(gramIndex, "VP" + lbl + "*");
-    tagging.addFeature(gramIndex, "VG" + lbl + "*");
+//    tagging.addFeature(gramIndex, "VP" + lbl + "*");
+//    tagging.addFeature(gramIndex, "VG" + lbl + "*");
   }
 }

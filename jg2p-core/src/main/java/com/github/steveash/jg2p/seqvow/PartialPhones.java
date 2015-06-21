@@ -190,7 +190,7 @@ public class PartialPhones {
   }
 
   protected static boolean doesGramContainPhoneEligibleAsPartial(String gram) {
-    if (isBlank(gram)) {
+    if (isEps(gram)) {
       return false;
     }
     if (!GramBuilder.isUnaryGram(gram)) {
@@ -222,7 +222,7 @@ public class PartialPhones {
    * tag.  This is used to create training data from aligned dictionary entries
    */
   public static String phoneGramToPartialPhoneGram(String finalPhoneGram) {
-    if (isBlank(finalPhoneGram) || finalPhoneGram.equalsIgnoreCase(GramBuilder.EPS)) {
+    if (isEps(finalPhoneGram)) {
       return "";
     }
 
@@ -243,6 +243,10 @@ public class PartialPhones {
       }
     }
     return sb.make();
+  }
+
+  protected static boolean isEps(String finalPhoneGram) {
+    return isBlank(finalPhoneGram) || finalPhoneGram.equalsIgnoreCase(GramBuilder.EPS);
   }
 
   public static List<String> phoneGramsToPartialPhoneGrams(List<String> finalPhoneGrams) {

@@ -28,6 +28,8 @@ psaur_22_xeps_ww_f4B* - F4B features is the same as F4A except + surrounding(2,2
 psaur_22_xeos_ww_f4C* - F4C features are F4 features + a few more surrounding char permutations
 psaur_22_xeps_ww_F5_pe1 - F5 features (less than F4C) + retagger
 psaur_22_xeps_ww_F6_pe1 - F6 features (which are F5 + window fix) no retagger (yet)
+psaur_22_xeps_ww_F7_pe1 - F7 features (which are F6 + -3 behind + 2 surround
+
 
 dt_reranker2_1.dat - this is the log reg RR model trained off the psaur_rerank_train_50k.txt file (with the 7 order LM)
 dt_reranker2_2.dat - this is the log reg RR model trained off the psaur_rerank_train_50k_LM2.txt file (with the 2 order LM)

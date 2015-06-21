@@ -272,10 +272,10 @@ public class PhonemeCrfTrainer {
         new NeighborTokenFeature(true, makeNeighbors()),         // grab neighboring graphemes
         new NeighborShapeFeature(true, makeShapeNeighs()),
         new SurroundingTokenFeature2(false, 1, 1),
-        new SurroundingTokenFeature2(true, 1, 1),
+//        new SurroundingTokenFeature2(true, 1, 1),
         new SurroundingTokenFeature2(false, 2, 2),
 //        new SurroundingTokenFeature2(false, 3, 2),
-//        new SurroundingTokenFeature2(true, 3, 3),
+        new SurroundingTokenFeature2(true, 3, 3),
 //        new SurroundingTokenFeature2(true, 4, 4),
         new LeadingTrailingFeature(),
         new TokenSequenceToFeature(),                       // convert the strings in the text to features
@@ -312,8 +312,8 @@ public class PhonemeCrfTrainer {
         new TokenWindow(-2, 1),
         new TokenWindow(-3, 1),
         new TokenWindow(-4, 1),
-        new TokenWindow(-2, 2)
-//        new TokenWindow(-3, 3)
+        new TokenWindow(-2, 2),
+        new TokenWindow(-3, 3)
 //        new TokenWindow(-4, 4),
     );
   }

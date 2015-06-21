@@ -43,7 +43,7 @@ opts.maximizer = Maximizer.JOINT
 opts.topKAlignCandidates = 1
 opts.minAlignScore = Integer.MIN_VALUE
 opts.useRetagger = false
-opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_F5_pe1.dat"
+opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_F6_pe1.dat"
 //opts.alignAllowedFile = new File("../resources/possible-aligns.txt")
 def log = LoggerFactory.getLogger("psaurus")
 log.info("Starting training with $trainFile and $testFile with opts $opts")
@@ -52,6 +52,6 @@ def t = new SimpleEncoderTrainer()
 //def t = new RetaggingEncoderTrainer()
 //def t = new JointEncoderTrainer()
 def model = t.train(train, opts)
-ReadWrite.writeTo(model, new File("../resources/psaur_22_xEps_ww_F6_pe1.dat"))
+ReadWrite.writeTo(model, new File("../resources/psaur_22_xEps_ww_F7_pe1.dat"))
 
 log.info("***********************************Finished*************************************")

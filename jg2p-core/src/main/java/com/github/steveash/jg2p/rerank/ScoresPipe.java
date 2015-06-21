@@ -35,6 +35,10 @@ public class ScoresPipe extends Pipe {
     RerankExample ex = data.getExample();
     data.setFeature("A_tagScore", ex.getEncodingA().tagProbability());
     data.setFeature("B_tagScore", ex.getEncodingB().tagProbability());
+
+    data.setFeature("A_retagScore", ex.getEncodingA().retagProbability());
+    data.setFeature("B_retagScore", ex.getEncodingB().retagProbability());
+
     data.setFeature("A_alignScore", Math.pow(2.0, ex.getEncodingA().alignScore));
     data.setFeature("B_alignScore", Math.pow(2.0, ex.getEncodingB().alignScore));
     data.setFeature("A_lmScore", ex.getLanguageModelScoreA());

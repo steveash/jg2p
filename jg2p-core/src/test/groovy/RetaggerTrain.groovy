@@ -31,17 +31,16 @@ import com.github.steveash.jg2p.util.Zipper
 /**
  * @author Steve Ash
  */
-//def trainFile = "g014b2b.train"
-def testFile = "g014b2b.test"
-//def inps = InputReader.makePSaurusReader().readFromClasspath(trainFile)
-def inps = InputReader.makePSaurusReader().readFromClasspath(testFile)
-
+def inpFile = "g014b2b.train"
+//def inpFile = "g014b2b.test"
+def inps = InputReader.makePSaurusReader().readFromClasspath(inpFile)
 //inps = inps.findAll {it.left.asSpaceString == "A F F L U E N T"}
+
 def opts = new TrainOptions()
 opts.maxXGram = 2
 opts.maxYGram = 2
 opts.onlyOneGrams = true
-opts.maxCrfIterations = 100
+opts.maxCrfIterations = 130
 opts.useWindowWalker = true
 opts.includeXEpsilons = true
 opts.maximizer = Maximizer.JOINT
@@ -49,9 +48,9 @@ opts.topKAlignCandidates = 1
 opts.minAlignScore = Integer.MIN_VALUE
 //opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f3_100.dat"
 
-def model = ReadWrite.readFromFile(AlignModel, new File("../resources/am_cmudict_22_xeps_ww_A.dat"))
-def pe = ReadWrite.readFromFile(PhoneticEncoder, new File("../resources/psaur_22_xEps_ww_F5_pe1.dat"))
-//def model = pe.aligner
+//def model = ReadWrite.readFromFile(AlignModel, new File("../resources/am_cmudict_22_xeps_ww_A.dat"))
+def pe = ReadWrite.readFromFile(PhoneticEncoder, new File("../resources/psaur_22_xEps_ww_F6_pe1.dat"))
+def model = pe.alignModel
 // training the align model
 
 def partials = inps.collect { InputRecord rec ->
@@ -76,6 +75,8 @@ println "Got " + partials.size() + " inputs to train on"
 def trainer = RetaggerTrainer.open(opts)
 trainer.printEval = false;
 trainer.trainFor(partials)
-//trainer.writeModel(new File("../resources/sv_A.dat"))
+pe.setRetagger(trainer.buildModel());
+ReadWrite.writeTo(pe, new File("../resources/psaur_22_xEps_ww_F6_retag_pe1.dat"))
+
 double selfAccuracy = trainer.accuracyFor(partials)
 println "Got accuracy $selfAccuracy"

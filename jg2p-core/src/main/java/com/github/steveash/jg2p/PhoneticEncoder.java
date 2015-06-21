@@ -75,12 +75,14 @@ public class PhoneticEncoder implements Serializable {
     @CsvField(pos = 4)
     public double tagScore;
     @CsvField(pos = 5)
-    public boolean isPostProcessed;
+    public double retagScore;
     @CsvField(pos = 6)
-    public int rank;      // what order overall was this coming out of the encoder
+    public boolean isPostProcessed;
     @CsvField(pos = 7)
-    public int alignRank; // what order did this come out for the particular align group
+    public int rank;      // what order overall was this coming out of the encoder
     @CsvField(pos = 8)
+    public int alignRank; // what order did this come out for the particular align group
+    @CsvField(pos = 9)
     public List<String> graphones;
         // the exact phones that came out of the CRF.  This is 1-1 with alignment i.e. alignment - split phones make
         // up the graphones of the word
@@ -89,18 +91,21 @@ public class PhoneticEncoder implements Serializable {
       // no arg constructor for the CSV serialization library
     }
 
-    private Encoding(List<String> alignment, List<String> phones, List<String> graphones, double alignScore, double tagScore) {
+    private Encoding(List<String> alignment, List<String> phones, List<String> graphones, double alignScore,
+                     double tagScore, double retagScore) {
+
       this.alignment = alignment;
       this.phones = phones;
       this.graphones = graphones;
       this.alignScore = alignScore;
       this.tagScore = tagScore;
+      this.retagScore = retagScore;
     }
 
     public static Encoding createEncoding(List<String> alignment, List<String> phones, List<String> graphones,
-                                          double alignScore, double tagScore) {
+                                          double alignScore, double tagScore, double retagScore) {
 
-      Encoding encoding = new Encoding(alignment, phones, graphones, alignScore, tagScore);
+      Encoding encoding = new Encoding(alignment, phones, graphones, alignScore, tagScore, retagScore);
       return encoding;
     }
 
@@ -108,10 +113,15 @@ public class PhoneticEncoder implements Serializable {
       return Math.exp(tagScore);
     }
 
+    public double retagProbability() {
+      if (retagScore == 0) return 0;
+      return Math.exp(retagScore);
+    }
+
     public Encoding withReplacedPhoneme(int index, String newPhoneme) {
       ArrayList<String> newPhones = Lists.newArrayList(this.phones);
       newPhones.set(index, newPhoneme);
-      Encoding result = createEncoding(this.alignment, newPhones, this.graphones, alignScore, tagScore);
+      Encoding result = createEncoding(this.alignment, newPhones, this.graphones, alignScore, tagScore, retagScore);
       result.isPostProcessed = true;
       result.rank = this.rank;
       result.alignRank = this.alignRank;
@@ -169,12 +179,11 @@ public class PhoneticEncoder implements Serializable {
         if (!results.isEmpty() && tagResult.sequenceLogProbability() < tagMinScore) {
           continue;
         }
-        double initialLogProb = tagResult.sequenceLogProbability();
         if (retagger != null) {
           tagResult = retag(graphemes, tagResult);
         }
         Encoding e = Encoding.createEncoding(graphemes, tagResult.phones(), tagResult.phoneGrams(), alignment.getScore(),
-                                             initialLogProb);
+                                             tagResult.sequenceLogProbability(), tagResult.getLogScore2());
         results.add(e);
         ar.encodings.add(e);
       }
@@ -198,20 +207,19 @@ public class PhoneticEncoder implements Serializable {
   }
 
   private TagResult retag(List<String> graphemes, TagResult tagResult) {
-    if (!PartialPhones.doesAnyGramContainPartialPhone(tagResult.phoneGrams())) {
-      // nothing to retag -- but make sure no vowels are coming through in tagResult...otherwise the crf is
-      // sending the wrong stuff
-      Preconditions.checkArgument(!PartialPhones.doesAnyGramContainPhoneEligibleAsPartial(tagResult.phoneGrams()),
-                                  "crf sent vowels throw when it shouldve sent partialPhones", tagResult);
+    // in this version we only re-assign vowels that were predicted
+    Preconditions.checkArgument(!PartialPhones.doesAnyGramContainPartialPhone(tagResult.phoneGrams()));
+    if (!PartialPhones.doesAnyGramContainPhoneEligibleAsPartial(tagResult.phoneGrams())) {
       return tagResult;
     }
-    List<TagResult> retagged = retagger.tag(graphemes, tagResult.phoneGrams(), 1);
+    List<String> partialPhoneGrams = PartialPhones.phoneGramsToPartialPhoneGrams(tagResult.phoneGrams());
+    List<TagResult> retagged = retagger.tag(graphemes, partialPhoneGrams, 1);
     if (retagged.isEmpty()) {
       throw new IllegalArgumentException("cant retag " + graphemes + " -> " + tagResult);
     }
     TagResult retaggedResult = retagged.get(0);
     TagResult updatedResult = new TagResult(retaggedResult.phoneGrams(), retaggedResult.phones(), tagResult.sequenceLogProbability());
-    updatedResult.setLogScore2(retaggedResult.getLogScore2());
+    updatedResult.setLogScore2(retaggedResult.sequenceLogProbability());
     return updatedResult;
   }
 
@@ -275,6 +283,8 @@ public class PhoneticEncoder implements Serializable {
   public void setTagMinScore(double tagMinScore) {
     this.tagMinScore = tagMinScore;
   }
+
+
 
   public Aligner getAligner() {
     return aligner;

@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Used to create training data for the reranking model
- * this will use the extra generated candidates (with vowelReplacer) but will use a fairly large feature set
+ * this will use the extra generated candidates but will use a fairly large feature set
  * @author Steve Ash
  */
 //def rr = RerankModel.from(new File("../resources/dt_rerank_2.pmml"))
@@ -52,7 +52,7 @@ def file = "g014b2b-results.train"
 def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
 
 @Field PhoneticEncoder enc = ReadWrite.
-    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_F5_pe1.dat"))
+    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_F6_pe1.dat"))
 enc.setBestAlignments(5)
 enc.setBestTaggings(5)
 enc.setBestFinal(25)

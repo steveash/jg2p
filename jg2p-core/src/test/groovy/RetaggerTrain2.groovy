@@ -74,7 +74,7 @@ GParsPool.withPool {
 
     if (bestAns != null) {
       topContainsRight.incrementAndGet()
-      if (PartialPhones.doesAnyGramContainPartialPhone(bestAns.graphones)) {
+      if (PartialPhones.doesAnyGramContainPhoneEligibleAsPartial(bestAns.graphones)) {
         // this is what the model is already getting right
         def pt = PartialTagging.createFromGraphsAndFinalPhoneGrams(bestAns.alignment, bestAns.graphones)
         pt.setOriginalPredictedGrams(bestAns.graphones)

@@ -213,7 +213,7 @@ public class PhoneticEncoder implements Serializable {
       return tagResult;
     }
     List<String> partialPhoneGrams = PartialPhones.phoneGramsToPartialPhoneGrams(tagResult.phoneGrams());
-    List<TagResult> retagged = retagger.tag(graphemes, partialPhoneGrams, 1);
+    List<TagResult> retagged = retagger.tag(graphemes, tagResult.phoneGrams(), 1);
     if (retagged.isEmpty()) {
       throw new IllegalArgumentException("cant retag " + graphemes + " -> " + tagResult);
     }

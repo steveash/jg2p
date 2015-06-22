@@ -76,8 +76,8 @@ GParsPool.withPool {
       topContainsRight.incrementAndGet()
       if (PartialPhones.doesAnyGramContainPhoneEligibleAsPartial(bestAns.graphones)) {
         // this is what the model is already getting right
-        def pt = PartialTagging.createFromGraphsAndFinalPhoneGrams(bestAns.alignment, bestAns.graphones)
-        pt.setOriginalPredictedGrams(bestAns.graphones)
+        def pt = PartialTagging.createFromGraphsAndOriginalPredictedPhoneGrams(bestAns.alignment, bestAns.graphones)
+        pt.setExpectedPhonesGrams(bestAns.graphones)
         exs.add(pt)
       }
     } else {
@@ -86,11 +86,8 @@ GParsPool.withPool {
                                       PartialPhones.phoneGramsToPartialPhoneGrams(it.graphones) == rightPartial}
       if (matchingPartial != null) {
         topContainsRightPartials.incrementAndGet()
-        def partial = PartialPhones.phoneGramsToPartialPhoneGrams(matchingPartial.graphones)
-        assert matchingPartial.alignment.size() == partial.size()
-        assert partial.size() == input.yWord.value.size()
-        def pt = PartialTagging.createFromGraphsAndPartialPhoneGrams(matchingPartial.alignment, partial)
-        pt.setOriginalPredictedGrams(matchingPartial.graphones)
+
+        def pt = PartialTagging.createFromGraphsAndOriginalPredictedPhoneGrams(matchingPartial.alignment, matchingPartial.graphones)
         pt.setExpectedPhonesGrams(input.yWord.value)
         exs.add(pt)
       } else {

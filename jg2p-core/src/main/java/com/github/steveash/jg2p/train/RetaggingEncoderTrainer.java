@@ -78,9 +78,11 @@ public class RetaggingEncoderTrainer extends AbstractEncoderTrainer {
         if (!PartialPhones.doesAnyGramContainPhoneEligibleAsPartial(phoneGrams)) {
           continue;
         }
-        PartialTagging input =
-            PartialTagging.createFromGraphsAndFinalPhoneGrams(align.getAllXTokensAsList(), phoneGrams);
-        trainingInput.add(input);
+        throw new IllegalStateException(
+            "unimplemented this since need to figure out what i want to do with this trainer");
+//        PartialTagging input =
+//            PartialTagging.createFromGraphsAndFinalPhoneGrams(align.getAllXTokensAsList(), phoneGrams);
+//        trainingInput.add(input);
       } catch (Exception e) {
         throw new IllegalArgumentException("Problem trying to make example from $align", e);
       }

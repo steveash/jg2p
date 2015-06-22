@@ -64,7 +64,7 @@ def partials = inps.collect { InputRecord rec ->
     if (!PartialPhones.doesAnyGramContainPhoneEligibleAsPartial(graphonePhones)) {
       return null;
     }
-    return PartialTagging.createFromGraphsAndFinalPhoneGrams(align.allXTokensAsList, graphonePhones)
+    return PartialTagging.createFromGraphsAndOriginalPredictedPhoneGrams(align.allXTokensAsList, graphonePhones)
   } catch (Exception e) {
     throw new IllegalArgumentException("Problem trying to make example from $align", e)
   }

@@ -49,9 +49,7 @@ public class RetaggingModel implements Serializable {
   }
 
   public List<TagResult> tag(List<String> graphemeGrams, List<String> phoneGrams, int nBest) {
-    List<String> partials = PartialPhones.phoneGramsToPartialPhoneGrams(phoneGrams);
-    PartialTagging partial = PartialTagging.createFromGraphsAndPartialPhoneGrams(graphemeGrams, partials);
-    partial.setOriginalPredictedGrams(phoneGrams);
+    PartialTagging partial = PartialTagging.createFromGraphsAndOriginalPredictedPhoneGrams(graphemeGrams, phoneGrams);
     Instance instance = new Instance(partial, null, null, null);
     instance = tduc.getInputPipe().instanceFrom(instance);
 

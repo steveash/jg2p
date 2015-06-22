@@ -250,9 +250,24 @@ public class PartialPhones {
   }
 
   public static List<String> phoneGramsToPartialPhoneGrams(List<String> finalPhoneGrams) {
+    return phoneGramsToPartialPhoneGrams(finalPhoneGrams, Integer.MAX_VALUE);
+  }
+
+  public static List<String> phoneGramsToPartialPhoneGrams(List<String> finalPhoneGrams, int maxToChange) {
     List<String> output = Lists.newArrayListWithCapacity(finalPhoneGrams.size());
+    int changed = 0;
     for (String phoneGram : finalPhoneGrams) {
-      output.add(phoneGramToPartialPhoneGram(phoneGram));
+      if (isEps(phoneGram)) {
+        output.add("");
+        continue;
+      }
+      String updated = phoneGramToPartialPhoneGram(phoneGram);
+      if (!updated.equals(phoneGram) && changed < maxToChange) {
+        output.add(updated);
+        changed += 1;
+        continue;
+      }
+      output.add(phoneGram);
     }
     return output;
   }

@@ -34,11 +34,14 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
  */
 public class PartialTagging {
 
+  private static final int MAX_PHONES_TO_RETAG = 1;
+
   public static PartialTagging createFromGraphsAndFinalPhoneGrams(List<String> graphemeGrams, List<String> finalPhoneGrams) {
     Preconditions.checkArgument(!PartialPhones.doesAnyGramContainPartialPhone(finalPhoneGrams));
     List<String> partialPhoneGrams = PartialPhones.phoneGramsToPartialPhoneGrams(finalPhoneGrams);
     PartialTagging tagging = new PartialTagging(graphemeGrams, partialPhoneGrams);
     tagging.setExpectedPhonesGrams(finalPhoneGrams);
+    tagging.setOriginalPredictedGrams(finalPhoneGrams);
     return tagging;
   }
 
@@ -46,11 +49,16 @@ public class PartialTagging {
    * This creates the PartialTagging from the input to the retagging process i.e. the phoneGrams should already contain
    * partialPhones (that were output from the previous stage)
    * @param graphs
-   * @param partialPhoneGrams
+   * @param predictedPhoneGrams
    * @return
    */
-  public static PartialTagging createFromGraphsAndPartialPhoneGrams(List<String> graphs, List<String> partialPhoneGrams) {
-    return new PartialTagging(graphs, partialPhoneGrams);
+  public static PartialTagging createFromGraphsAndOriginalPredictedPhoneGrams(List<String> graphs,
+                                                                              List<String> predictedPhoneGrams) {
+    Preconditions.checkArgument(!PartialPhones.doesAnyGramContainPartialPhone(predictedPhoneGrams));
+    List<String> partials = PartialPhones.phoneGramsToPartialPhoneGrams(predictedPhoneGrams, MAX_PHONES_TO_RETAG);
+    PartialTagging tagging = new PartialTagging(graphs, partials);
+    tagging.setOriginalPredictedGrams(predictedPhoneGrams);
+    return tagging;
   }
 
   // invariant is that these two are equal length

@@ -26,7 +26,14 @@ class PartialTaggingTest {
   @Test
   public void shouldMakePartialForFinal() throws Exception {
     assert ["!D T", "!M !D", "K S"] ==
-           PartialTagging.createFromGraphsAndFinalPhoneGrams(["A", "T", "X"], ["EY T", "IY EY", "K S"]).partialPhoneGrams
+           PartialTagging.createFromGraphsAndOriginalPredictedPhoneGrams(["A", "T", "X"], ["EY T", "IY EY", "K S"]).partialPhoneGrams
 
+  }
+
+  @Test
+  public void shouldMakePartialForMax1() throws Exception {
+    def grams = PartialTagging.
+        createFromGraphsAndOriginalPredictedPhoneGrams(['B', 'A', 'E', 'K'], ['B', '<EPS>', 'EH', 'K'])
+    assert grams.partialPhoneGrams == ['B', '', '!M', 'K']
   }
 }

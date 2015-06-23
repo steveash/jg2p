@@ -27,7 +27,7 @@ import com.google.common.collect.Maps
  */
 def filePath = "../resources/psaur_rerank_train.txt"
 //def filePath = "/home/steve/Downloads/psaur_rerank_train_50k.txt"
-def outPath = "../resources/dt_rerank_F7_retag_1.dat"
+def outPath = "../resources/dt_rerank_F7_2.dat"
 
 def exs = []
 new File(filePath).withReader { r ->

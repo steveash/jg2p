@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger
 //def rr = RerankModel.from(new File("../resources/dt_rerank_2.pmml"))
 // 5b is the last asymm one, 4 is the last symm one, 3 is the best symm one
 //@Field RerankModel rr = RerankModel.from(new File("../resources/dt_rerank_3.pmml"))
-@Field Rerank2Model rr2 = ReadWrite.readFromFile(Rerank2Model.class, new File("../resources/dt_rerank_F7_retag_1.dat"))
+@Field Rerank2Model rr2 = ReadWrite.readFromFile(Rerank2Model.class, new File("../resources/dt_rerank_F7_2.dat"))
 @Field boolean useRr2 = true
 
 //def file = "g014b2b-results.train"
@@ -51,7 +51,7 @@ def inps = InputReader.makePSaurusReader().readFromClasspath(file)
 def grouped = inps.groupBy { it.xWord.asSpaceString }
 
 @Field PhoneticEncoder enc = ReadWrite.
-    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_F7_retag_pe1.dat"))
+    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_F7_pe1.dat"))
 enc.setBestAlignments(5)
 enc.setBestTaggings(5)
 enc.setBestFinal(25)

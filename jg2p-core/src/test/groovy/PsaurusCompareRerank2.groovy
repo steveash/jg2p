@@ -52,7 +52,7 @@ def file = "g014b2b-results.train"
 def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file)
 
 @Field PhoneticEncoder enc = ReadWrite.
-    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_F7_retag_pe1.dat"))
+    readFromFile(PhoneticEncoder.class, new File("../resources/psaur_22_xEps_ww_F7_pe1.dat"))
 enc.setBestAlignments(5)
 enc.setBestTaggings(5)
 enc.setBestFinal(25)
@@ -66,8 +66,8 @@ Stopwatch watch = Stopwatch.createStarted()
 def total = new AtomicInteger(0)
 def skipped = new AtomicInteger(0)
 @Field Random rand = new Random(0xCAFEBABE)
-def totalPairsPerEntryToInclude = 18
-def totalEntriesToInclude = 75000
+def totalPairsPerEntryToInclude = 15
+def totalEntriesToInclude = 50000
 println "Starting..."
 
 // calculate the probability of including any particular record

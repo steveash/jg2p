@@ -43,7 +43,10 @@ public class RanksPipe extends Pipe {
   }
 
   private void addRanks(RerankFeature data, String prefix, PhoneticEncoder.Encoding encoding) {
-    data.setFeature(prefix + "all", (Scaler.scaleLog(encoding.rank, RANK_SCALE_BASE)));
-    data.setFeature(prefix + "alg", (Scaler.scaleLog(encoding.alignRank, RANK_SCALE_BASE)));
+//    data.setFeature(prefix + "all", (Scaler.scaleLog(encoding.rank, RANK_SCALE_BASE)));
+//    data.setFeature(prefix + "alg", (Scaler.scaleLog(encoding.alignRank, RANK_SCALE_BASE)));
+
+    data.setFeature(prefix + "all", encoding.rank);
+    data.setFeature(prefix + "alg", encoding.alignRank);
   }
 }

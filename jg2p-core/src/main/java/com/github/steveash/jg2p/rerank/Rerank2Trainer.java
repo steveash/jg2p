@@ -94,7 +94,7 @@ public class Rerank2Trainer {
     return new SerialPipes(ImmutableList.of(
         new LoadExamplePipe(alpha, labelAlpha),
         new DupsPipe(alpha, labelAlpha),
-//        new ModePipe(alpha, labelAlpha),
+        new ModePipe(alpha, labelAlpha),
         new PrefixPipe(alpha, labelAlpha),
         new RanksPipe(alpha, labelAlpha),
         new ScoresPipe(alpha, labelAlpha),

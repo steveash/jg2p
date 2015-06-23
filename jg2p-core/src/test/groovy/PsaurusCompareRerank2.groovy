@@ -66,7 +66,7 @@ Stopwatch watch = Stopwatch.createStarted()
 def total = new AtomicInteger(0)
 def skipped = new AtomicInteger(0)
 @Field Random rand = new Random(0xCAFEBABE)
-def totalPairsPerEntryToInclude = 15
+def totalPairsPerEntryToInclude = 12
 def totalEntriesToInclude = 50000
 println "Starting..."
 

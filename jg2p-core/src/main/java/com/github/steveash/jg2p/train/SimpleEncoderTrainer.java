@@ -16,6 +16,8 @@
 
 package com.github.steveash.jg2p.train;
 
+import com.google.common.base.Preconditions;
+
 import com.github.steveash.jg2p.PhoneticEncoder;
 import com.github.steveash.jg2p.PhoneticEncoderFactory;
 import com.github.steveash.jg2p.align.AlignModel;
@@ -40,6 +42,7 @@ import java.util.List;
 public class SimpleEncoderTrainer extends AbstractEncoderTrainer {
 
   private boolean useCrf = true;
+  private boolean skipAlignTrain = false;
 
   public SimpleEncoderTrainer() {
   }
@@ -50,11 +53,17 @@ public class SimpleEncoderTrainer extends AbstractEncoderTrainer {
 
   @Override
   public PhoneticEncoder train(List<InputRecord> inputs, TrainOptions opts) {
-    AlignerTrainer alignTrainer = new AlignerTrainer(opts);
     AlignTagTrainer alignTagTrainer = new AlignTagTrainer();
 
-    AlignModel model = alignTrainer.train(inputs);
-    setAlignModel(model);
+    AlignModel model;
+    if (!skipAlignTrain) {
+      AlignerTrainer alignTrainer = new AlignerTrainer(opts);
+      model = alignTrainer.train(inputs);
+      setAlignModel(model);
+    } else {
+      model = getAlignModel();
+      Preconditions.checkArgument(model != null, "cant skip align training if you dont set a model");
+    }
 
     List<Alignment> crfExamples = makeCrfExamples(inputs, model, opts);
     AlignTagModel alignTagModel = alignTagTrainer.train(crfExamples);
@@ -74,4 +83,11 @@ public class SimpleEncoderTrainer extends AbstractEncoderTrainer {
     return encoder;
   }
 
+  public boolean isSkipAlignTrain() {
+    return skipAlignTrain;
+  }
+
+  public void setSkipAlignTrain(boolean skipAlignTrain) {
+    this.skipAlignTrain = skipAlignTrain;
+  }
 }

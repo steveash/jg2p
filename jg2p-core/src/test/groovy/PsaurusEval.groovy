@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import com.github.steveash.jg2p.PhoneticEncoder
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.Maximizer
 import com.github.steveash.jg2p.align.TrainOptions
@@ -43,12 +44,17 @@ opts.maximizer = Maximizer.JOINT
 opts.topKAlignCandidates = 1
 opts.minAlignScore = Integer.MIN_VALUE
 opts.useRetagger = false
-opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_F6_pe1.dat"
+opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_F7_pe1.dat"
 //opts.alignAllowedFile = new File("../resources/possible-aligns.txt")
 def log = LoggerFactory.getLogger("psaurus")
 log.info("Starting training with $trainFile and $testFile with opts $opts")
 
+PhoneticEncoder from = ReadWrite.readFromFile(PhoneticEncoder, new File(opts.initCrfFromModelFile))
+
 def t = new SimpleEncoderTrainer()
+t.setAlignModel(from.alignModel)
+t.skipAlignTrain = true
+
 //def t = new RetaggingEncoderTrainer()
 //def t = new JointEncoderTrainer()
 def model = t.train(train, opts)

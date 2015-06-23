@@ -45,7 +45,7 @@ public abstract class AbstractEncoderTrainer {
     return alignModel;
   }
 
-  protected void setAlignModel(AlignModel alignModel) {
+  public void setAlignModel(AlignModel alignModel) {
     this.alignModel = alignModel;
   }
 

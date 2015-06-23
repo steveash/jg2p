@@ -56,7 +56,8 @@ public class ShapePrefixPipe extends Pipe {
       }
       String gg = wordShape.substring(0, i);
       String pp = ansShape.substring(0, i);
-      if (gg.equalsIgnoreCase(pp) && Rerank2Model.goodShapes.contains(gg)) {
+//      if (gg.equalsIgnoreCase(pp) && Rerank2Model.goodShapes.contains(gg)) {
+      if (gg.equalsIgnoreCase(pp)) {
         data.setBinary(prefix + "sp_" + gg);
       }
     }

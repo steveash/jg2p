@@ -54,14 +54,14 @@ public class ShapePipe extends Pipe {
     int dist = StringUtils.getLevenshteinDistance(wordShape, ansShape, DIST_BASE);
     double distFeature = 1.0;
     if (dist > 0) {
-//      distFeature = Scaler.scaleLogSquash(dist, DIST_BASE, 1.0);
-      distFeature = dist;
+      distFeature = Scaler.scaleLogSquash(dist, DIST_BASE, 1.0);
+//      distFeature = dist;
     }
     data.setFeature(prefix + "shpDst", distFeature);
 
     int lenDiff = Math.abs(wordShape.length() - ansShape.length());
-//    double lenDiffFeature = Scaler.scaleLogSquash(lenDiff, 3.0, 1.0);
-    double lenDiffFeature = lenDiff;
+    double lenDiffFeature = Scaler.scaleLogSquash(lenDiff, 3.0, 1.0);
+//    double lenDiffFeature = lenDiff;
     data.setFeature(prefix + "shpLenDiff", lenDiffFeature);
   }
 }

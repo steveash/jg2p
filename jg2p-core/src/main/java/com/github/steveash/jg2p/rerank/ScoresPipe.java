@@ -39,10 +39,10 @@ public class ScoresPipe extends Pipe {
     data.setFeature("A_retagScore", ex.getEncodingA().retagProbability());
     data.setFeature("B_retagScore", ex.getEncodingB().retagProbability());
 
-//    data.setFeature("A_alignScore", Math.pow(2.0, ex.getEncodingA().alignScore));
-//    data.setFeature("B_alignScore", Math.pow(2.0, ex.getEncodingB().alignScore));
-    data.setFeature("A_alignScore", ex.getEncodingA().alignScore);
-    data.setFeature("B_alignScore", ex.getEncodingB().alignScore);
+    data.setFeature("A_alignScore", Math.pow(2.0, ex.getEncodingA().alignScore));
+    data.setFeature("B_alignScore", Math.pow(2.0, ex.getEncodingB().alignScore));
+//    data.setFeature("A_alignScore", ex.getEncodingA().alignScore);
+//    data.setFeature("B_alignScore", ex.getEncodingB().alignScore);
 
     data.setFeature("A_lmScore", ex.getLanguageModelScoreA());
     data.setFeature("B_lmScore", ex.getLanguageModelScoreB());

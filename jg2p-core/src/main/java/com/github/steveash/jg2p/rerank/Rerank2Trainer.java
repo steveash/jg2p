@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import cc.mallet.classify.MaxEnt;
+import cc.mallet.classify.MaxEntL1Trainer;
 import cc.mallet.classify.MaxEntTrainer;
 import cc.mallet.classify.Trial;
 import cc.mallet.classify.evaluate.ConfusionMatrix;
@@ -61,7 +62,8 @@ public class Rerank2Trainer {
    */
   public Rerank2Model trainFor(Collection<RerankExample> trainingData) {
     InstanceList instances = convert(trainingData);
-    MaxEntTrainer trainer = new MaxEntTrainer(10.0);
+//    MaxEntTrainer trainer = new MaxEntTrainer(10.0);
+    MaxEntL1Trainer trainer = new MaxEntL1Trainer();
     MaxEnt model = trainer.train(instances);
     Trial trial = new Trial(model, instances);
     log.info("Trained reranker. Final accuracy on itself: " + trial.getAccuracy());

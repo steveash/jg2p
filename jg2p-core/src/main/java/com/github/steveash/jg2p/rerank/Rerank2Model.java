@@ -90,7 +90,7 @@ public class Rerank2Model implements Reranker, Serializable {
     for (int i = 0; i < labeling.numLocations(); i++) {
       String label = (String) labeling.labelAtLocation(i).getEntry();
       double prob = labeling.valueAtLocation(i);
-      Preconditions.checkArgument(prob >= 0 && prob <= 0, "didnt get a real prob", prob);
+      Preconditions.checkArgument(prob >= 0 && prob <= 1, "didnt get a real prob", prob);
       result.put(label, prob);
     }
     return result;

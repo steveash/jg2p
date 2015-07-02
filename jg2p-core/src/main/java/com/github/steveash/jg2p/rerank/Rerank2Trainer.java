@@ -74,7 +74,7 @@ public class Rerank2Trainer {
     return new Rerank2Model(model);
   }
 
-  private InstanceList convert(Collection<RerankExample> trainingData) {
+  public InstanceList convert(Collection<RerankExample> trainingData) {
     InstanceList instances = new InstanceList(pipe, trainingData.size());
     int count = 0;
     for (RerankExample data : trainingData) {

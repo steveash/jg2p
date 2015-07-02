@@ -1,10 +1,10 @@
-import com.github.steveash.jg2p.rerank.Rerank2Model
+import cc.mallet.types.FeatureVector
+import cc.mallet.types.Instance
+import com.github.steveash.jg2p.rerank.KnimeOutputter
 import com.github.steveash.jg2p.rerank.Rerank2Trainer
 import com.github.steveash.jg2p.rerank.RerankExample
 import com.github.steveash.jg2p.util.CsvFactory
-import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.collect.Lists
-import com.google.common.collect.Maps
 
 /*
  * Copyright 2015 Steve Ash
@@ -27,7 +27,8 @@ import com.google.common.collect.Maps
  */
 def filePath = "../resources/psaur_rerank_train.txt"
 //def filePath = "/home/steve/Downloads/psaur_rerank_train_50k.txt"
-def outPath = "../resources/dt_rerank_F7_2.dat"
+//def outPath = "../resources/dt_rerank_F7_2.dat"
+def outPath = "../resources/psaur_rerank_train_knime.txt"
 
 def exs = []
 new File(filePath).withReader { r ->
@@ -36,7 +37,8 @@ new File(filePath).withReader { r ->
   deser.open(r)
   while (deser.hasNext()) {
     RerankExample ex = deser.next()
-    if (ex.encodingA.phones == null || ex.encodingB.phones == null || ex.encodingA.phones.isEmpty() || ex.encodingB.phones.isEmpty()) {
+    if (ex.encodingA.phones == null || ex.encodingB.phones == null || ex.encodingA.phones.isEmpty() ||
+        ex.encodingB.phones.isEmpty()) {
       println "Problem with example on line $count got $ex skipping..."
     } else {
       exs.add(ex)
@@ -46,12 +48,14 @@ new File(filePath).withReader { r ->
     if (count % 5000 == 0) {
       println "Parsed $count input records..."
     }
-
   }
   println "Got ${exs.size()} inputs to train on from many lines of input"
 
   def trainer = new Rerank2Trainer()
-  def model = trainer.trainFor(exs)
-  ReadWrite.writeTo(model, new File(outPath))
+  def insts = trainer.convert(exs)
+  new File(outPath).withPrintWriter { pw ->
+    new KnimeOutputter().output(insts, pw)
+  }
+//  ReadWrite.writeTo(model, new File(outPath))
   println "done"
 }

@@ -25,5 +25,5 @@ import java.util.Map;
  */
 public interface Reranker {
 
-  Map<String,Double> probabilities(Map<String, Object> values);
+  Map<String,Double> probabilities(RerankExample values);
 }

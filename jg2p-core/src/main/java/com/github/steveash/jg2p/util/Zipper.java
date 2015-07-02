@@ -18,19 +18,35 @@ package com.github.steveash.jg2p.util;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Steve Ash
  */
 public class Zipper {
 
-  public static <A,B> List<Pair<A, B>> up(Iterable<A> a, Iterable<B> b) {
+  public static <A, B> Map<A, B> toMap(Iterable<A> a, Iterable<B> b) {
+    Map<A, B> result = Maps.newHashMap();
+    Iterator<A> iterA = a.iterator();
+    Iterator<B> iterB = b.iterator();
+    while (iterA.hasNext()) {
+      Preconditions.checkArgument(iterB.hasNext(), "B is shorter than A, must be same size");
+      A aa = iterA.next();
+      B bb = iterB.next();
+      result.put(aa, bb);
+    }
+    Preconditions.checkArgument(!iterB.hasNext(), "A is shorter than B, must be same size");
+    return result;
+  }
+
+  public static <A, B> List<Pair<A, B>> up(Iterable<A> a, Iterable<B> b) {
     ArrayList<Pair<A, B>> result = Lists.newArrayList();
     Iterator<A> iterA = a.iterator();
     Iterator<B> iterB = b.iterator();
@@ -44,23 +60,23 @@ public class Zipper {
     return result;
   }
 
-  public static <A,B> List<Pair<A, B>> upTo(Iterable<A> a, B b) {
-    ArrayList<Pair<A,B>> result = Lists.newArrayList();
+  public static <A, B> List<Pair<A, B>> upTo(Iterable<A> a, B b) {
+    ArrayList<Pair<A, B>> result = Lists.newArrayList();
     for (A aa : a) {
       result.add(Pair.of(aa, b));
     }
     return result;
   }
 
-  public static <A,B> List<Pair<A, B>> upTo(A a, Iterable<B> b) {
-    ArrayList<Pair<A,B>> result = Lists.newArrayList();
+  public static <A, B> List<Pair<A, B>> upTo(A a, Iterable<B> b) {
+    ArrayList<Pair<A, B>> result = Lists.newArrayList();
     for (B bb : b) {
       result.add(Pair.of(a, bb));
     }
     return result;
   }
 
-  public static <A,B> List<Pair<A,B>> replaceRight(List<Pair<A,B>> original, Iterable<B> newRight) {
+  public static <A, B> List<Pair<A, B>> replaceRight(List<Pair<A, B>> original, Iterable<B> newRight) {
     ArrayList<Pair<A, B>> result = Lists.newArrayListWithCapacity(original.size());
     Iterator<B> iter = newRight.iterator();
     for (Pair<A, B> pair : original) {

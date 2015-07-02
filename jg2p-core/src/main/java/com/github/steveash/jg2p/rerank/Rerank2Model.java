@@ -29,6 +29,7 @@ import java.util.Map;
 import cc.mallet.classify.Classification;
 import cc.mallet.classify.Classifier;
 import cc.mallet.classify.MaxEnt;
+import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Instance;
 import cc.mallet.types.Label;
 import cc.mallet.types.LabelVector;
@@ -82,6 +83,7 @@ public class Rerank2Model implements Reranker, Serializable {
     this.model = model;
   }
 
+  @Override
   public Map<String, Double> probabilities(RerankExample ex) {
 
     Classification classify = model.classify(ex);
@@ -96,8 +98,7 @@ public class Rerank2Model implements Reranker, Serializable {
     return result;
   }
 
-  @Override
-  public Map<String, Double> probabilities(Map<String, Object> values) {
-    throw new IllegalStateException("not implemented");
+  public Pipe getPipe() {
+    return model.getInstancePipe();
   }
 }

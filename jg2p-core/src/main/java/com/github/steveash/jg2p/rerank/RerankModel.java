@@ -18,6 +18,8 @@ package com.github.steveash.jg2p.rerank;
 
 import com.google.common.collect.Maps;
 
+import com.github.steveash.jg2p.util.ReadWrite;
+
 import org.dmg.pmml.FieldName;
 import org.dmg.pmml.Model;
 import org.dmg.pmml.PMML;
@@ -40,18 +42,26 @@ import java.util.Map;
 import javax.xml.bind.JAXBException;
 import javax.xml.transform.Source;
 
+import cc.mallet.pipe.Pipe;
+import cc.mallet.types.Instance;
+
 /**
  * @author Steve Ash
  */
 public class RerankModel implements Reranker {
 
   private final ModelEvaluator<? extends Model> evaluator;
+  private final Pipe pipe;
+  private final KnimeOutputter knime = new KnimeOutputter();
 
-  public RerankModel(ModelEvaluator<? extends Model> evaluator) {
+  public RerankModel(ModelEvaluator<? extends Model> evaluator, Pipe pipe ) {
     this.evaluator = evaluator;
+    this.pipe = pipe;
   }
 
-  public static RerankModel from(File file) throws SAXException, JAXBException, IOException {
+  public static RerankModel from(File file, File model2File)
+      throws SAXException, JAXBException, IOException, ClassNotFoundException {
+    Rerank2Model rr2 = ReadWrite.readFromFile(Rerank2Model.class, model2File);
     InputStream is = new FileInputStream(file);
     PMML pmml;
     try {
@@ -63,19 +73,16 @@ public class RerankModel implements Reranker {
 
     PMMLManager pmmlManager = new PMMLManager(pmml);
     ModelEvaluator<? extends Model> evaluator = (ModelEvaluator<? extends Model>)pmmlManager.getModelManager(ModelEvaluatorFactory.getInstance());
-    return new RerankModel(evaluator);
-  }
-
-  public String label(Map<String,Object> values) {
-    ProbabilityClassificationMap label = probabilities(values);
-    return (String)label.getResult();
+    return new RerankModel(evaluator, rr2.getPipe());
   }
 
   @Override
-  public ProbabilityClassificationMap probabilities(Map<String, Object> values) {
+  public Map<String, Double> probabilities(RerankExample example) {
+    Instance instance = pipe.instanceFrom(new Instance(example, null, null, null));
+    Map<String, String> vals = knime.makeFeatureMap(instance);
     Map<FieldName, FieldValue> inputs = Maps.newHashMap();
     for (FieldName field : evaluator.getActiveFields()) {
-      Object value = values.get(field.getValue());
+      Object value = vals.get(field.getValue());
       if (value == null) {
         throw new IllegalArgumentException("cant find value for " + field.getValue());
       }

@@ -20,6 +20,7 @@ import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.InputRecord
 import com.github.steveash.jg2p.rerank.Rerank2Model
 import com.github.steveash.jg2p.rerank.RerankExample
+import com.github.steveash.jg2p.rerank.RerankModel
 import com.github.steveash.jg2p.rerank.VowelReplacer
 import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
@@ -40,13 +41,14 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 //def rr = RerankModel.from(new File("../resources/dt_rerank_2.pmml"))
 // 5b is the last asymm one, 4 is the last symm one, 3 is the best symm one
-//@Field RerankModel rr = RerankModel.from(new File("../resources/dt_rerank_3.pmml"))
-@Field Rerank2Model rr2 = ReadWrite.readFromFile(Rerank2Model.class, new File("../resources/dt_rerank_F7_2.dat"))
-@Field boolean useRr2 = true
+@Field File rr2file = new File("../resources/dt_rerank_F7_2.dat")
+@Field RerankModel rr = RerankModel.from(new File("../resources/dt_rerank_F7_knime_1.pmml"), rr2file)
+@Field Rerank2Model rr2 = ReadWrite.readFromFile(Rerank2Model.class, rr2file)
+@Field boolean useRr2 = false
 
 //def file = "g014b2b-results.train"
 def file = "g014b2b.test"
-def inps = InputReader.makePSaurusReader().readFromClasspath(file)
+def inps = InputReader.makePSaurusReader().readFromClasspath(file).take(500)
 //def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file).take(250)
 def grouped = inps.groupBy { it.xWord.asSpaceString }
 
@@ -175,5 +177,9 @@ private probs(Encoding a, Encoding b, List<String> modePhones, boolean uniqueMod
   rre.uniqueMatchingModeA = uniqueMode && modePhones == a.phones
   rre.uniqueMatchingModeB = uniqueMode && modePhones == b.phones
   rre.wordGraphs = wordGraphs
-  return rr2.probabilities(rre)
+  if (useRr2) {
+    return rr2.probabilities(rre)
+  } else {
+    return rr.probabilities(rre)
+  }
 }

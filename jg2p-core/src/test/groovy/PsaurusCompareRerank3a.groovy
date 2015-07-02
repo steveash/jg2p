@@ -48,7 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 //def file = "g014b2b-results.train"
 def file = "g014b2b.test"
-def inps = InputReader.makePSaurusReader().readFromClasspath(file).take(500)
+def inps = InputReader.makePSaurusReader().readFromClasspath(file)
 //def inps = InputReader.makeDefaultFormatReader().readFromClasspath(file).take(250)
 def grouped = inps.groupBy { it.xWord.asSpaceString }
 

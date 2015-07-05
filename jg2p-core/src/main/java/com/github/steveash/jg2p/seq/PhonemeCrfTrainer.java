@@ -296,24 +296,30 @@ public class PhonemeCrfTrainer {
         new TokenWindow(1, 2),
         new TokenWindow(1, 3),
         new TokenWindow(1, 4),
-        new TokenWindow(1, 5)
+        new TokenWindow(1, 5),
+        new TokenWindow(1, 6)
     );
   }
 
   private static List<TokenWindow> makeNeighbors() {
     return ImmutableList.of(
         new TokenWindow(1, 1),
-        new TokenWindow(2, 1),
-        new TokenWindow(3, 1),
-        new TokenWindow(4, 1),
         new TokenWindow(1, 2),
+        new TokenWindow(2, 1),
+        new TokenWindow(1, 3),
+        new TokenWindow(3, 1),
+        new TokenWindow(1, 4),
+//        new TokenWindow(1, 2),
 //              new TokenWindow(1, 3),
         new TokenWindow(-1, 1),
-        new TokenWindow(-2, 1),
-        new TokenWindow(-3, 1),
-        new TokenWindow(-4, 1),
         new TokenWindow(-2, 2),
-        new TokenWindow(-3, 3)
+        new TokenWindow(-2, 1),
+        new TokenWindow(-3, 3),
+        new TokenWindow(-4, 4),
+        new TokenWindow(-5, 5)
+
+//        new TokenWindow(-2, 2),
+//        new TokenWindow(-3, 3)
 //        new TokenWindow(-4, 4),
     );
   }

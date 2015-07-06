@@ -65,8 +65,8 @@ public class Rerank2Trainer {
   public Rerank2Model trainFor(Collection<RerankExample> trainingData) {
     InstanceList instances = convert(trainingData);
 //    MaxEntTrainer trainer = new MaxEntTrainer(10.0);
-//    MaxEntL1Trainer trainer = new MaxEntL1Trainer();
-    AdaBoostTrainer trainer = new AdaBoostTrainer(new MaxEntL1Trainer(), 10);
+    MaxEntL1Trainer trainer = new MaxEntL1Trainer();
+//    AdaBoostTrainer trainer = new AdaBoostTrainer(new MaxEntL1Trainer(), 10);
     Classifier model = trainer.train(instances);
     Trial trial = new Trial(model, instances);
     log.info("Trained reranker. Final accuracy on itself: " + trial.getAccuracy());

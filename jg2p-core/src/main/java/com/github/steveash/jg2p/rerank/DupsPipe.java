@@ -41,8 +41,10 @@ public class DupsPipe extends Pipe {
   @Override
   public Instance pipe(Instance inst) {
     RerankFeature data = (RerankFeature) inst.getData();
-    data.setFeature("A_dupCount", Scaler.scaleLog(data.getExample().getDupCountA(), DUP_SCALE_BASE));
-    data.setFeature("B_dupCount", Scaler.scaleLog(data.getExample().getDupCountB(), DUP_SCALE_BASE));
+//    data.setFeature("A_dupCount", Scaler.scaleLog(data.getExample().getDupCountA(), DUP_SCALE_BASE));
+    data.setFeature("A_dupCount", data.getExample().getDupCountA());
+//    data.setFeature("B_dupCount", Scaler.scaleLog(data.getExample().getDupCountB(), DUP_SCALE_BASE));
+    data.setFeature("B_dupCount", data.getExample().getDupCountB());
     return inst;
   }
 }

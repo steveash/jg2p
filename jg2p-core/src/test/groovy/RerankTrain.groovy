@@ -4,6 +4,7 @@ import com.github.steveash.jg2p.rerank.KnimeOutputter
 import com.github.steveash.jg2p.rerank.Rerank2Trainer
 import com.github.steveash.jg2p.rerank.RerankExample
 import com.github.steveash.jg2p.util.CsvFactory
+import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.collect.Lists
 
 /*
@@ -27,8 +28,8 @@ import com.google.common.collect.Lists
  */
 def filePath = "../resources/psaur_rerank_train.txt"
 //def filePath = "/home/steve/Downloads/psaur_rerank_train_50k.txt"
-//def outPath = "../resources/dt_rerank_F7_2.dat"
-def outPath = "../resources/psaur_rerank_train_knime.txt"
+def outPath = "../resources/dt_rerank_f8A_1.dat"
+//def outPath = "../resources/psaur_rerank_train_knime.txt"
 
 def exs = []
 new File(filePath).withReader { r ->
@@ -52,10 +53,11 @@ new File(filePath).withReader { r ->
   println "Got ${exs.size()} inputs to train on from many lines of input"
 
   def trainer = new Rerank2Trainer()
-  def insts = trainer.convert(exs)
-  new File(outPath).withPrintWriter { pw ->
-    new KnimeOutputter().output(insts, pw)
-  }
-//  ReadWrite.writeTo(model, new File(outPath))
+  def model = trainer.trainFor(exs)
+//  def insts = trainer.convert(exs)
+//  new File(outPath).withPrintWriter { pw ->
+//    new KnimeOutputter().output(insts, pw)
+//  }
+  ReadWrite.writeTo(model, new File(outPath))
   println "done"
 }

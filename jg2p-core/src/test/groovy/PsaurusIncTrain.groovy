@@ -35,7 +35,7 @@ def testFile = "g014b2b.test"
 def train = InputReader.makePSaurusReader().readFromClasspath(trainFile)
 def test = InputReader.makePSaurusReader().readFromClasspath(testFile)
 def opts = new TrainOptions()
-def startingIter = 0
+def startingIter = 50
 def maxIter = 300
 def outPrefix = "../resources/psaur_22_xEps_ww_f8A_"
 
@@ -48,7 +48,7 @@ opts.includeXEpsilons = true
 opts.maximizer = Maximizer.JOINT
 opts.topKAlignCandidates = 1
 opts.minAlignScore = Integer.MIN_VALUE
-opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f7_pe1.dat"
+opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f8A_50.dat"
 //opts.alignAllowedFile = new File("../resources/possible-aligns.txt")
 def log = LoggerFactory.getLogger("psaurus")
 log.info("Starting training with $trainFile and $testFile with opts $opts")
@@ -63,12 +63,14 @@ def iters = opts.maxCrfIterations + startingIter
 while (iters < maxIter) {
   def temp = new File(outPrefix + iters + ".dat")
   ReadWrite.writeTo(model, temp)
+  def aligner = model.aligner
+  model = null; // need to clear this memory to get more
   // now create new trainer initing from previous model
   opts.initCrfFromModelFile = temp.canonicalPath
   def trainer = PhonemeCrfTrainer.open(opts)
   trainer.trainFor(trainInps)
   def phoneModel = trainer.buildModel()
-  model = PhoneticEncoderFactory.make(model.aligner, phoneModel)
+  model = PhoneticEncoderFactory.make(aligner, phoneModel)
 
   iters += opts.maxCrfIterations
 }

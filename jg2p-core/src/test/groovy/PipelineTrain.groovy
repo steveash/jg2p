@@ -30,17 +30,17 @@ import org.slf4j.LoggerFactory
  * Driver for the whole end-to-end training process
  * @author Steve Ash
  */
-//def trainFile = "g014b2b.train"
-def trainFile = "cmudict.2kA.txt"
-def testFile = "g014b2b.test"
-//def train = InputReader.makePSaurusReader().readFromClasspath(trainFile)
-def train = InputReader.makeDefaultFormatReader().readFromClasspath(trainFile)
+def trainFile = "g014b2b.train"
+//def trainFile = "cmudict.2kA.txt"
+//def testFile = "g014b2b.test"
+def train = InputReader.makePSaurusReader().readFromClasspath(trainFile)
+//def train = InputReader.makeDefaultFormatReader().readFromClasspath(trainFile)
 //def test = InputReader.makePSaurusReader().readFromClasspath(testFile)
 def opts = new TrainOptions()
 opts.maxXGram = 2
 opts.maxYGram = 2
 opts.onlyOneGrams = true
-opts.maxPronouncerTrainingIterations = 50
+opts.maxPronouncerTrainingIterations = 100
 //def inFile = "../resources/pipe_22_F9.dat"
 //opts.initTrainingAlignerFromFile = inFile
 //opts.initTestingAlignerFromFile = inFile

@@ -30,10 +30,10 @@ import org.slf4j.LoggerFactory
  * Driver for the whole end-to-end training process
  * @author Steve Ash
  */
-def trainFile = "g014b2b.train"
+def inputFile = "g014b2b.train"
 //def trainFile = "cmudict.2kA.txt"
 //def testFile = "g014b2b.test"
-def train = InputReader.makePSaurusReader().readFromClasspath(trainFile)
+def inputs = InputReader.makePSaurusReader().readFromClasspath(inputFile)
 //def train = InputReader.makeDefaultFormatReader().readFromClasspath(trainFile)
 //def test = InputReader.makePSaurusReader().readFromClasspath(testFile)
 def opts = new TrainOptions()
@@ -54,12 +54,12 @@ def outFile = "../resources/pipe_22_F9_1.dat"
 def log = LoggerFactory.getLogger("psaurus")
 out = new GroovyLogger(log)
 def watch = Stopwatch.createStarted()
-log.info("Starting training with $trainFile and $testFile with opts $opts")
+log.info("Starting training with $inputFile with opts $opts")
 
 def pt = new PipelineTrainer()
 def pm = new PipelineModel()
 try {
-  pt.train(train, opts, pm)
+  pt.train(inputs, opts, pm)
 } catch (Exception e) {
   log.error("Problem trying to train model ", e)
   // go ahead and continue so that you can save current progress

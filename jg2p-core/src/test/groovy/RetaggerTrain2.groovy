@@ -21,7 +21,7 @@ import com.github.steveash.jg2p.align.Maximizer
 import com.github.steveash.jg2p.align.TrainOptions
 import com.github.steveash.jg2p.seqvow.PartialPhones
 import com.github.steveash.jg2p.seqvow.PartialTagging
-import com.github.steveash.jg2p.seqvow.RetaggerTrainer
+
 import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Stopwatch
@@ -112,10 +112,10 @@ def opts = new TrainOptions()
 opts.maxXGram = 2
 opts.maxYGram = 2
 opts.onlyOneGrams = true
-opts.maxCrfIterations = 130
+opts.maxPronouncerTrainingIterations = 130
 opts.useWindowWalker = true
 opts.includeXEpsilons = true
-opts.maximizer = Maximizer.JOINT
+opts.trainingAlignerMaximizer = Maximizer.JOINT
 opts.topKAlignCandidates = 1
 opts.minAlignScore = Integer.MIN_VALUE
 def trainer = RetaggerTrainer.open(opts)

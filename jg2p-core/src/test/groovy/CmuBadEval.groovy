@@ -17,7 +17,6 @@
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.Maximizer
 import com.github.steveash.jg2p.align.TrainOptions
-import com.github.steveash.jg2p.train.JointEncoderTrainer
 import com.github.steveash.jg2p.train.SimpleEncoderTrainer
 import com.github.steveash.jg2p.util.ReadWrite
 
@@ -37,7 +36,7 @@ opts.maxYGram = 2
 opts.onlyOneGrams = true
 opts.useWindowWalker = true
 opts.includeXEpsilons = true
-opts.maximizer = Maximizer.JOINT
+opts.trainingAlignerMaximizer = Maximizer.JOINT
 opts.topKAlignCandidates = 1
 opts.minAlignScore = Integer.MIN_VALUE
 opts.initCrfFromModelFile = "../resources/pe_cmubad3kC_A.dat"

@@ -61,4 +61,12 @@ public class DoubleTable {
   private int index(int x, int y) {
     return (x * ySize) + y;
   }
+
+  public double sumOfRow(int x) {
+    double sum = 0;
+    for (int y = 0; y < ySize; y++) {
+      sum += get(x, y);
+    }
+    return sum;
+  }
 }

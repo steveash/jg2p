@@ -23,11 +23,10 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
-import com.github.steveash.jg2p.PhoneticEncoder;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.align.TrainOptions;
-import com.github.steveash.jg2p.seqvow.PartialPhones;
 import com.github.steveash.jg2p.util.GramBuilder;
+import com.github.steveash.jg2p.util.ModelReadWrite;
 import com.github.steveash.jg2p.util.ReadWrite;
 
 import org.slf4j.Logger;
@@ -108,19 +107,7 @@ public class PhonemeCrfTrainer {
   }
 
   private CRF readCrfFrom() throws IOException, ClassNotFoundException {
-    Object model = ReadWrite.readFromFile(Object.class, new File(opts.initCrfFromModelFile));
-    if (model instanceof PhonemeCrfModel) {
-      return ((PhonemeCrfModel) model).getCrf();
-    } else if (model instanceof PhoneticEncoder) {
-      return ((PhoneticEncoder) model).getPhoneTagger().getCrf();
-    }
-    throw new IllegalArgumentException("Dont know how to get a crf out of " + model);
-  }
-
-  public void useCrf(CRF crf) {
-    Preconditions.checkState(state == State.Initializing);
-    this.crf = crf;
-    this.state = State.Training;
+    return ModelReadWrite.readPronouncerFrom(opts.initCrfFromModelFile).getCrf();
   }
 
   public void trainFor(Collection<Alignment> inputs) {
@@ -138,7 +125,7 @@ public class PhonemeCrfTrainer {
 //    CRFTrainerByLabelLikelihood trainer = makeNewTrainerSingleThreaded(crf);
     this.lastTrainer = trainer;
 
-    trainer.train(examples, opts.maxCrfIterations);
+    trainer.train(examples, opts.maxPronouncerTrainingIterations);
 //    trainer.train(examples, 8, 250, new double[]{0.15, 1.0});
 //    trainer.train(examples, 8, new double[]{0.15, 1.0});
     trainer.shutdown(); // just closes the pool; next call to train will create a new one
@@ -220,18 +207,11 @@ public class PhonemeCrfTrainer {
     for (Alignment align : alignsToTrain) {
       List<String> phones = align.getAllYTokensAsList();
       updateEpsilons(phones);
-      if (opts.useRetagger) {
-        phones = PartialPhones.phoneGramsToPartialPhoneGrams(phones);
-      }
       Instance ii = new Instance(align.getAllXTokensAsList(), phones, null, null);
       instances.addThruPipe(ii);
       count += 1;
-
-//      if (count > 1000) {
-//        break;
-//      }
     }
-    log.info("Read {} instances of training data", count);
+    log.info("Read {} instances of training data for pronouncer training", count);
     return instances;
   }
 

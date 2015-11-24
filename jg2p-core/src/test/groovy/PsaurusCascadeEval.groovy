@@ -20,8 +20,6 @@ import com.github.steveash.jg2p.align.Maximizer
 import com.github.steveash.jg2p.align.TrainOptions
 import com.github.steveash.jg2p.train.CascadeEncoder
 import com.github.steveash.jg2p.train.CascadingTrainer
-import com.github.steveash.jg2p.train.JointEncoderTrainer
-import com.github.steveash.jg2p.train.SimpleEncoderTrainer
 import com.github.steveash.jg2p.util.ListEditDistance
 import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
@@ -45,10 +43,10 @@ def opts = new TrainOptions()
 opts.maxXGram = 2
 opts.maxYGram = 2
 opts.onlyOneGrams = true
-opts.maxCrfIterations = 100
+opts.maxPronouncerTrainingIterations = 100
 opts.useWindowWalker = true
 opts.includeXEpsilons = true 
-opts.maximizer = Maximizer.JOINT
+opts.trainingAlignerMaximizer = Maximizer.JOINT
 opts.topKAlignCandidates = 1
 opts.minAlignScore = Integer.MIN_VALUE;
 opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f3.dat"

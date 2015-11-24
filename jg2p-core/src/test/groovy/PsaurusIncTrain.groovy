@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import com.github.steveash.jg2p.PhoneticEncoder
 import com.github.steveash.jg2p.PhoneticEncoderFactory
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.Maximizer
 import com.github.steveash.jg2p.align.TrainOptions
 import com.github.steveash.jg2p.seq.PhonemeCrfTrainer
-import com.github.steveash.jg2p.train.JointEncoderTrainer
 import com.github.steveash.jg2p.train.SimpleEncoderTrainer
 import com.github.steveash.jg2p.util.ReadWrite
 import org.slf4j.LoggerFactory
@@ -42,10 +39,10 @@ def outPrefix = "../resources/psaur_22_xEps_ww_f8A_"
 opts.maxXGram = 2
 opts.maxYGram = 2
 opts.onlyOneGrams = true
-opts.maxCrfIterations = 50
+opts.maxPronouncerTrainingIterations = 50
 opts.useWindowWalker = true
 opts.includeXEpsilons = true 
-opts.maximizer = Maximizer.JOINT
+opts.trainingAlignerMaximizer = Maximizer.JOINT
 opts.topKAlignCandidates = 1
 opts.minAlignScore = Integer.MIN_VALUE
 opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f8A_50.dat"
@@ -59,7 +56,7 @@ def model = t.trainNoEval(train, test, opts)
 
 def trainInps = SimpleEncoderTrainer.makeCrfExamples(train, t.alignModel, opts);
 
-def iters = opts.maxCrfIterations + startingIter
+def iters = opts.maxPronouncerTrainingIterations + startingIter
 while (iters < maxIter) {
   def temp = new File(outPrefix + iters + ".dat")
   ReadWrite.writeTo(model, temp)
@@ -72,7 +69,7 @@ while (iters < maxIter) {
   def phoneModel = trainer.buildModel()
   model = PhoneticEncoderFactory.make(aligner, phoneModel)
 
-  iters += opts.maxCrfIterations
+  iters += opts.maxPronouncerTrainingIterations
 }
 
 def temp = new File(outPrefix + iters + ".dat")

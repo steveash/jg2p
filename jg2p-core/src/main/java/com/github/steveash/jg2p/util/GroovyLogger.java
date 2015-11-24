@@ -24,28 +24,31 @@ import java.util.Objects;
 /**
  * @author Steve Ash
  */
-public class GroovyLogger {
-    private static final Logger defaultLog = LoggerFactory.getLogger(GroovyLogger.class);
+public class GroovyLogger implements SimpleWriter {
 
-    private final Logger log;
+  private static final Logger defaultLog = LoggerFactory.getLogger(GroovyLogger.class);
 
-    public GroovyLogger(Logger log) {
-        this.log = log;
-    }
+  private final Logger log;
 
-    public GroovyLogger() {
-        this.log = defaultLog;
-    }
+  public GroovyLogger(Logger log) {
+    this.log = log;
+  }
 
-    void print(Object o) {
-        log.info(Objects.toString(o));
-    }
+  public GroovyLogger() {
+    this.log = defaultLog;
+  }
 
-    void println(Object o) {
-        log.info(Objects.toString(o));
-    }
+  public void print(Object o) {
+    log.info(Objects.toString(o));
+  }
 
-    void println() {
-        log.info("");
-    }
+  @Override
+  public void println(Object o) {
+    log.info(Objects.toString(o));
+  }
+
+  @Override
+  public void println() {
+    log.info("");
+  }
 }

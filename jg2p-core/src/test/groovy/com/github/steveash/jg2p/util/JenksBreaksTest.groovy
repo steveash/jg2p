@@ -17,6 +17,7 @@
 package com.github.steveash.jg2p.util
 
 import com.google.common.collect.Lists
+import groovy.xml.MarkupBuilder
 import org.junit.Test
 
 import static org.junit.Assert.assertEquals
@@ -27,6 +28,7 @@ import static org.junit.Assert.assertEquals
 class JenksBreaksTest {
 
   private final Random random = new Random(0x123456789ABCDEFL);
+
 
   @Test
   public void shouldFindEasyBreak() throws Exception {

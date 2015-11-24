@@ -16,6 +16,7 @@
 
 package com.github.steveash.jg2p;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.AbstractIterator;
@@ -26,6 +27,8 @@ import com.google.common.collect.Lists;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 /**
  * Word is a string with some helper methods for creating n-grams, etc.
  * Grams are space separated
@@ -35,6 +38,7 @@ import java.util.List;
 public class Word implements Iterable<String> {
   private static final Splitter splitter = Splitter.on(' ').trimResults().omitEmptyStrings();
   private static final Joiner joiner = Joiner.on(' ');
+  private static final CharMatcher spaces = CharMatcher.is(' ').precomputed();
 
   public static Word fromSpaceSeparated(String spaceSeparated) {
     return new Word(splitter.splitToList(spaceSeparated));
@@ -53,7 +57,24 @@ public class Word implements Iterable<String> {
   }
 
   private final List<String> value;
-  private final int size;
+
+  public static void throwIfNotUnigram(List<String> grams) {
+    boolean gotOne = false;
+    for (int i = 0; i < grams.size(); i++) {
+      String gram = grams.get(i);
+      if (isBlank(gram) || spaces.matchesAnyOf(gram)) {
+        throw new IllegalArgumentException("The input grams list " + grams + " contains n-grams");
+      }
+      gotOne = true;
+    }
+    if (!gotOne) {
+      throw new IllegalArgumentException("Word is empty: " + grams);
+    }
+  }
+
+  public void throwIfNotUnigram() {
+    throwIfNotUnigram(this.value);
+  }
 
   public final int unigramCount() {
     return value.size();
@@ -61,7 +82,6 @@ public class Word implements Iterable<String> {
 
   private Word(List<String> value) {
     this.value = value;
-    this.size = value.size();
   }
 
   public String getAsSpaceString() {

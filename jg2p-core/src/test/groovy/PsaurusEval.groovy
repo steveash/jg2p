@@ -18,8 +18,6 @@ import com.github.steveash.jg2p.PhoneticEncoder
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.Maximizer
 import com.github.steveash.jg2p.align.TrainOptions
-import com.github.steveash.jg2p.train.JointEncoderTrainer
-import com.github.steveash.jg2p.train.RetaggingEncoderTrainer
 import com.github.steveash.jg2p.train.SimpleEncoderTrainer
 import com.github.steveash.jg2p.util.ReadWrite
 import org.slf4j.LoggerFactory
@@ -37,13 +35,12 @@ def opts = new TrainOptions()
 opts.maxXGram = 2
 opts.maxYGram = 2
 opts.onlyOneGrams = true
-opts.maxCrfIterations = 130
+opts.maxPronouncerTrainingIterations = 130
 opts.useWindowWalker = true
 opts.includeXEpsilons = true 
-opts.maximizer = Maximizer.JOINT
+opts.trainingAlignerMaximizer = Maximizer.JOINT
 opts.topKAlignCandidates = 1
 opts.minAlignScore = Integer.MIN_VALUE
-opts.useRetagger = false
 opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_F7_pe1.dat"
 //opts.alignAllowedFile = new File("../resources/possible-aligns.txt")
 def log = LoggerFactory.getLogger("psaurus")

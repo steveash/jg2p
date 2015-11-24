@@ -72,7 +72,7 @@
     <dependency>
       <groupId>com.github.steveash</groupId>
       <artifactId>kylm</artifactId>
-      <version>20150421.1</version>
+      <version>20151124.1</version>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.bind</groupId>

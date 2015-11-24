@@ -17,7 +17,6 @@
 package com.github.steveash.jg2p;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
@@ -28,8 +27,6 @@ import com.github.steveash.jg2p.align.Aligner;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 import com.github.steveash.jg2p.seq.TagResult;
-import com.github.steveash.jg2p.seqvow.PartialPhones;
-import com.github.steveash.jg2p.seqvow.RetaggingModel;
 import com.github.steveash.jg2p.util.Zipper;
 
 import net.sf.jsefa.csv.annotation.CsvDataType;
@@ -43,9 +40,20 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * TODO eventually make this implement Encoder but only after all of the models have been converted to PipelineModel
+ * classes
  * @author Steve Ash
  */
 public class PhoneticEncoder implements Serializable {
+
+  public static Encoder adapt(final PhoneticEncoder enc) {
+    return new Encoder() {
+      @Override
+      public List<Encoding> encode(Word input) {
+        return enc.encode(input);
+      }
+    };
+  }
 
   private static final long serialVersionUID = 5996956897894317622L;
 
@@ -60,7 +68,6 @@ public class PhoneticEncoder implements Serializable {
   private double tagMinScore;
   private Integer bestFinal;
   private boolean includeOneToOne = true;
-  private RetaggingModel retagger = null;
   private AlignModel alignModel = null;
 
   @CsvDataType
@@ -162,6 +169,14 @@ public class PhoneticEncoder implements Serializable {
     return encode(input);
   }
 
+  /**
+   * Performs an encoding and returns quite a lot of information broken down about the results lists
+   * that can be used in reranking;  NOTE that there might be duplicate phoneme sequences in the output
+   * that took different alignment paths to get to the same output sequence; they are preserved.
+   * See
+   * @param input
+   * @return
+   */
   public Result complexEncode(Word input) {
     Result result = new Result();
     List<Alignment> alignments = aligner.inferAlignments(input, bestAlignments);
@@ -169,7 +184,8 @@ public class PhoneticEncoder implements Serializable {
       alignments.add(makeOneToOne(input));
     }
     Set<Alignment> deduped = Sets.newHashSet(alignments);
-    List<Encoding> results = Lists.newArrayListWithCapacity(alignments.size() + 1);
+    List<Encoding> results = Lists.newArrayListWithCapacity(bestTaggings * alignments.size() + 1);
+
     for (Alignment alignment : deduped) {
       AlignResult ar = new AlignResult(alignment);
       result.alignResults.add(ar);
@@ -179,13 +195,12 @@ public class PhoneticEncoder implements Serializable {
         if (!results.isEmpty() && tagResult.sequenceLogProbability() < tagMinScore) {
           continue;
         }
-        if (retagger != null) {
-          tagResult = retag(graphemes, tagResult);
-        }
         Encoding e = Encoding.createEncoding(graphemes, tagResult.phones(), tagResult.phoneGrams(), alignment.getScore(),
                                              tagResult.sequenceLogProbability(), tagResult.getLogScore2());
-        results.add(e);
-        ar.encodings.add(e);
+        if (e.phones != null && !e.phones.isEmpty()) {
+          results.add(e);
+          ar.encodings.add(e);
+        }
       }
       Collections.sort(ar.encodings, OrderByTagScore);
       // set the align ranks
@@ -194,7 +209,7 @@ public class PhoneticEncoder implements Serializable {
       }
     }
     Collections.sort(results, OrderByTagScore);
-    int finalCount = (bestFinal != null ? bestFinal : bestAlignments);
+    int finalCount = (bestFinal != null ? bestFinal : (bestAlignments * bestTaggings));
     if (results.size() > finalCount) {
       results = results.subList(0, finalCount);
     }
@@ -204,23 +219,6 @@ public class PhoneticEncoder implements Serializable {
     }
     result.overallResults.addAll(results);
     return result;
-  }
-
-  private TagResult retag(List<String> graphemes, TagResult tagResult) {
-    // in this version we only re-assign vowels that were predicted
-    Preconditions.checkArgument(!PartialPhones.doesAnyGramContainPartialPhone(tagResult.phoneGrams()));
-    if (!PartialPhones.doesAnyGramContainPhoneEligibleAsPartial(tagResult.phoneGrams())) {
-      return tagResult;
-    }
-    List<String> partialPhoneGrams = PartialPhones.phoneGramsToPartialPhoneGrams(tagResult.phoneGrams());
-    List<TagResult> retagged = retagger.tag(graphemes, tagResult.phoneGrams(), 1);
-    if (retagged.isEmpty()) {
-      throw new IllegalArgumentException("cant retag " + graphemes + " -> " + tagResult);
-    }
-    TagResult retaggedResult = retagged.get(0);
-    TagResult updatedResult = new TagResult(retaggedResult.phoneGrams(), retaggedResult.phones(), tagResult.sequenceLogProbability());
-    updatedResult.setLogScore2(retaggedResult.sequenceLogProbability());
-    return updatedResult;
   }
 
   public List<Encoding> encode(Word input) {
@@ -292,14 +290,6 @@ public class PhoneticEncoder implements Serializable {
 
   public PhonemeCrfModel getPhoneTagger() {
     return phoneTagger;
-  }
-
-  public RetaggingModel getRetagger() {
-    return retagger;
-  }
-
-  public void setRetagger(RetaggingModel retagger) {
-    this.retagger = retagger;
   }
 
   public AlignModel getAlignModel() {

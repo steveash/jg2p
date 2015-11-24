@@ -29,7 +29,6 @@ import com.github.steveash.jg2p.aligntag.AlignTagModel;
 import com.github.steveash.jg2p.aligntag.AlignTagTrainer;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 import com.github.steveash.jg2p.seq.PhonemeCrfTrainer;
-import com.github.steveash.jg2p.seq.PhonemeHmmTrainer;
 
 import java.util.List;
 
@@ -45,10 +44,6 @@ public class SimpleEncoderTrainer extends AbstractEncoderTrainer {
   private boolean skipAlignTrain = false;
 
   public SimpleEncoderTrainer() {
-  }
-
-  public SimpleEncoderTrainer(boolean useCrf) {
-    this.useCrf = useCrf;
   }
 
   @Override
@@ -69,15 +64,9 @@ public class SimpleEncoderTrainer extends AbstractEncoderTrainer {
     AlignTagModel alignTagModel = alignTagTrainer.train(crfExamples);
 
     PhonemeCrfModel crfModel;
-    if (useCrf) {
-      PhonemeCrfTrainer crfTrainer = PhonemeCrfTrainer.open(opts);
-      crfTrainer.trainFor(crfExamples);
-      crfModel = crfTrainer.buildModel();
-    } else {
-      PhonemeHmmTrainer hmmTrainer = PhonemeHmmTrainer.open(opts);
-      hmmTrainer.trainFor(crfExamples);
-      crfModel = hmmTrainer.buildModel();
-    }
+    PhonemeCrfTrainer crfTrainer = PhonemeCrfTrainer.open(opts);
+    crfTrainer.trainFor(crfExamples);
+    crfModel = crfTrainer.buildModel();
     PhoneticEncoder encoder = PhoneticEncoderFactory.make(alignTagModel, crfModel);
     encoder.setAlignModel(model);
     return encoder;

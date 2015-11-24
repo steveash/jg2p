@@ -116,7 +116,7 @@ public class AlignerTrainer {
       log.info("EM only had a mass shift by " + thisChange + " training is complete.");
       return true;
     }
-    if (iteration >= trainOpts.maxIterations) {
+    if (iteration >= trainOpts.trainingAlignerMaxIterations) {
       return true;
     }
     return false;
@@ -190,7 +190,7 @@ public class AlignerTrainer {
       String x = xy.getLeft();
       String y = xy.getRight();
       double countExp = counts.prob(x, y);
-      double unsupervised = trainOpts.maximizer.maximize(immutableCell(x, y, countExp), marginals);
+      double unsupervised = trainOpts.trainingAlignerMaximizer.maximize(immutableCell(x, y, countExp), marginals);
       double supervised = labelledProbs.prob(x, y);
       double update = (unsuperFactor * unsupervised) + (superFactor * supervised);
       assertProb(update);
@@ -201,7 +201,7 @@ public class AlignerTrainer {
     }
 
     counts.clear();
-    return trainOpts.maximizer.normalize(totalChange, marginals);
+    return trainOpts.trainingAlignerMaximizer.normalize(totalChange, marginals);
   }
 
   private void smoothCounts() {

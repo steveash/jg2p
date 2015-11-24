@@ -41,6 +41,7 @@ import static com.google.common.collect.Multisets.copyHighestCountFirst;
 /**
  * @author Steve Ash
  */
+@Deprecated // use BulkEval instead
 public class EncoderEval {
 
   private static final Logger log = LoggerFactory.getLogger(EncoderEval.class);

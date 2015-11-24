@@ -44,8 +44,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
- * Encoder trainer that only does a forward pass from alignment stage to phoneme classification stage and doesnt feed
- * anything back to the alignment model
+ * Trains the entire pipeline and uses TrainOptions to control overall what stages are loaded from
+ * previous runs vs what is re-trained from scratch
  *
  * @author Steve Ash
  */

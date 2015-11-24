@@ -28,6 +28,8 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.Labeling;
 
 /**
+ * Model to predict what "cluster" of examples the input belongs; trying to do something like boosting
+ * where multiple pronouncers are trained
  * @author Steve Ash
  */
 public class SeqBinModel implements Serializable {

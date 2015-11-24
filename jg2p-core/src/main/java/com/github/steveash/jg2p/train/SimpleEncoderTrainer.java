@@ -34,7 +34,7 @@ import java.util.List;
 
 /**
  * Encoder trainer that only does a forward pass from alignment stage to phoneme classification stage and doesnt feed
- * anything back to the alignment model
+ * anything back to the alignment model.  This only trains: trainingAligner, testingAligner, and pronouncer no reranking
  *
  * @author Steve Ash
  */

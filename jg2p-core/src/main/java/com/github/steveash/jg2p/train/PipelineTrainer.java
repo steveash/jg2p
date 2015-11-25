@@ -108,8 +108,21 @@ public class PipelineTrainer {
 
   private Rerank2Model makeRerankerModel(PipelineModel modelSoFar) {
     if (opts.trainReranker) {
-      List<RerankExample> rrExamples = collectExamples(modelSoFar);
-      return new Rerank2Trainer().trainFor(rrExamples);
+      LangModel existing = modelSoFar.getGraphoneModel();
+      try {
+        if (opts.graphoneLanguageModelOrder != opts.graphoneLanguageModelOrderForTraining) {
+          // train a graphone model for the different order
+          log.info("Need to train a separate graphone model for training...");
+          LangModel graphoneModelForTraining = new LangModelTrainer(opts, false).trainFor(alignedInputs);
+          log.info("Finished the training graphone model");
+          modelSoFar.setGraphoneModel(graphoneModelForTraining);
+        }
+        List<RerankExample> rrExamples = collectExamples(modelSoFar);
+        return new Rerank2Trainer().trainFor(rrExamples);
+
+      } finally {
+        modelSoFar.setGraphoneModel(existing);
+      }
     }
     return checkNotNull(loadedReranker, "shouldve already been loaded in init()");
   }
@@ -126,7 +139,7 @@ public class PipelineTrainer {
 
   private LangModel makeGraphoneModel() {
     if (opts.trainGraphoneModel) {
-      return new LangModelTrainer(this.opts).trainFor(alignedInputs);
+      return new LangModelTrainer(this.opts, true).trainFor(alignedInputs);
     }
     return checkNotNull(loadedGraphone, "shouldve already been loaded in init()");
   }

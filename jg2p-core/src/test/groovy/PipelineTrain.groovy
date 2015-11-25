@@ -31,11 +31,11 @@ import org.slf4j.LoggerFactory
  * @author Steve Ash
  */
 def inputFile = "g014b2b.train"
-//def trainFile = "cmudict.2kA.txt"
-//def testFile = "g014b2b.test"
+//def inputFile = "cmudict.2kA.txt"
+//def inputFile = "g014b2b.test"
 def inputs = InputReader.makePSaurusReader().readFromClasspath(inputFile)
-//def train = InputReader.makeDefaultFormatReader().readFromClasspath(trainFile)
-//def test = InputReader.makePSaurusReader().readFromClasspath(testFile)
+//def inputs = InputReader.makeDefaultFormatReader().readFromClasspath(inputFile)
+
 def opts = new TrainOptions()
 opts.maxXGram = 2
 opts.maxYGram = 2

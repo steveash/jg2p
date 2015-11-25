@@ -1,3 +1,5 @@
+import com.github.steveash.jg2p.GraphoneSortingEncoder
+import com.github.steveash.jg2p.PhoneticEncoder
 import com.github.steveash.jg2p.PipelineEncoder
 import com.github.steveash.jg2p.PipelineModel
 import com.github.steveash.jg2p.align.InputReader
@@ -38,8 +40,12 @@ def watch = Stopwatch.createStarted()
 log.info("Starting eval of with $testFile with $modelFile")
 
 def model = ReadWrite.readFromFile(PipelineModel, new File(modelFile))
+//def enc = new GraphoneSortingEncoder(model)
+//def enc = PhoneticEncoder.adapt(model.phoneticEncoder)
+def enc = new PipelineEncoder(model)
 
-def eval = new BulkEval(new PipelineEncoder(model))
+println "Starting eval with encoder $enc"
+def eval = new BulkEval(enc)
 def stats = eval.groupAndEval(test)
 watch.stop()
 log.info("Finished eval took $watch")

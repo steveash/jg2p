@@ -89,6 +89,9 @@ public class TrainOptions implements Cloneable {
   @Option(name = "--graphoneNGram")
   public int graphoneLanguageModelOrder = 8;
 
+  @Option(name = "--graphoneNGramForTraining")
+  public int graphoneLanguageModelOrderForTraining = 8;
+
   @Option(name = "--modelLangFromGraphones")
   public boolean graphoneLangModel = true; // if true then model is of graphones, if false then its of phonemes only
 

@@ -35,7 +35,7 @@ class EncodingHolder implements Comparable<EncodingHolder> {
     return Lists.transform(unordered, selectEncoding);
   }
 
-  private static final Function<EncodingHolder, PhoneticEncoder.Encoding> selectEncoding =
+  public static final Function<EncodingHolder, PhoneticEncoder.Encoding> selectEncoding =
       new Function<EncodingHolder, PhoneticEncoder.Encoding>() {
         @Override
         public PhoneticEncoder.Encoding apply(EncodingHolder encodingHolder) {

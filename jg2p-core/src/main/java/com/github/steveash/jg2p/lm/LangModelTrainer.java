@@ -39,15 +39,21 @@ public class LangModelTrainer {
   private static final Logger log = LoggerFactory.getLogger(LangModelTrainer.class);
 
   private final TrainOptions opts;
+  private final int modelOrder;
 
-  public LangModelTrainer(TrainOptions opts) {
+  public LangModelTrainer(TrainOptions opts, boolean isForTesting) {
     this.opts = opts;
+    if (isForTesting) {
+      this.modelOrder = opts.graphoneLanguageModelOrder;
+    } else {
+      this.modelOrder = opts.graphoneLanguageModelOrderForTraining;
+    }
   }
 
   public LangModel trainFor(Collection<Alignment> inputs) {
     KNSmoother smoother = new KNSmoother();
     smoother.setSmoothUnigrams(true);
-    NgramLM lm = new NgramLM(opts.graphoneLanguageModelOrder, smoother);
+    NgramLM lm = new NgramLM(modelOrder, smoother);
     Iterable<String[]> trainInput = FluentIterable.from(inputs).transform(new Function<Alignment, String[]>() {
       @Override
       public String[] apply(Alignment input) {

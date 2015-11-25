@@ -17,8 +17,10 @@
 package com.github.steveash.jg2p;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,6 +44,7 @@ public class GraphoneSortingEncoder implements Encoder {
       double lmScore = model.getGraphoneModel().score(result);
       holders.add(new EncodingHolder(result, lmScore));
     }
-    return EncodingHolder.orderedResultsFrom(holders);
+    Collections.sort(holders, Ordering.natural()); // lm scores are neg to pos?
+    return Lists.transform(holders, EncodingHolder.selectEncoding);
   }
 }

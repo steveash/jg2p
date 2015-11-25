@@ -40,16 +40,17 @@ def opts = new TrainOptions()
 opts.maxXGram = 2
 opts.maxYGram = 2
 opts.onlyOneGrams = true
-opts.maxPronouncerTrainingIterations = 100
+opts.maxPronouncerTrainingIterations = 150
 //def inFile = "../resources/pipe_22_F9.dat"
 //opts.initTrainingAlignerFromFile = inFile
 //opts.initTestingAlignerFromFile = inFile
 //opts.initCrfFromModelFile = inFile
-opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f8A_300.dat"
+opts.useWindowWalker = false
+opts.initCrfFromModelFile = "../resources/pipe_22_F9_1.dat"
 //opts.initTrainingAlignerFromFile = opts.initCrfFromModelFile = "../resources/pipe_22_F9_1.dat"
 //opts.trainTrainingAligner = false
 //opts.trainTestingAligner = opts.trainPronouncer = true
-def outFile = "../resources/pipe_22_F9_1.dat"
+def outFile = "../resources/pipe_22_F9_noww_1.dat"
 
 def log = LoggerFactory.getLogger("psaurus")
 out = new GroovyLogger(log)

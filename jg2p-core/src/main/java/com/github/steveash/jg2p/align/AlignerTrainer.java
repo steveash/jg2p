@@ -19,6 +19,7 @@ package com.github.steveash.jg2p.align;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 
+import com.github.steveash.jg2p.Grams;
 import com.github.steveash.jg2p.Word;
 import com.github.steveash.jg2p.util.DoubleTable;
 import com.github.steveash.jg2p.util.ReadWrite;
@@ -53,6 +54,7 @@ public class AlignerTrainer {
   private ProbTable labelledProbs;
   private final Set<Pair<String, String>> allowed;
   private final Set<Pair<String,String>> blocked;
+  private final boolean cityBlockPenalty;
 
   public AlignerTrainer(TrainOptions trainOpts) {
     this.trainOpts = trainOpts;
@@ -75,6 +77,7 @@ public class AlignerTrainer {
       this.blocked = null;
     }
     this.walker = w;
+    this.cityBlockPenalty = trainOpts.useCityBlockPenalty;
   }
 
 //  private static XyWalker decorateForAllowed(TrainOptions trainOpts, XyWalker w) {
@@ -148,7 +151,7 @@ public class AlignerTrainer {
       @Override
       public void visit(int xxBefore, int xxAfter, String xGram, int yyBefore, int yyAfter, String yGram) {
         double prob = alpha.get(xxBefore, yyBefore) *
-                      probs.prob(xGram, yGram) *
+                      penalize(xGram, yGram, probs.prob(xGram, yGram)) *
                       beta.get(xxAfter, yyAfter) /
                       alphaXy;
 
@@ -162,7 +165,7 @@ public class AlignerTrainer {
     walker.backward(x, y, new XyWalker.Visitor() {
       @Override
       public void visit(int xxBefore, int xxAfter, String xGram, int yyBefore, int yyAfter, String yGram) {
-        double newBeta = probs.prob(xGram, yGram) * beta.get(xxAfter, yyAfter);
+        double newBeta = penalize(xGram, yGram, probs.prob(xGram, yGram)) * beta.get(xxAfter, yyAfter);
         beta.add(xxBefore, yyBefore, newBeta);
       }
     });
@@ -173,10 +176,21 @@ public class AlignerTrainer {
     walker.forward(x, y, new XyWalker.Visitor() {
       @Override
       public void visit(int xxBefore, int xxAfter, String xGram, int yyBefore, int yyAfter, String yGram) {
-        double newAlpha = probs.prob(xGram, yGram) * alpha.get(xxBefore, yyBefore);
+        double newAlpha = penalize(xGram, yGram, probs.prob(xGram, yGram)) * alpha.get(xxBefore, yyBefore);
         alpha.add(xxAfter, yyAfter, newAlpha);
       }
     });
+  }
+
+  private double penalize(String xGram, String yGram, double prob) {
+    if (!cityBlockPenalty) {
+      return prob;
+    }
+    int xCount = Grams.countInGram(xGram);
+    int yCount = Grams.countInGram(yGram);
+    if (xCount < 1) xCount = 1;
+    if (yCount < 1) yCount = 1;
+    return Math.pow(prob, xCount + yCount);
   }
 
   private double maximization() {

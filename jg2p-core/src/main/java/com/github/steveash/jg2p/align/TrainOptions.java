@@ -50,6 +50,9 @@ public class TrainOptions implements Cloneable {
   @Option(name = "--onlyOneGrams")
   public boolean onlyOneGrams = true; // only 1-1, 2-1, 1-2, etc. no 2-2 or 3-2
 
+  @Option(name = "--useCityBlockPenalty")
+  public boolean useCityBlockPenalty = false; // enables the penalty described in Kubo 2014
+
   /**
    * training aligner options
    **/

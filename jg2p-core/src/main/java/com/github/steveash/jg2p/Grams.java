@@ -26,6 +26,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.transform;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * Utility class for iterating over grams, lists of words X Y into grams, etc.
@@ -36,6 +37,19 @@ public class Grams {
   public static final String EPSILON = "";
 
   private Grams() { }
+
+  public static int countInGram(String gram) {
+    if (isBlank(gram)) {
+      return 0;
+    }
+    int count = 0;
+    for (int i = 0; i < gram.length(); i++) {
+      if (gram.charAt(i) == ' ') {
+        count += 1;
+      }
+    }
+    return count + 1; // gram count is number of spaces + 1
+  }
 
   public static Iterable<Pair<String, String>> wordPairsToAllGrams(Iterable<? extends Pair<Word, Word>> words,
                                                                              final GramOptions opts) {

@@ -21,9 +21,13 @@ import com.github.steveash.jg2p.PipelineModel
 import com.github.steveash.jg2p.align.AlignModel
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.InputRecord
+import com.github.steveash.jg2p.align.TrainOptions
 import com.github.steveash.jg2p.aligntag.AlignTagModel
 import com.github.steveash.jg2p.eval.BulkEval
 import com.github.steveash.jg2p.eval.EvalPrinter
+import com.github.steveash.jg2p.rerank.RerankExample
+import com.github.steveash.jg2p.rerank.RerankExampleCollector
+import com.github.steveash.jg2p.rerank.RerankerResult
 import com.github.steveash.jg2p.util.GroovyLogger
 import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
@@ -59,22 +63,21 @@ println "Done in $watch"
 
 public procFor(String label, List<InputRecord> input) {
   AtomicInteger total = new AtomicInteger(0), totalRight = new AtomicInteger(0)
-  def aligner = model.trainingAlignerModel
-  def pron = model.pronouncerModel
+  def ranker = model.rerankerModel
+  def collector = new RerankExampleCollector(model.rerankEncoder, new TrainOptions())
+  def examples = collector.makeExamples(input)
+  println "Got examples, testing them"
   RateLimiter limiter = RateLimiter.create(1.0 / 3.0)
   GParsPool.withPool {
-    input.everyParallel() { InputRecord record ->
-      def aligns = aligner.align(record.left, record.right, 1)
-      if (aligns.size() == 0)
-        return true;
+    examples.everyParallel() { RerankExample record ->
 
-      total.incrementAndGet()
-      def tags = pron.tag(aligns[0].allXTokensAsList, 1)
-      if (tags.isEmpty())
-        return true;
-      if (tags[0].phoneGrams().equals(aligns[0].allYTokensAsList)) {
-        totalRight.incrementAndGet()
-      }
+      total.addAndGet(2)
+      def r1 = ranker.probabilities(record)
+      updateRight(record, r1, totalRight)
+      def rec2 = record.flip()
+      def r2 = ranker.probabilities(rec2)
+      updateRight(rec2, r2, totalRight)
+
       if (limiter.tryAcquire()) {
         println "$label Finished ${total.get()}..."
       }
@@ -84,4 +87,12 @@ public procFor(String label, List<InputRecord> input) {
   def tt = total.get()
   def ttr = totalRight.get()
   println "$label records got $ttr / $tt = " + Percent.print(ttr, tt)
+}
+
+public updateRight(RerankExample record, RerankerResult result, AtomicInteger inc) {
+  if (record.label == "A" && result.probabilityA > result.probabilityB) {
+    inc.incrementAndGet()
+  } else if (record.label == "B" && result.probabilityA < result.probabilityB) {
+    inc.incrementAndGet()
+  }
 }

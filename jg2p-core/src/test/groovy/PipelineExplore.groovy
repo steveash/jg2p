@@ -28,8 +28,12 @@ import com.github.steveash.jg2p.util.GroovyLogger
 import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Stopwatch
+import com.google.common.util.concurrent.RateLimiter
 import groovy.transform.Field
+import groovyx.gpars.GParsPool
 import org.slf4j.LoggerFactory
+
+import java.util.concurrent.atomic.AtomicInteger
 
 def trainFile = "g014b2b.train"
 //def testFile = "cmudict.2kA.txt"
@@ -54,18 +58,30 @@ watch.stop()
 println "Done in $watch"
 
 public procFor(String label, List<InputRecord> input) {
-  int total = 0, totalRight = 0
+  AtomicInteger total = new AtomicInteger(0), totalRight = new AtomicInteger(0)
   def aligner = model.trainingAlignerModel
-  for (InputRecord record : input) {
-    def aligns = aligner.align(record.left, record.right, 1)
-    if (aligns.size() == 0) continue;
+  def pron = model.pronouncerModel
+  RateLimiter limiter = RateLimiter.create(1.0 / 3.0)
+  GParsPool.withPool {
+    input.everyParallel() { InputRecord record ->
+      def aligns = aligner.align(record.left, record.right, 1)
+      if (aligns.size() == 0)
+        return true;
 
-    total += 1
-    def tags = model.pronouncerModel.tag(aligns[0].allXTokensAsList, 1)
-    if (tags.isEmpty()) continue;
-    if (tags[0].phoneGrams().equals(aligns[0].allYTokensAsList)) {
-      totalRight += 1
+      total.incrementAndGet()
+      def tags = pron.tag(aligns[0].allXTokensAsList, 1)
+      if (tags.isEmpty())
+        return true;
+      if (tags[0].phoneGrams().equals(aligns[0].allYTokensAsList)) {
+        totalRight.incrementAndGet()
+      }
+      if (limiter.tryAcquire()) {
+        println "$label Finished ${total.get()}..."
+      }
+      return true;
     }
   }
-  println "$label records got $totalRight / $total = " + Percent.print(totalRight, total)
+  def tt = total.get()
+  def ttr = totalRight.get()
+  println "$label records got $ttr / $tt = " + Percent.print(ttr, tt)
 }

@@ -18,20 +18,23 @@ import com.github.steveash.jg2p.GraphoneSortingEncoder
 import com.github.steveash.jg2p.PhoneticEncoder
 import com.github.steveash.jg2p.PipelineEncoder
 import com.github.steveash.jg2p.PipelineModel
+import com.github.steveash.jg2p.align.AlignModel
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.InputRecord
+import com.github.steveash.jg2p.aligntag.AlignTagModel
 import com.github.steveash.jg2p.eval.BulkEval
 import com.github.steveash.jg2p.eval.EvalPrinter
 import com.github.steveash.jg2p.util.GroovyLogger
 import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Stopwatch
+import groovy.transform.Field
 import org.slf4j.LoggerFactory
 
 def trainFile = "g014b2b.train"
 //def testFile = "cmudict.2kA.txt"
 def testFile = "g014b2b.test"
-def modelFile = "../resources/pipe_22_F9_1.dat"
+@Field def modelFile = "../resources/pipe_22_F9_1.dat"
 
 //def test = InputReader.makeDefaultFormatReader().readFromClasspath(testFile)
 def train = InputReader.makePSaurusReader().readFromClasspath(trainFile)
@@ -42,33 +45,27 @@ out = new GroovyLogger(log)
 def watch = Stopwatch.createStarted()
 log.info("Starting explore with $testFile with $modelFile")
 
-def model = ReadWrite.readFromFile(PipelineModel, new File(modelFile))
-def aligner = model.trainingAlignerModel
-def taligner = model.testingAlignerModel
+@Field PipelineModel model = ReadWrite.readFromFile(PipelineModel, new File(modelFile))
 
-int totalTrain = 0, totalTrainRight = 0
-for (InputRecord record : train ) {
-  def aligns = aligner.align(record.left, record.right, 1)
-  assert aligns.size() == 1
-  def taligns = taligner.inferAlignments(record.left, 1)
-  assert taligns.size() == 1
-  if (aligns[0].XAsPipeString == taligns[0].XAsPipeString) {
-    totalTrain += 1
-  }
-  totalTrainRight += 1
-}
-println "Training records got $totalTrainRight = " + Percent.print(totalTrainRight, totalTrain)
-int totalTest = 0, totalTestRight = 0
-for (InputRecord record : test ) {
-  def aligns = aligner.align(record.left, record.right, 1)
-  assert aligns.size() == 1
-  def taligns = taligner.inferAlignments(record.left, 1)
-  assert taligns.size() == 1
-  if (aligns[0].XAsPipeString == taligns[0].XAsPipeString) {
-    totalTest += 1
-  }
-  totalTestRight += 1
-}
-println "Testing records got $totalTestRight = " + Percent.print(totalTestRight, totalTest)
+procFor("train", train)
+procFor("test", test)
+
 watch.stop()
 println "Done in $watch"
+
+public procFor(String label, List<InputRecord> input) {
+  int total = 0, totalRight = 0
+  def aligner = model.trainingAlignerModel
+  for (InputRecord record : input) {
+    def aligns = aligner.align(record.left, record.right, 1)
+    if (aligns.size() == 0) continue;
+
+    total += 1
+    def tags = model.pronouncerModel.tag(aligns[0].allXTokensAsList, 1)
+    if (tags.isEmpty()) continue;
+    if (tags[0].phoneGrams().equals(aligns[0].allYTokensAsList)) {
+      totalRight += 1
+    }
+  }
+  println "$label records got $totalRight / $total = " + Percent.print(totalRight, total)
+}

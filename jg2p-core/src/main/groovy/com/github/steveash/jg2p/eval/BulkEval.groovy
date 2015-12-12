@@ -88,11 +88,11 @@ class BulkEval {
     // updates the IR stats for different configurations
     def good = group.acceptableYWords.size()
     def ranks = calcRanks(encodings, group)
-    for (int i = 1; i < this.considerTopK; i++) {
+    for (int i = 0; i < this.considerTopK; i++) {
       int goodInResults = countRanks(ranks, Revelant.Good, 0, i)
       int badInResults = countRanks(ranks, Revelant.Bad, 0, i)
       int totalResults = goodInResults + badInResults;
-      int possible = Math.min(good, i);
+      int possible = Math.min(good, (i + 1));
 
       if (goodInResults > possible) {
         throw new IllegalStateException("Got $possible possible but counted $goodInResults good from $ranks " +

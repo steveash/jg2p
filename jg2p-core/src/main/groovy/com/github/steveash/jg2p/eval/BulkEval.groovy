@@ -92,10 +92,11 @@ class BulkEval {
       int goodInResults = countRanks(ranks, Revelant.Good, 0, i)
       int badInResults = countRanks(ranks, Revelant.Bad, 0, i)
       int totalResults = goodInResults + badInResults;
+      int possible = Math.min(good, i);
 
-      stats.irConfigSetup.get("IR_ALL_TOP" + (i+1)).onNewQuery(goodInResults, totalResults, good)
+      stats.irConfigSetup.get("IR_ALL_TOP" + (i+1)).onNewQuery(goodInResults, totalResults, good, possible)
       if (good >= 2) {
-        stats.irConfigSetup.get("IR_MULTI_TOP" + (i+1)).onNewQuery(goodInResults, totalResults, good)
+        stats.irConfigSetup.get("IR_MULTI_TOP" + (i+1)).onNewQuery(goodInResults, totalResults, good, possible)
       }
     }
   }

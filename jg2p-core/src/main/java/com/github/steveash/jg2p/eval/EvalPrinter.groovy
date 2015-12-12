@@ -45,7 +45,9 @@ class EvalPrinter {
     pw.println(StringUtils.repeat('*', 20))
     pw.println("IR metrics for various top-k configurations")
     stats.irConfigSetup.asMap().entrySet().sort {it.key}.each {
-      pw.println(String.format(" * " + it.key + " = Prec  %.3f  Recall  %.3f", it.value.precision(), it.value.recall()))
+      pw.println(String.format(" * " + it.key + " = Prec  %.3f (Max %.3f), Recall  %.3f (Max %.3f)",
+                               it.value.precision(), it.value.precisionMax(),
+                               it.value.recall(), it.value.recallMax()))
     }
     pw.println(StringUtils.repeat('*', 20))
     // final stats at the bottom

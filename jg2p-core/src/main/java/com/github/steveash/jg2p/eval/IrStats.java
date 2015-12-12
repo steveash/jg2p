@@ -27,12 +27,14 @@ public class IrStats {
   final AtomicLong totalReturned = new AtomicLong(0);
   final AtomicLong totalGoodReturned = new AtomicLong(0);
   final AtomicLong totalGood = new AtomicLong(0);
+  final AtomicLong totalPossibleReturned = new AtomicLong(0);
 
-  void onNewQuery(int goodReturned, int returned, int good) {
+  void onNewQuery(int goodReturned, int returned, int good, int possible) {
     totalQueries.incrementAndGet();
     totalGoodReturned.addAndGet(goodReturned);
     totalReturned.addAndGet(returned);
     totalGood.addAndGet(good);
+    totalPossibleReturned.addAndGet(possible);
   }
 
   public double precision() {
@@ -41,6 +43,14 @@ public class IrStats {
 
   public double recall() {
     return ((double) totalGoodReturned.get()) / totalGood.get();
+  }
+
+  public double precisionMax() {
+    return ((double) totalPossibleReturned.get()) / totalReturned.get();
+  }
+
+  public double recallMax() {
+    return ((double) totalPossibleReturned.get()) / totalGood.get();
   }
 
 }

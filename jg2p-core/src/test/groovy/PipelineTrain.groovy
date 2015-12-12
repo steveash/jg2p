@@ -37,20 +37,21 @@ def inputs = InputReader.makePSaurusReader().readFromClasspath(inputFile)
 //def inputs = InputReader.makeDefaultFormatReader().readFromClasspath(inputFile)
 
 def opts = new TrainOptions()
-opts.maxXGram = 3
-opts.maxYGram = 3
+opts.maxXGram = 2
+opts.maxYGram = 2
 opts.onlyOneGrams = false
 opts.maxPronouncerTrainingIterations = 200
+opts.useCityBlockPenalty = false
+opts.useWindowWalker = true
 //def inFile = "../resources/pipe_22_F9.dat"
 //opts.initTrainingAlignerFromFile = inFile
 //opts.initTestingAlignerFromFile = inFile
 //opts.initCrfFromModelFile = inFile
-opts.useWindowWalker = true
 //opts.graphoneLanguageModelOrder = 8
 //opts.graphoneLanguageModelOrderForTraining = 8
 opts.initCrfFromModelFile = "../resources/pipe_22_F9_1.dat"
 //opts.trainTrainingAligner = opts.trainTestingAligner = opts.trainPronouncer = false
-def outFile = "../resources/pipe_22_F9_citybl_1.dat"
+def outFile = "../resources/pipe_22_F9_2.dat"
 
 def log = LoggerFactory.getLogger("psaurus")
 out = new GroovyLogger(log)

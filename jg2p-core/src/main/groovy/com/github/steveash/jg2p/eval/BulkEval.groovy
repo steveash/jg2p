@@ -94,6 +94,11 @@ class BulkEval {
       int totalResults = goodInResults + badInResults;
       int possible = Math.min(good, i);
 
+      if (goodInResults > possible) {
+        throw new IllegalStateException("Got $possible possible but counted $goodInResults good from $ranks " +
+                                        "based on good words ${group.acceptableYWords} from encodings $encodings")
+      }
+
       stats.irConfigSetup.get("IR_ALL_TOP" + (i+1)).onNewQuery(goodInResults, totalResults, good, possible)
       if (good >= 2) {
         stats.irConfigSetup.get("IR_MULTI_TOP" + (i+1)).onNewQuery(goodInResults, totalResults, good, possible)

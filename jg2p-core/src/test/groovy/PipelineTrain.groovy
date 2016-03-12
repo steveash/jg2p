@@ -13,14 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import com.github.steveash.jg2p.PhoneticEncoder
 import com.github.steveash.jg2p.PipelineModel
 import com.github.steveash.jg2p.align.InputReader
-import com.github.steveash.jg2p.align.Maximizer
 import com.github.steveash.jg2p.align.TrainOptions
 import com.github.steveash.jg2p.train.PipelineTrainer
-import com.github.steveash.jg2p.train.SimpleEncoderTrainer
 import com.github.steveash.jg2p.util.GroovyLogger
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Stopwatch
@@ -44,14 +40,15 @@ opts.maxPronouncerTrainingIterations = 200
 opts.useCityBlockPenalty = false
 opts.useWindowWalker = true
 //def inFile = "../resources/pipe_22_F9.dat"
-//opts.initTrainingAlignerFromFile = inFile
-//opts.initTestingAlignerFromFile = inFile
-//opts.initCrfFromModelFile = inFile
+opts.initTrainingAlignerFromFile = "../resources/pip_align.dat"
+opts.initTestingAlignerFromFile = "../resources/pip_testAlign.dat"
+opts.initCrfFromModelFile = "../resources/pip_pron.dat"
+opts.initRerankerFromFile = "../resources/pip_rr.dat"
 //opts.graphoneLanguageModelOrder = 8
 //opts.graphoneLanguageModelOrderForTraining = 8
-opts.initCrfFromModelFile = "../resources/pipe_22_F9_1.dat"
-//opts.trainTrainingAligner = opts.trainTestingAligner = opts.trainPronouncer = false
-def outFile = "../resources/pipe_22_F9_2.dat"
+//opts.initCrfFromModelFile = "../resources/pipe_22_F9_1.dat"
+opts.trainTrainingAligner = opts.trainTestingAligner = opts.trainPronouncer = opts.trainReranker = false
+def outFile = "../resources/pipe_22_F9_1.dat"
 
 def log = LoggerFactory.getLogger("psaurus")
 out = new GroovyLogger(log)

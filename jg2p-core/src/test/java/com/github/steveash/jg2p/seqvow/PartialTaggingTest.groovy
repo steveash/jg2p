@@ -16,11 +16,13 @@
 
 package com.github.steveash.jg2p.seqvow
 
+import org.junit.Ignore
 import org.junit.Test
 
 /**
  * @author Steve Ash
  */
+@Ignore // not doing partial tagging anymore
 class PartialTaggingTest {
 
   @Test

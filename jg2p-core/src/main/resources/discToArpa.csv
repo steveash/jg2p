@@ -1,0 +1,67 @@
+// consonants
+p   P
+b   B
+t   T
+d   D
+k   K
+x   G
+g   G
+N   NG
+m   M
+n   N
+l   L
+r   R
+f   F
+v   V
+T   TH
+D   DH
+s   S
+z   Z
+S   SH
+Z   ZH
+j   Y
+h   HH
+w   W
+
+// affricates
+J   CH
+_   JH
+
+// syllabic consonants- these are coded just to their consonant counterpart in arpabet
+C   N
+F   M
+H   N
+P   L
+R   R
+
+// long vowels
+i   IY
+u   UW
+#   AA
+$   AO
+3   ER
+
+// short vowels a few of these in DISC code to the same in ARPAbet
+I   IH
+E   EH
+{   AE
+Q   AA
+V   AH
+U   UH
+@   ER
+
+// borrowed vowels dont have a separate encoding in arpabet and in both DISC and arpabet the subsequent consonant sound is coded
+c   IH
+q   AA
+0   AA
+~   AH
+
+// dipthongs oddly arpabet lacks something for 8 e.g. "pair" which is clearly a dipthong...
+1   EY
+2   AY
+4   OY
+5   OW
+6   AW
+7   IH
+8   EH
+9   UW

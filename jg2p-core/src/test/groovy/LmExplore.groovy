@@ -2,15 +2,8 @@ import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.phoseq.Perplexity
 import com.github.steveash.jg2p.util.GroovyLogger
 import com.github.steveash.jg2p.util.ReadWrite
-import kylm.model.ngram.NgramLM
-import kylm.model.ngram.smoother.AbsoluteSmoother
-import kylm.model.ngram.smoother.GTSmoother
-import kylm.model.ngram.smoother.KNSmoother
-import kylm.model.ngram.smoother.MKNSmoother
-import kylm.model.ngram.smoother.MLSmoother
-import kylm.model.ngram.smoother.WBSmoother
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.github.steveash.kylm.model.ngram.NgramLM
+import com.github.steveash.kylm.model.ngram.smoother.KNSmoother
 
 /*
  * Copyright 2015 Steve Ash

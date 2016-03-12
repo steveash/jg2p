@@ -57,13 +57,21 @@ public class AlignerTrainer {
   private final boolean cityBlockPenalty;
 
   public AlignerTrainer(TrainOptions trainOpts) {
+    this(trainOpts, null);
+  }
+
+  public AlignerTrainer(TrainOptions trainOpts, XyWalker overrideWalker) {
     this.trainOpts = trainOpts;
     this.gramOpts = trainOpts.makeGramOptions();
     XyWalker w;
-    if (trainOpts.useWindowWalker) {
-      w = new WindowXyWalker(gramOpts);
+    if (overrideWalker == null) {
+      if (trainOpts.useWindowWalker) {
+        w = new WindowXyWalker(gramOpts);
+      } else {
+        w = new FullXyWalker(gramOpts);
+      }
     } else {
-      w = new FullXyWalker(gramOpts);
+      w = overrideWalker;
     }
     if (trainOpts.alignAllowedFile != null) {
       try {

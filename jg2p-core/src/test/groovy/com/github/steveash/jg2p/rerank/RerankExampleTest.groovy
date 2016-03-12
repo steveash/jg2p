@@ -19,10 +19,6 @@ package com.github.steveash.jg2p.rerank
 import com.github.steveash.jg2p.PhoneticEncoder
 import com.github.steveash.jg2p.util.CsvFactory
 import com.google.common.collect.ImmutableList
-import net.sf.jsefa.common.converter.provider.SimpleTypeConverterProvider
-import net.sf.jsefa.csv.CsvIOFactory
-import net.sf.jsefa.csv.CsvSerializer
-import net.sf.jsefa.csv.config.CsvConfiguration
 
 /**
  * @author Steve Ash
@@ -31,8 +27,8 @@ class RerankExampleTest extends GroovyTestCase {
 
   void testCsvInOut() {
     def abc = ImmutableList.of("A", "B", "C")
-    def encA = new PhoneticEncoder.Encoding(abc, abc, 2.123, 3.456)
-    def encB = new PhoneticEncoder.Encoding(abc, abc, 2.123, 3.456)
+    def encA = PhoneticEncoder.Encoding.createEncoding(abc, abc, abc, 2.123, 3.456, 10.0)
+    def encB = PhoneticEncoder.Encoding.createEncoding(abc, abc, abc, 2.123, 3.456, 10.0)
 
     def ex = new RerankExample(encA, true, 1, encB, true, 2, abc, "A")
 

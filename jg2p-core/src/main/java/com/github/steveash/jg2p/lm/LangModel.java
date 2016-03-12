@@ -21,12 +21,10 @@ import com.google.common.collect.Lists;
 
 import com.github.steveash.jg2p.PhoneticEncoder;
 import com.github.steveash.jg2p.align.Alignment;
-import com.github.steveash.jg2p.align.TrainOptions;
+import com.github.steveash.kylm.model.immutable.ImmutableLM;
 
 import java.io.Serializable;
 import java.util.List;
-
-import kylm.model.ngram.NgramLM;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -37,47 +35,47 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 public class LangModel implements Serializable {
   private static final long serialVersionUID = -843134336202792076L;
 
-  private final NgramLM gramLm;
+  private final ImmutableLM gramLm;
   private final boolean isGraphoneModel;
 
-  public LangModel(NgramLM gramLm, boolean isGraphoneModel) {
+  public LangModel(ImmutableLM gramLm, boolean isGraphoneModel) {
     this.gramLm = gramLm;
     this.isGraphoneModel = isGraphoneModel;
   }
 
   public double score(PhoneticEncoder.Encoding enc) {
-    String[] gramSeq = makeSequence(enc);
-    return gramLm.getSentenceProbNormalized(gramSeq);
+    List<String> gramSeq = makeSequence(enc);
+    return gramLm.sentenceProbNormalized(gramSeq);
   }
 
-  private String[] makeSequence(PhoneticEncoder.Encoding enc) {
+  private List<String> makeSequence(PhoneticEncoder.Encoding enc) {
     if (isGraphoneModel) {
       return makeGraphoneSeq(enc.alignment, enc.graphones);
     }
     return makePhonemeSeq(enc.phones);
   }
 
-  public static String[] makeSequenceFromAlignment(Alignment align, boolean useGraphoneModel) {
+  public static List<String> makeSequenceFromAlignment(Alignment align, boolean useGraphoneModel) {
     if (useGraphoneModel) {
       return makeGraphoneSeq(align.getAllXTokensAsList(), align.getAllYTokensAsList());
     }
     return makePhonemeSeq(Lists.newArrayList(align.getYTokens()));
   }
 
-  public static String[] makeGraphoneSeq(List<String> graphemes, List<String> phonemes) {
+  public static List<String> makeGraphoneSeq(List<String> graphemes, List<String> phonemes) {
     Preconditions.checkArgument(graphemes.size() == phonemes.size(), "must be same length");
-    String[] seq = new String[graphemes.size()];
+    List<String> seq = Lists.newArrayListWithCapacity(graphemes.size());
     for (int i = 0; i < graphemes.size(); i++) {
-      seq[i] = graphemes.get(i) + "^" + phonemes.get(i);
+      seq.add(graphemes.get(i) + "^" + phonemes.get(i));
     }
     return seq;
   }
 
-  public static String[] makePhonemeSeq(List<String> phonesNoEps) {
-    String[] seq = new String[phonesNoEps.size()];
+  public static List<String> makePhonemeSeq(List<String> phonesNoEps) {
+    List<String> seq = Lists.newArrayListWithCapacity(phonesNoEps.size());
     for (int i = 0; i < phonesNoEps.size(); i++) {
-      seq[i] = phonesNoEps.get(i);
-      Preconditions.checkState(isNotBlank(seq[i]), "cant have an epsilon phoneme here");
+      seq.add(phonesNoEps.get(i));
+      Preconditions.checkState(isNotBlank(seq.get(i)), "cant have an epsilon phoneme here");
     }
     return seq;
   }

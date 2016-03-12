@@ -16,8 +16,6 @@
 
 package com.github.steveash.jg2p.rerank;
 
-import org.jpmml.evaluator.ProbabilityClassificationMap;
-
 import java.util.Map;
 
 /**

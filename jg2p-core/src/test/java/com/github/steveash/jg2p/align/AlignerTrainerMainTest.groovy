@@ -40,7 +40,7 @@ class AlignerTrainerMainTest {
 
     def outFile = new File(outFile)
     outFile.deleteOnExit()
-    def model = ReadWrite.readFromFile(outFile)
+    def model = ReadWrite.readFromFile(AlignModel, outFile)
     printExample(model, "fresh", "F R EH SH")
     printExample(model, "wrinkling", "R IH NG K L IH NG")
   }

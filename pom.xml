@@ -8,7 +8,7 @@
   <description>Java grapheme to phoneme encoder using joint-modelling and CRFs</description>
   <modules>
     <module>jg2p-core</module>
-    <!--<module>jg2p-tagger</module>-->
+    <module>jg2p-model-cmu</module>
   </modules>
   <packaging>pom</packaging>
 
@@ -66,16 +66,6 @@
         <version>${groovy-eclipse-batch-version}</version>
       </dependency>
       <dependency>
-        <groupId>org.scala-lang</groupId>
-        <artifactId>scala-library</artifactId>
-        <version>${scala-version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.scala-lang</groupId>
-        <artifactId>scala-compiler</artifactId>
-        <version>${scala-version}</version>
-      </dependency>
-      <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <version>17.0</version>
@@ -119,12 +109,7 @@
       <dependency>
         <groupId>com.github.steveash.mallet</groupId>
         <artifactId>mallet</artifactId>
-        <version>2.0.8-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>cc.factorie</groupId>
-        <artifactId>factorie_2.11</artifactId>
-        <version>1.2-SNAPSHOT</version>
+        <version>2.0.9</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -203,28 +188,6 @@
               <version>${groovy-eclipse-batch-version}</version>
             </dependency>
           </dependencies>
-        </plugin>
-        <plugin>
-          <groupId>net.alchim31.maven</groupId>
-          <artifactId>scala-maven-plugin</artifactId>
-          <version>3.2.0</version>
-          <executions>
-            <execution>
-              <id>scala-compile-first</id>
-              <phase>process-resources</phase>
-              <goals>
-                <goal>add-source</goal>
-                <goal>compile</goal>
-              </goals>
-            </execution>
-            <execution>
-              <id>scala-test-compile</id>
-              <phase>process-test-resources</phase>
-              <goals>
-                <goal>testCompile</goal>
-              </goals>
-            </execution>
-          </executions>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>

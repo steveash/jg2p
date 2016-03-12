@@ -80,7 +80,7 @@ public class Word implements Iterable<String> {
     return value.size();
   }
 
-  private Word(List<String> value) {
+  protected Word(List<String> value) {
     this.value = value;
   }
 

@@ -22,14 +22,15 @@ import com.google.common.collect.FluentIterable;
 
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.align.TrainOptions;
+import com.github.steveash.kylm.model.immutable.ImmutableLM;
+import com.github.steveash.kylm.model.immutable.ImmutableLMConverter;
+import com.github.steveash.kylm.model.ngram.NgramLM;
+import com.github.steveash.kylm.model.ngram.smoother.KNSmoother;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-
-import kylm.model.ngram.NgramLM;
-import kylm.model.ngram.smoother.KNSmoother;
 
 /**
  * Trains a graphone model based on aligned exampled
@@ -57,14 +58,15 @@ public class LangModelTrainer {
     Iterable<String[]> trainInput = FluentIterable.from(inputs).transform(new Function<Alignment, String[]>() {
       @Override
       public String[] apply(Alignment input) {
-        return LangModel.makeSequenceFromAlignment(input, opts.graphoneLangModel);
+        return LangModel.makeSequenceFromAlignment(input, opts.graphoneLangModel).toArray(new String[0]);
       }
     });
     try {
       log.info("Starting to train language model on {} inputs", inputs.size());
       lm.trainModel(trainInput);
       log.info("Finished training language model");
-      return new LangModel(lm, opts.graphoneLangModel);
+      ImmutableLM newlm = new ImmutableLMConverter().convert(lm);
+      return new LangModel(newlm, opts.graphoneLangModel);
     } catch (Exception e) {
       throw Throwables.propagate(e);
     }

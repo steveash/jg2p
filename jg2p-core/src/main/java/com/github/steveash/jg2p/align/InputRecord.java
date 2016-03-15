@@ -16,14 +16,19 @@
 
 package com.github.steveash.jg2p.align;
 
+import com.google.common.base.Equivalence;
+import com.google.common.base.Function;
+import com.google.common.collect.Ordering;
+
 import com.github.steveash.jg2p.Word;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * One training exemplar for the aligner
-* @author Steve Ash
-*/
+ *
+ * @author Steve Ash
+ */
 public class InputRecord extends Pair<Word, Word> {
 
   public final Word xWord;
@@ -42,7 +47,7 @@ public class InputRecord extends Pair<Word, Word> {
     this.memo = memo;
   }
 
-  public Pair<Word,Word> xyWordPair() {
+  public Pair<Word, Word> xyWordPair() {
     return Pair.of(xWord, yWord);
   }
 
@@ -61,5 +66,23 @@ public class InputRecord extends Pair<Word, Word> {
     throw new IllegalStateException("Word pairs are immutable");
   }
 
+  public static final Ordering<InputRecord> OrderByX = Ordering.natural().onResultOf(
+      new Function<InputRecord, Word>() {
+        @Override
+        public Word apply(InputRecord input) {
+          return input.getLeft();
+        }
+      });
 
+  public static final Equivalence<InputRecord> EqualByX = new Equivalence<InputRecord>() {
+    @Override
+    protected boolean doEquivalent(InputRecord a, InputRecord b) {
+      return a.getLeft().equals(b.getLeft());
+    }
+
+    @Override
+    protected int doHash(InputRecord inputRecord) {
+      return 0;
+    }
+  };
 }

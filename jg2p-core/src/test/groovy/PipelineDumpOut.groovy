@@ -13,18 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import com.github.steveash.jg2p.GraphoneSortingEncoder
-import com.github.steveash.jg2p.PhoneticEncoder
-import com.github.steveash.jg2p.PipelineEncoder
 import com.github.steveash.jg2p.PipelineModel
-import com.github.steveash.jg2p.Word
-import com.github.steveash.jg2p.align.InputReader
-import com.github.steveash.jg2p.eval.BulkEval
-import com.github.steveash.jg2p.eval.EvalPrinter
 import com.github.steveash.jg2p.util.GroovyLogger
 import com.github.steveash.jg2p.util.ReadWrite
-import com.google.common.base.Stopwatch
 import org.slf4j.LoggerFactory
 
 def modelFile = "../resources/pipe_22_F9_1.dat"

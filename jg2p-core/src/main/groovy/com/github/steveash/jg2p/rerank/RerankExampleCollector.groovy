@@ -20,8 +20,10 @@ import com.github.steveash.jg2p.Word
 import com.github.steveash.jg2p.align.InputRecord
 import com.github.steveash.jg2p.align.TrainOptions
 import com.github.steveash.jg2p.util.CsvFactory
+import com.github.steveash.jg2p.util.GroupingIterable
 import com.github.steveash.jg2p.util.Percent
 import com.google.common.collect.Lists
+import com.google.common.collect.Ordering
 import com.google.common.util.concurrent.RateLimiter
 import groovyx.gpars.GParsPool
 import org.slf4j.Logger
@@ -35,15 +37,16 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank
  * Class that knows how to collect examples for reranker training
  * @author Steve Ash
  */
+//@CompileStatic
 class RerankExampleCollector {
 
   private static final Logger log = LoggerFactory.getLogger(RerankExampleCollector.class);
 
   private final TrainOptions opts;
   private final RerankableEncoder enc
-  private final def limiter = RateLimiter.create(1.0 / 5.0)
-  private final def total = new AtomicInteger(0)
-  private final def skipped = new AtomicInteger(0)
+  private final RateLimiter limiter = RateLimiter.create(1.0 / 5.0)
+  private final AtomicInteger total = new AtomicInteger(0)
+  private final AtomicInteger skipped = new AtomicInteger(0)
 
   RerankExampleCollector(RerankableEncoder enc, TrainOptions opts) {
     this.enc = enc
@@ -51,13 +54,16 @@ class RerankExampleCollector {
   }
 
   Collection<List<RerankExample>> makeExamples(List<InputRecord> inputs) {
-    double recProb = ((double) opts.maxExamplesForReranker) / inputs.size()
-    log.info("Collecting reranking examples Using rec prob of $recProb")
-    def inps = inputs.groupBy { it.xWord }
-    List<List<RerankExample>> exs = Lists.newArrayListWithCapacity(inps.size())
+    assert Ordering.natural().isOrdered(inputs)
 
-    GParsPool.withPool {
-      inps.eachParallel { Word xWord, List<InputRecord> recs ->
+    Iterable<List<InputRecord>> gi = GroupingIterable.groupOver(inputs, InputRecord.EqualByX)
+    log.info("Collecting reranking examples from " + inputs.size() + " grouped inputs")
+    List<List<RerankExample>> exs = Lists.newArrayListWithExpectedSize((0.90 * inputs.size()) as int)
+
+    GParsPool.withPool(16) {
+      gi.eachParallel { List inRecs ->
+        List<InputRecord> recs = (List<InputRecord>) inRecs
+        Word xWord = (Word) (((InputRecord) recs[0]).left)
 
         def newTotal = total.incrementAndGet()
         def rrResult = enc.encode(xWord)
@@ -69,26 +75,26 @@ class RerankExampleCollector {
           skipped.incrementAndGet()
           return;
         }
-        def goodPhones = recs.collect {it.yWord.value}.toSet()
+        def goodPhones = recs.collect { InputRecord rec -> rec.yWord.value }.toSet()
         def outs = RerankExample.makeExamples(rrResult, xWord, goodPhones)
 
         synchronized (exs) {
           exs.add(outs)
         }
 
-        if (newTotal % 256 == 0) {
-          if (limiter.tryAcquire()) {
-            log.info "Completed " + newTotal + " of " + inputs.size() + " " + Percent.print(newTotal, inputs.size())
-          }
+        if (limiter.tryAcquire()) {
+          log.info "Completed " + newTotal + " of " + inputs.size() + " " + Percent.print(newTotal, inputs.size())
         }
       }
     }
+
     synchronized (exs) {
 //      if (isNotBlank(opts.writeOutputRerankExampleCsv)) {
 //        writeExamples(exs)
 //      }
       return exs;
     }
+
   }
 
   private void writeExamples(List<RerankExample> exs) {

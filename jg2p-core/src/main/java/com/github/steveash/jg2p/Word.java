@@ -20,10 +20,13 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -35,7 +38,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  *
  * @author Steve Ash
  */
-public class Word implements Iterable<String> {
+public class Word implements Iterable<String>, Comparable<Word> {
   private static final Splitter splitter = Splitter.on(' ').trimResults().omitEmptyStrings();
   private static final Joiner joiner = Joiner.on(' ');
   private static final CharMatcher spaces = CharMatcher.is(' ').precomputed();
@@ -51,7 +54,7 @@ public class Word implements Iterable<String> {
   public static Word fromNormalString(String normalString) {
     List<String> chars = Lists.newArrayListWithCapacity(normalString.length());
     for (int i = 0; i < normalString.length(); i++) {
-      chars.add(normalString.substring(i, i + 1));
+      chars.add(normalString.substring(i, i + 1).intern());
     }
     return new Word(chars);
   }
@@ -162,5 +165,17 @@ public class Word implements Iterable<String> {
   @Override
   public Iterator<String> iterator() {
     return value.iterator();
+  }
+
+  @Override
+  public int compareTo(Word o) {
+    int min = Math.min(this.value.size(), o.value.size());
+    for (int i = 0; i < min; i++) {
+      int elem = Ordering.natural().compare(this.value.get(i), o.value.get(i));
+      if (elem != 0) {
+        return elem;
+      }
+    }
+    return Integer.compare(this.value.size(), o.value.size());
   }
 }

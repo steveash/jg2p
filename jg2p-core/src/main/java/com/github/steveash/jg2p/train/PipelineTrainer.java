@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -66,6 +67,7 @@ public class PipelineTrainer {
   private Rerank3Model loadedReranker;
 
   public void train(List<InputRecord> inputs, TrainOptions opts, PipelineModel model) {
+    Collections.sort(inputs, InputRecord.OrderByX);
     this.inputs = inputs;
     this.opts = opts;
     validateInputs();

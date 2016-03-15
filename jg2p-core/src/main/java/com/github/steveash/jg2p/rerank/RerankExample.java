@@ -17,6 +17,7 @@
 package com.github.steveash.jg2p.rerank;
 
 import com.google.common.collect.Lists;
+import com.google.common.primitives.Doubles;
 
 import com.github.steveash.jg2p.PhoneticEncoder;
 import com.github.steveash.jg2p.Word;
@@ -104,7 +105,7 @@ public class RerankExample {
         log.warn("Got bad cand for " + xWord.getAsSpaceString());
         continue;
       }
-      if (!Double.isFinite(entry.getLangModelScore())) {
+      if (!Doubles.isFinite(entry.getLangModelScore())) {
         log.warn("Got bad lm score from " + entry.getEncoding().phones + " for " + xWord.getAsSpaceString());
         continue;
       }

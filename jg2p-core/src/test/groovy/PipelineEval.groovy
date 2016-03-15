@@ -1,5 +1,3 @@
-import com.github.steveash.jg2p.GraphoneSortingEncoder
-import com.github.steveash.jg2p.PhoneticEncoder
 import com.github.steveash.jg2p.PipelineEncoder
 import com.github.steveash.jg2p.PipelineModel
 import com.github.steveash.jg2p.align.InputReader

@@ -16,28 +16,17 @@
 
 package com.github.steveash.jg2p.rerank;
 
-import cc.mallet.pipe.Pipe;
-import cc.mallet.types.Alphabet;
-import cc.mallet.types.Instance;
-
 /**
  * @author Steve Ash
  */
-public class ModePipe extends Pipe {
+public class ModePipe implements RerankFeature {
 
-  public ModePipe(Alphabet dataDict, Alphabet targetDict) {
-    super(dataDict, targetDict);
-  }
+  private static final long serialVersionUID = -8849136831504461062L;
 
   @Override
-  public Instance pipe(Instance inst) {
-    RerankFeature data = (RerankFeature) inst.getData();
-    if (data.getExample().isUniqueMatchingModeA()) {
-      data.setBinary("A_uniqueMode");
+  public void emitFeatures(RerankFeatureBag data) {
+    if (data.getExample().isUniqueMatchingMode()) {
+      data.setBinary("uniqueMode");
     }
-    if (data.getExample().isUniqueMatchingModeB()) {
-      data.setBinary("B_uniqueMode");
-    }
-    return inst;
   }
 }

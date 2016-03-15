@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Steve Ash
+ * Copyright 2016 Steve Ash
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,146 +16,65 @@
 
 package com.github.steveash.jg2p.rerank;
 
-import com.github.steveash.jg2p.PhoneticEncoder;
+import com.google.common.collect.Lists;
 
-import net.sf.jsefa.csv.annotation.CsvDataType;
-import net.sf.jsefa.csv.annotation.CsvField;
+import com.github.steveash.jg2p.PhoneticEncoder;
+import com.github.steveash.jg2p.Word;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 /**
- * one example to train the pipes on the reranker
+ * The new re-ranker attempt that doesn't do the silly pairwise deal
+ *
  * @author Steve Ash
  */
-@CsvDataType
 public class RerankExample {
 
-  public static final String A = "A";
-  public static final String B = "B";
+  private static final Logger log = LoggerFactory.getLogger(RerankExample.class);
 
-  @CsvField(pos = 1, required = true)
-  private PhoneticEncoder.Encoding encodingA;
-  @CsvField(pos = 2)
-  private boolean uniqueMatchingModeA;
-  @CsvField(pos = 3)
-  private int dupCountA;
-  @CsvField(pos = 4)
-  private double languageModelScoreA;
-
-  @CsvField(pos = 5, required = true)
-  private PhoneticEncoder.Encoding encodingB;
-  @CsvField(pos = 6)
-  private boolean uniqueMatchingModeB;
-  @CsvField(pos = 7)
-  private int dupCountB;
-  @CsvField(pos = 8)
-  private double languageModelScoreB;
-
-  @CsvField(pos = 9, required = true)
+  private PhoneticEncoder.Encoding encoding;
+  private boolean uniqueMatchingMode;
+  private int dupCount;
+  private double languageModelScore;
   private List<String> wordGraphs;
-  @CsvField(pos = 10, required = true)
-  private String label;
+  private boolean isRelevant; // set when training, otherwise not
 
-  public RerankExample() {
-    // no arg constructor for the csv library
+  public PhoneticEncoder.Encoding getEncoding() {
+    return encoding;
   }
 
-  public RerankExample(PhoneticEncoder.Encoding encodingA, boolean uniqueMatchingModeA, int dupCountA,
-                       PhoneticEncoder.Encoding encodingB, boolean uniqueMatchingModeB, int dupCountB,
-                       List<String> wordGraphs, String label) {
-    this.encodingA = encodingA;
-    this.uniqueMatchingModeA = uniqueMatchingModeA;
-    this.dupCountA = dupCountA;
-    this.encodingB = encodingB;
-    this.uniqueMatchingModeB = uniqueMatchingModeB;
-    this.dupCountB = dupCountB;
-    this.wordGraphs = wordGraphs;
-    this.label = label;
+  public void setEncoding(PhoneticEncoder.Encoding encoding) {
+    this.encoding = encoding;
   }
 
-  public RerankExample flip() {
-    RerankExample r = new RerankExample();
-    r.setEncodingA(this.encodingB);
-    r.setEncodingB(this.encodingA);
-    r.setUniqueMatchingModeA(this.uniqueMatchingModeB);
-    r.setUniqueMatchingModeB(this.uniqueMatchingModeA);
-    r.setDupCountA(this.dupCountB);
-    r.setDupCountB(this.dupCountA);
-    r.setLanguageModelScoreA(this.languageModelScoreB);
-    r.setLanguageModelScoreB(this.languageModelScoreA);
-    r.setWordGraphs(this.wordGraphs);
-    if (this.label.equalsIgnoreCase(A)) {
-      r.setLabel(B);
-    } else if (this.label.equalsIgnoreCase(B)) {
-      r.setLabel(A);
-    } else {
-      throw new IllegalArgumentException("Unknown labels " + this.label);
-    }
-    return r;
+  public boolean isUniqueMatchingMode() {
+    return uniqueMatchingMode;
   }
 
-  public PhoneticEncoder.Encoding getEncodingA() {
-    return encodingA;
+  public void setUniqueMatchingMode(boolean uniqueMatchingMode) {
+    this.uniqueMatchingMode = uniqueMatchingMode;
   }
 
-  public void setEncodingA(PhoneticEncoder.Encoding encodingA) {
-    this.encodingA = encodingA;
+  public int getDupCount() {
+    return dupCount;
   }
 
-  public boolean isUniqueMatchingModeA() {
-    return uniqueMatchingModeA;
+  public void setDupCount(int dupCount) {
+    this.dupCount = dupCount;
   }
 
-  public void setUniqueMatchingModeA(boolean uniqueMatchingModeA) {
-    this.uniqueMatchingModeA = uniqueMatchingModeA;
+  public double getLanguageModelScore() {
+    return languageModelScore;
   }
 
-  public int getDupCountA() {
-    return dupCountA;
-  }
-
-  public void setDupCountA(int dupCountA) {
-    this.dupCountA = dupCountA;
-  }
-
-  public double getLanguageModelScoreA() {
-    return languageModelScoreA;
-  }
-
-  public void setLanguageModelScoreA(double languageModelScoreA) {
-    this.languageModelScoreA = languageModelScoreA;
-  }
-
-  public PhoneticEncoder.Encoding getEncodingB() {
-    return encodingB;
-  }
-
-  public void setEncodingB(PhoneticEncoder.Encoding encodingB) {
-    this.encodingB = encodingB;
-  }
-
-  public boolean isUniqueMatchingModeB() {
-    return uniqueMatchingModeB;
-  }
-
-  public void setUniqueMatchingModeB(boolean uniqueMatchingModeB) {
-    this.uniqueMatchingModeB = uniqueMatchingModeB;
-  }
-
-  public int getDupCountB() {
-    return dupCountB;
-  }
-
-  public void setDupCountB(int dupCountB) {
-    this.dupCountB = dupCountB;
-  }
-
-  public double getLanguageModelScoreB() {
-    return languageModelScoreB;
-  }
-
-  public void setLanguageModelScoreB(double languageModelScoreB) {
-    this.languageModelScoreB = languageModelScoreB;
+  public void setLanguageModelScore(double languageModelScore) {
+    this.languageModelScore = languageModelScore;
   }
 
   public List<String> getWordGraphs() {
@@ -166,25 +85,41 @@ public class RerankExample {
     this.wordGraphs = wordGraphs;
   }
 
-  public String getLabel() {
-    return label;
+  public boolean isRelevant() {
+    return isRelevant;
   }
 
-  public void setLabel(String label) {
-    this.label = label;
+  public void setRelevant(boolean relevant) {
+    isRelevant = relevant;
   }
 
-  @Override
-  public String toString() {
-    return "RerankExample{" +
-           "encodingA=" + encodingA +
-           ", uniqueMatchingModeA=" + uniqueMatchingModeA +
-           ", dupCountA=" + dupCountA +
-           ", encodingB=" + encodingB +
-           ", uniqueMatchingModeB=" + uniqueMatchingModeB +
-           ", dupCountB=" + dupCountB +
-           ", wordGraphs=" + wordGraphs +
-           ", label='" + label + '\'' +
-           '}';
+  public static List<RerankExample> makeExamples(RerankableResult rrResult, Word xWord,
+                                                 @Nullable Set<List<String>> goodPhones) {
+
+    List<RerankExample> outs = Lists.newArrayListWithCapacity(rrResult.overallResultCount());
+    for (int i = 0; i < rrResult.overallResultCount(); i++) {
+      RerankableEntry entry = rrResult.entryAtOverallIndex(i);
+
+      if (entry.getEncoding().phones == null || entry.getEncoding().phones.isEmpty()) {
+        log.warn("Got bad cand for " + xWord.getAsSpaceString());
+        continue;
+      }
+      if (!Double.isFinite(entry.getLangModelScore())) {
+        log.warn("Got bad lm score from " + entry.getEncoding().phones + " for " + xWord.getAsSpaceString());
+        continue;
+      }
+
+      RerankExample rr = new RerankExample();
+      rr.setDupCount(entry.getDupPhonesCount());
+      rr.setEncoding(entry.getEncoding());
+      rr.setLanguageModelScore(entry.getLangModelScore());
+      rr.setUniqueMatchingMode(entry.getHasMatchingUniqueModePhones());
+      rr.setWordGraphs(xWord.getValue());
+      if (goodPhones != null) {
+        rr.setRelevant(goodPhones.contains(entry.getEncoding().phones));
+      }
+      outs.add(rr);
+    }
+    return outs;
   }
 }

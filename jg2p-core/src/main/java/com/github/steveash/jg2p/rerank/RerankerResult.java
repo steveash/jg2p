@@ -16,39 +16,41 @@
 
 package com.github.steveash.jg2p.rerank;
 
-import com.google.common.base.Preconditions;
-import com.google.common.math.DoubleMath;
+import com.google.common.base.Function;
+
+import com.github.steveash.jg2p.PhoneticEncoder;
+
 
 /**
  * @author Steve Ash
  */
-public class RerankerResult {
+public class RerankerResult implements Comparable<RerankerResult> {
 
-  public enum Winner {A, B}
+  public static final Function<RerankerResult, PhoneticEncoder.Encoding> SelectEncoding = new Function<RerankerResult, PhoneticEncoder.Encoding>() {
+    @Override
+    public PhoneticEncoder.Encoding apply(RerankerResult input) {
+      return input.getExample().getEncoding();
+    }
+  };
 
-  public RerankerResult(double probabilityA, double probabilityB) {
-    Preconditions.checkArgument(probabilityA >= 0 && probabilityA <= 1, "didnt get a real prob", probabilityA);
-    Preconditions.checkArgument(probabilityB >= 0 && probabilityB <= 1, "didnt get a real prob", probabilityB);
-    this.probabilityA = probabilityA;
-    this.probabilityB = probabilityB;
+  private final RerankExample example;
+  private final double score;
+
+  public RerankerResult(RerankExample example, double score) {
+    this.example = example;
+    this.score = score;
   }
 
-  private final double probabilityA;
-  private final double probabilityB;
-
-  public double getProbabilityA() {
-    return probabilityA;
+  public RerankExample getExample() {
+    return example;
   }
 
-  public double getProbabilityB() {
-    return probabilityB;
+  public double getScore() {
+    return score;
   }
 
-  public double logOddsAOverB() {
-    return DoubleMath.log2(getProbabilityA()) - DoubleMath.log2(getProbabilityB());
-  }
-
-  public double logOddsBOverA() {
-    return DoubleMath.log2(getProbabilityB()) - DoubleMath.log2(getProbabilityA());
+  @Override
+  public int compareTo(RerankerResult o) {
+    return Double.compare(this.score, o.score);
   }
 }

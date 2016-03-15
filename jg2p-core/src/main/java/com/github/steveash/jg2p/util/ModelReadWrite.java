@@ -24,7 +24,7 @@ import com.github.steveash.jg2p.align.AlignModel;
 import com.github.steveash.jg2p.align.Aligner;
 import com.github.steveash.jg2p.aligntag.AlignTagModel;
 import com.github.steveash.jg2p.lm.LangModel;
-import com.github.steveash.jg2p.rerank.Rerank2Model;
+import com.github.steveash.jg2p.rerank.Rerank3Model;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 
 import java.io.File;
@@ -71,10 +71,10 @@ public class ModelReadWrite {
     throw badModel(file, model);
   }
 
-  public static Rerank2Model readRerankerFrom(String file) {
+  public static Rerank3Model readRerankerFrom(String file) {
     Object model = read(file);
-    if (model instanceof Rerank2Model) {
-      return (Rerank2Model) model;
+    if (model instanceof Rerank3Model) {
+      return (Rerank3Model) model;
     }
     if (model instanceof PipelineModel) {
       return checkNotNull(((PipelineModel) model).getRerankerModel());

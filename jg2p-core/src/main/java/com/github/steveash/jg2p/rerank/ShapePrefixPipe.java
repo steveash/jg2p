@@ -16,41 +16,21 @@
 
 package com.github.steveash.jg2p.rerank;
 
-import com.github.steveash.jg2p.PhoneticEncoder;
 import com.github.steveash.jg2p.phoseq.WordShape;
-import com.github.steveash.jg2p.util.Scaler;
-
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.List;
-
-import cc.mallet.pipe.Pipe;
-import cc.mallet.types.Alphabet;
-import cc.mallet.types.Instance;
 
 /**
  * @author Steve Ash
  */
-public class ShapePrefixPipe extends Pipe {
+public class ShapePrefixPipe implements RerankFeature {
 
   private static final int DIST_BASE = 5;
-
-  public ShapePrefixPipe(Alphabet dataDict, Alphabet targetDict) {
-    super(dataDict, targetDict);
-  }
+  private static final long serialVersionUID = -8778690531170551758L;
 
   @Override
-  public Instance pipe(Instance inst) {
-    RerankFeature data = (RerankFeature) inst.getData();
+  public void emitFeatures(RerankFeatureBag data) {
     String wordShape = WordShape.graphShape(data.getExample().getWordGraphs(), false);
-    addShapeFeatures(wordShape, "A_", data.getExample().getEncodingA().phones, data);
-    addShapeFeatures(wordShape, "B_", data.getExample().getEncodingB().phones, data);
-    return inst;
-  }
-
-  private void addShapeFeatures(String wordShape, String prefix, List<String> phones, RerankFeature data) {
-    String ansShape = WordShape.phoneShape(phones, false);
-    for (int i = Rerank2Model.minGoodShape; i <= Rerank2Model.maxGoodShape; i++) {
+    String ansShape = WordShape.phoneShape(data.getExample().getEncoding().phones, false);
+    for (int i = Rerank3Model.minGoodShape; i <= Rerank3Model.maxGoodShape; i++) {
       if (wordShape.length() < i || ansShape.length() < i) {
         continue;
       }
@@ -58,7 +38,7 @@ public class ShapePrefixPipe extends Pipe {
       String pp = ansShape.substring(0, i);
 //      if (gg.equalsIgnoreCase(pp) && Rerank2Model.goodShapes.contains(gg)) {
       if (gg.equalsIgnoreCase(pp)) {
-        data.setBinary(prefix + "sp_" + gg);
+        data.setBinary("sp_" + gg);
       }
     }
   }

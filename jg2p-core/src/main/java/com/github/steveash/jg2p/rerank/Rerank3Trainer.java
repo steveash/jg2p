@@ -21,66 +21,58 @@ import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 
-import cc.mallet.classify.AdaBoostTrainer;
 import cc.mallet.classify.Classifier;
-import cc.mallet.classify.MaxEnt;
 import cc.mallet.classify.MaxEntL1Trainer;
-import cc.mallet.classify.MaxEntTrainer;
+import cc.mallet.classify.RankMaxEnt;
+import cc.mallet.classify.RankMaxEntTrainer;
 import cc.mallet.classify.Trial;
 import cc.mallet.classify.evaluate.ConfusionMatrix;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.SerialPipes;
-import cc.mallet.pipe.Target2Label;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Trains a maxent classifier to do A-B reranking
  *
  * @author Steve Ash
  */
-public class Rerank2Trainer {
+public class Rerank3Trainer {
 
-  private static final Logger log = LoggerFactory.getLogger(Rerank2Trainer.class);
+  private static final Logger log = LoggerFactory.getLogger(Rerank3Trainer.class);
 
   private final Pipe pipe;
 
-  public Rerank2Trainer() {
+  public Rerank3Trainer() {
     pipe = makePipe();
   }
 
   /**
-   * Takes "one-sided" rerank examples and will create the "flip" side and then train on both (so we dont learn to
-   * just prefer one side over the other
-   * @param trainingData
-   * @return
+   * Takes "one-sided" rerank examples and will create the "flip" side and then train on both (so we dont learn to just
+   * prefer one side over the other
    */
-  public Rerank2Model trainFor(Collection<RerankExample> trainingData) {
+  public Rerank3Model trainFor(Collection<List<RerankExample>> trainingData) {
     InstanceList instances = convert(trainingData);
-//    MaxEntTrainer trainer = new MaxEntTrainer(10.0);
-    MaxEntL1Trainer trainer = new MaxEntL1Trainer();
+    RankMaxEntTrainer trainer = new RankMaxEntTrainer(10.0);
 //    AdaBoostTrainer trainer = new AdaBoostTrainer(new MaxEntL1Trainer(), 10);
-    Classifier model = trainer.train(instances);
+    RankMaxEnt model = (RankMaxEnt) trainer.train(instances);
     Trial trial = new Trial(model, instances);
     log.info("Trained reranker. Final accuracy on itself: " + trial.getAccuracy());
     log.info(new ConfusionMatrix(trial).toString());
-    return new Rerank2Model(model);
+    return new Rerank3Model(model);
   }
 
-  public InstanceList convert(Collection<RerankExample> trainingData) {
+  public InstanceList convert(Collection<List<RerankExample>> trainingData) {
     InstanceList instances = new InstanceList(pipe, trainingData.size());
     int count = 0;
-    for (RerankExample data : trainingData) {
-      instances.addThruPipe(new Instance(data, checkNotNull(data.getLabel()), null, null));
-      RerankExample flip = data.flip();
-      instances.addThruPipe(new Instance(flip, checkNotNull(flip.getLabel()), null, null));
+    for (List<RerankExample> data : trainingData) {
+      instances.addThruPipe(new Instance(data, 1 /*just putting something here triggers pipe*/, null, null));
       count += 1;
 
       if (count % 10000 == 0) {
@@ -94,21 +86,20 @@ public class Rerank2Trainer {
   private static Pipe makePipe() {
     Alphabet alpha = new Alphabet();
     LabelAlphabet labelAlpha = new LabelAlphabet();
-    Target2Label labelPipe = new Target2Label(alpha, labelAlpha);
 
     return new SerialPipes(ImmutableList.of(
-        new LoadExamplePipe(alpha, labelAlpha),
-        new DupsPipe(alpha, labelAlpha),
-        new ModePipe(alpha, labelAlpha),
-        new PrefixPipe(alpha, labelAlpha),
-        new RanksPipe(alpha, labelAlpha),
-        new ScoresPipe(alpha, labelAlpha),
-        new ShapePipe(alpha, labelAlpha),
-        new ShapePrefixPipe(alpha, labelAlpha),
+        new LoadTargetPipe(alpha, labelAlpha),
+        new RerankFeaturePipe(alpha, labelAlpha, Arrays.asList(
+            new DupsPipe(),
+            new ModePipe(),
+            new PrefixPipe(),
+            new RanksPipe(),
+            new ScoresPipe(),
+            new ShapePipe(),
+            new ShapePrefixPipe()
 //        new VowelBigramPipe(alpha, labelAlpha),
 //        new VowelPatternPipe(alpha, labelAlpha),
-        new ExampleToFeatureVectorPipe(alpha, labelAlpha),
-        labelPipe
+        ))
     ));
 
   }

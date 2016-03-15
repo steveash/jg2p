@@ -16,49 +16,27 @@
 
 package com.github.steveash.jg2p.rerank;
 
-import com.github.steveash.jg2p.PhoneticEncoder;
 import com.github.steveash.jg2p.phoseq.Phonemes;
-import com.github.steveash.jg2p.phoseq.WordShape;
-import com.github.steveash.jg2p.util.Scaler;
-
-import org.apache.commons.lang3.StringUtils;
-
-import java.util.List;
-
-import cc.mallet.pipe.Pipe;
-import cc.mallet.types.Alphabet;
-import cc.mallet.types.Instance;
 
 /**
  * @author Steve Ash
  */
-public class VowelBigramPipe extends Pipe {
+public class VowelBigramPipe implements RerankFeature {
 
   private static final int DIST_BASE = 5;
 
-  public VowelBigramPipe(Alphabet dataDict, Alphabet targetDict) {
-    super(dataDict, targetDict);
-  }
-
   @Override
-  public Instance pipe(Instance inst) {
-    RerankFeature data = (RerankFeature) inst.getData();
-    addBigrams(data, "A_", data.getExample().getEncodingA().phones);
-    addBigrams(data, "B_", data.getExample().getEncodingB().phones);
-    return inst;
-  }
-
-  private void addBigrams(RerankFeature data, String prefix, List<String> phones) {
-    for (int i = 0; i < phones.size(); i++) {
-      String p = phones.get(i);
+  public void emitFeatures(RerankFeatureBag data) {
+    for (int i = 0; i < data.getExample().getEncoding().phones.size(); i++) {
+      String p = data.getExample().getEncoding().phones.get(i);
       if (!Phonemes.isVowel(p)) {
         continue;
       }
       if (i > 0) {
-        data.setBinary(prefix + "bgm_" + phones.get(i-1) + "_" + p);
+        data.setBinary("bgm_" + data.getExample().getEncoding().phones.get(i - 1) + "_" + p);
       }
-      if (i + 1 < phones.size()) {
-        data.setBinary(prefix + "bgm_" + p + "_" + phones.get(i + 1));
+      if (i + 1 < data.getExample().getEncoding().phones.size()) {
+        data.setBinary("bgm_" + p + "_" + data.getExample().getEncoding().phones.get(i + 1));
       }
     }
   }

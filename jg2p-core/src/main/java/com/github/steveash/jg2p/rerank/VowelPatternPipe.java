@@ -21,40 +21,25 @@ import com.google.common.collect.Iterables;
 import com.github.steveash.jg2p.phoseq.Phonemes;
 
 import java.util.Iterator;
-import java.util.List;
-
-import cc.mallet.pipe.Pipe;
-import cc.mallet.types.Alphabet;
-import cc.mallet.types.Instance;
 
 /**
  * Emits features for n-grams of the vowels in the word.  I.e. like skip features
  * @author Steve Ash
  */
-public class VowelPatternPipe extends Pipe {
+public class VowelPatternPipe implements RerankFeature {
 
   private static final int DIST_BASE = 5;
 
-  public VowelPatternPipe(Alphabet dataDict, Alphabet targetDict) {
-    super(dataDict, targetDict);
-  }
-
   @Override
-  public Instance pipe(Instance inst) {
-    RerankFeature data = (RerankFeature) inst.getData();
-    addBigrams(data, "A_", data.getExample().getEncodingA().phones);
-    addBigrams(data, "B_", data.getExample().getEncodingB().phones);
-    return inst;
-  }
-
-  private void addBigrams(RerankFeature data, String prefix, List<String> phones) {
-    Iterator<String> vowels = Iterables.filter(phones, Phonemes.whereOnlyVowels).iterator();
+  public void emitFeatures(RerankFeatureBag data) {
+    Iterator<String> vowels = Iterables.filter(data.getExample().getEncoding().phones, Phonemes.whereOnlyVowels).iterator();
     if (!vowels.hasNext()) return;
     String last = vowels.next();
     while (vowels.hasNext()) {
       String next = vowels.next();
-      data.setBinary(prefix + "_bgmPatt_" + last + "_" + next);
+      data.setBinary("bgmPatt_" + last + "_" + next);
       last = next;
     }
   }
+
 }

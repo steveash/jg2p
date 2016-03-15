@@ -16,52 +16,33 @@
 
 package com.github.steveash.jg2p.rerank;
 
-import com.google.common.base.Joiner;
-
-import com.github.steveash.jg2p.PhoneticEncoder;
-import com.github.steveash.jg2p.phoseq.Phonemes;
 import com.github.steveash.jg2p.phoseq.WordShape;
-import com.github.steveash.jg2p.util.Scaler;
 
 import org.apache.commons.lang3.StringUtils;
-
-import cc.mallet.pipe.Pipe;
-import cc.mallet.types.Alphabet;
-import cc.mallet.types.Instance;
 
 /**
  * @author Steve Ash
  */
-public class ShapePipe extends Pipe {
+public class ShapePipe implements RerankFeature {
 
   private static final int DIST_BASE = 5;
-
-  public ShapePipe(Alphabet dataDict, Alphabet targetDict) {
-    super(dataDict, targetDict);
-  }
+  private static final long serialVersionUID = -2962634341623299872L;
 
   @Override
-  public Instance pipe(Instance inst) {
-    RerankFeature data = (RerankFeature) inst.getData();
+  public void emitFeatures(RerankFeatureBag data) {
     String wordShape = WordShape.graphShape(data.getExample().getWordGraphs(), false);
-    addShapeFeatures(wordShape, "A_", data.getExample().getEncodingA(), data);
-    addShapeFeatures(wordShape, "B_", data.getExample().getEncodingB(), data);
-    return inst;
-  }
-
-  private void addShapeFeatures(String wordShape, String prefix, PhoneticEncoder.Encoding encoding, RerankFeature data) {
-    String ansShape = WordShape.phoneShape(encoding.phones, false);
+    String ansShape = WordShape.phoneShape(data.getExample().getEncoding().phones, false);
     int dist = StringUtils.getLevenshteinDistance(wordShape, ansShape, DIST_BASE);
     double distFeature = 1.0;
     if (dist > 0) {
 //      distFeature = Scaler.scaleLogSquash(dist, DIST_BASE, 1.0);
       distFeature = dist;
     }
-    data.setFeature(prefix + "shpDst", distFeature);
+    data.setFeature("shpDst", distFeature);
 
     int lenDiff = Math.abs(wordShape.length() - ansShape.length());
 //    double lenDiffFeature = Scaler.scaleLogSquash(lenDiff, 3.0, 1.0);
     double lenDiffFeature = lenDiff;
-    data.setFeature(prefix + "shpLenDiff", lenDiffFeature);
+    data.setFeature("shpLenDiff", lenDiffFeature);
   }
 }

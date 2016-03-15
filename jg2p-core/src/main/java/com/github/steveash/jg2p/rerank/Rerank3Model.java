@@ -16,24 +16,25 @@
 
 package com.github.steveash.jg2p.rerank;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Ordering;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 
 import cc.mallet.classify.Classification;
 import cc.mallet.classify.Classifier;
+import cc.mallet.classify.RankMaxEnt;
 import cc.mallet.pipe.Pipe;
-import cc.mallet.types.Labeling;
+import cc.mallet.types.Label;
+import cc.mallet.types.LabelVector;
 
 /**
  * @author Steve Ash
  */
-public class Rerank2Model implements Serializable {
+public class Rerank3Model implements Serializable {
   private static final long serialVersionUID = 2016299559324603971L;
 
   public static final ImmutableList<String> goodShapes =
@@ -74,31 +75,22 @@ public class Rerank2Model implements Serializable {
 
   private final Classifier model;
 
-  public Rerank2Model(Classifier model) {
+  public Rerank3Model(RankMaxEnt model) {
     this.model = model;
   }
 
-  public RerankerResult probabilities(RerankExample ex) {
+  public List<RerankerResult> probabilities(List<RerankExample> ex) {
 
     Classification classify = model.classify(ex);
-    Labeling labeling = classify.getLabeling();
-    double probA = -1, probB = -1;
-    for (int i = 0; i < labeling.numLocations(); i++) {
-      String label = (String) labeling.labelAtLocation(i).getEntry();
-      double prob = labeling.valueAtLocation(i);
-      Preconditions.checkArgument(prob >= 0 && prob <= 1, "didnt get a real prob", prob);
-      switch (label) {
-        case "A":
-          probA = prob;
-          break;
-        case "B":
-          probB = prob;
-          break;
-        default:
-          throw new IllegalStateException("Dont know how to handle a label of " + label);
-      }
+    LabelVector labeling = (LabelVector) classify.getLabeling();
+
+    List<RerankerResult> result = Lists.newArrayListWithCapacity(ex.size());
+    for (int i = 0; i < ex.size(); i++) {
+      Label rankLabel = labeling.getLabelAlphabet().lookupLabel(Integer.toString(i));
+      result.add(new RerankerResult(ex.get(i), labeling.value(rankLabel)));
     }
-    return new RerankerResult(probA, probB);
+    Collections.sort(result, Ordering.<RerankerResult>natural().reverse());
+    return result;
   }
 
   public Pipe getPipe() {

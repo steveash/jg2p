@@ -17,7 +17,6 @@
 package com.github.steveash.jg2p.rerank;
 
 import com.github.steveash.jg2p.PhoneticEncoder;
-import com.github.steveash.jg2p.util.Scaler;
 
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Alphabet;
@@ -26,27 +25,21 @@ import cc.mallet.types.Instance;
 /**
  * @author Steve Ash
  */
-public class RanksPipe extends Pipe {
+public class RanksPipe implements RerankFeature {
 
   private static final double RANK_SCALE_BASE = 4.0;
+  private static final long serialVersionUID = 4679033851181086884L;
 
-  public RanksPipe(Alphabet dataDict, Alphabet targetDict) {
-    super(dataDict, targetDict);
-  }
-
-  @Override
-  public Instance pipe(Instance inst) {
-    RerankFeature data = (RerankFeature) inst.getData();
-    addRanks(data, "A_", data.getExample().getEncodingA());
-    addRanks(data, "B_", data.getExample().getEncodingB());
-    return inst;
-  }
-
-  private void addRanks(RerankFeature data, String prefix, PhoneticEncoder.Encoding encoding) {
+  private void addRanks(RerankFeatureBag data, PhoneticEncoder.Encoding encoding) {
 //    data.setFeature(prefix + "all", (Scaler.scaleLog(encoding.rank, RANK_SCALE_BASE)));
 //    data.setFeature(prefix + "alg", (Scaler.scaleLog(encoding.alignRank, RANK_SCALE_BASE)));
 
-    data.setFeature(prefix + "all", encoding.rank);
-    data.setFeature(prefix + "alg", encoding.alignRank);
+    data.setFeature("all", encoding.rank);
+    data.setFeature("alg", encoding.alignRank);
+  }
+
+  @Override
+  public void emitFeatures(RerankFeatureBag data) {
+    addRanks(data, data.getExample().getEncoding());
   }
 }

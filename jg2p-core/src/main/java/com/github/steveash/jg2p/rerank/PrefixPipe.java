@@ -21,36 +21,27 @@ import com.github.steveash.jg2p.phoseq.Phonemes;
 
 import java.util.List;
 
-import cc.mallet.pipe.Pipe;
-import cc.mallet.types.Alphabet;
-import cc.mallet.types.Instance;
-
 /**
  * @author Steve Ash
  */
-public class PrefixPipe extends Pipe {
+public class PrefixPipe implements RerankFeature {
 
-  public PrefixPipe(Alphabet dataDict, Alphabet targetDict) {
-    super(dataDict, targetDict);
+  private static final long serialVersionUID = 441008478061478926L;
+
+  private void addPrefix(RerankFeatureBag data, String graphChar, List<String> phones) {
+    String phoneSymbol = phones.get(0).substring(0, 1);
+    if (Graphemes.isConsonant(phoneSymbol) && graphChar.equalsIgnoreCase(phoneSymbol)) {
+      data.setBinary("leadCons+");
+    } else {
+      data.setBinary("leadCons-");
+    }
   }
 
   @Override
-  public Instance pipe(Instance inst) {
-    RerankFeature data = (RerankFeature) inst.getData();
+  public void emitFeatures(RerankFeatureBag data) {
     String graphChar = data.getExample().getWordGraphs().get(0).substring(0, 1);
     if (Graphemes.isConsonant(graphChar) && Phonemes.isSimpleConsonantGraph(graphChar)) {
-      addPrefix(data, "A_", graphChar, data.getExample().getEncodingA().phones);
-      addPrefix(data, "B_", graphChar, data.getExample().getEncodingB().phones);
-    }
-    return inst;
-  }
-
-  private void addPrefix(RerankFeature data, String prefix, String graphChar, List<String> phones) {
-    String phoneSymbol = phones.get(0).substring(0, 1);
-    if (Graphemes.isConsonant(phoneSymbol) && graphChar.equalsIgnoreCase(phoneSymbol)) {
-      data.setBinary(prefix + "leadCons+");
-    } else {
-      data.setBinary(prefix + "leadCons-");
+      addPrefix(data, graphChar, data.getExample().getEncoding().phones);
     }
   }
 }

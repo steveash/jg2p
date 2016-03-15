@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory
 def inputFile = "g014b2b.train"
 //def inputFile = "cmudict.2kA.txt"
 //def inputFile = "g014b2b.test"
-def inputs = InputReader.makePSaurusReader().readFromClasspath(inputFile)
+def inputs = InputReader.makePSaurusReader().readFromClasspath(inputFile).take(1000)
 //def inputs = InputReader.makeDefaultFormatReader().readFromClasspath(inputFile)
 
 def opts = new TrainOptions()
@@ -39,16 +39,18 @@ opts.onlyOneGrams = false
 opts.maxPronouncerTrainingIterations = 200
 opts.useCityBlockPenalty = false
 opts.useWindowWalker = true
-//def inFile = "../resources/pipe_22_F9.dat"
-opts.initTrainingAlignerFromFile = "../resources/pip_align.dat"
-opts.initTestingAlignerFromFile = "../resources/pip_testAlign.dat"
-opts.initCrfFromModelFile = "../resources/pip_pron.dat"
-opts.initRerankerFromFile = "../resources/pip_rr.dat"
+def inFile = "../../../../jg2p-model-cmu/src/main/resources/pipeline_cmu_default.dat"
+opts.initCrfFromModelFile = opts.initGraphoneModelFromFile = opts.initTestingAlignerFromFile = opts.initTrainingAlignerFromFile = inFile
+//opts.initTrainingAlignerFromFile = "../resources/pip_align.dat"
+//opts.initTestingAlignerFromFile = "../resources/pip_testAlign.dat"
+//opts.initCrfFromModelFile = "../resources/psaur_22_xEps_ww_f8A_300.dat"
+//opts.initRerankerFromFile = "../resources/pip_rr.dat"
 //opts.graphoneLanguageModelOrder = 8
 //opts.graphoneLanguageModelOrderForTraining = 8
 //opts.initCrfFromModelFile = "../resources/pipe_22_F9_1.dat"
-opts.trainTrainingAligner = opts.trainTestingAligner = opts.trainPronouncer = opts.trainReranker = false
-def outFile = "../resources/pipe_22_F9_1.dat"
+//opts.trainTrainingAligner = opts.trainTestingAligner = opts.trainPronouncer = false
+//opts.trainReranker = true
+def outFile = "../resources/pipe_22_F10_1.dat"
 
 def log = LoggerFactory.getLogger("psaurus")
 out = new GroovyLogger(log)

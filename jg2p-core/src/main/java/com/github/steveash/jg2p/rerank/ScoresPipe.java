@@ -16,37 +16,19 @@
 
 package com.github.steveash.jg2p.rerank;
 
-import cc.mallet.pipe.Pipe;
-import cc.mallet.types.Alphabet;
-import cc.mallet.types.Instance;
-
 /**
  * @author Steve Ash
  */
-public class ScoresPipe extends Pipe {
+public class ScoresPipe implements RerankFeature {
 
-  public ScoresPipe(Alphabet dataDict, Alphabet targetDict) {
-    super(dataDict, targetDict);
-  }
+  private static final long serialVersionUID = -8862818937464442838L;
 
   @Override
-  public Instance pipe(Instance inst) {
-    RerankFeature data = (RerankFeature) inst.getData();
+  public void emitFeatures(RerankFeatureBag data) {
     RerankExample ex = data.getExample();
-    data.setFeature("A_tagScore", ex.getEncodingA().tagProbability());
-    data.setFeature("B_tagScore", ex.getEncodingB().tagProbability());
-
-    data.setFeature("A_retagScore", ex.getEncodingA().retagProbability());
-    data.setFeature("B_retagScore", ex.getEncodingB().retagProbability());
-
-//    data.setFeature("A_alignScore", Math.pow(2.0, ex.getEncodingA().alignScore));
-//    data.setFeature("B_alignScore", Math.pow(2.0, ex.getEncodingB().alignScore));
-    data.setFeature("A_alignScore", ex.getEncodingA().alignScore);
-    data.setFeature("B_alignScore", ex.getEncodingB().alignScore);
-
-    data.setFeature("A_lmScore", ex.getLanguageModelScoreA());
-    data.setFeature("B_lmScore", ex.getLanguageModelScoreB());
-
-    return inst;
+    data.setFeature("A_tagScore", ex.getEncoding().tagProbability());
+//        data.setFeature("A_retagScore", ex.getEncodingA().retagProbability());
+    data.setFeature("A_alignScore", ex.getEncoding().alignScore);
+    data.setFeature("A_lmScore", ex.getLanguageModelScore());
   }
 }

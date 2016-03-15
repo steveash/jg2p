@@ -19,7 +19,7 @@ package com.github.steveash.jg2p;
 import com.github.steveash.jg2p.align.AlignModel;
 import com.github.steveash.jg2p.aligntag.AlignTagModel;
 import com.github.steveash.jg2p.lm.LangModel;
-import com.github.steveash.jg2p.rerank.Rerank2Model;
+import com.github.steveash.jg2p.rerank.Rerank3Model;
 import com.github.steveash.jg2p.rerank.RerankableEncoder;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 
@@ -39,7 +39,7 @@ public class PipelineModel implements Serializable {
   private AlignTagModel testingAlignerModel = null;
   private PhonemeCrfModel pronouncerModel = null;
   private LangModel graphoneModel = null;
-  private Rerank2Model rerankerModel = null;
+  private Rerank3Model rerankerModel = null;
 
   public AlignModel getTrainingAlignerModel() {
     return trainingAlignerModel;
@@ -73,11 +73,11 @@ public class PipelineModel implements Serializable {
     this.graphoneModel = graphoneModel;
   }
 
-  public Rerank2Model getRerankerModel() {
+  public Rerank3Model getRerankerModel() {
     return rerankerModel;
   }
 
-  public void setRerankerModel(Rerank2Model rerankerModel) {
+  public void setRerankerModel(Rerank3Model rerankerModel) {
     this.rerankerModel = rerankerModel;
   }
 

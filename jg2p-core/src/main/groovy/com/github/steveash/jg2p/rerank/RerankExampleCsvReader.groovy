@@ -17,6 +17,8 @@
 package com.github.steveash.jg2p.rerank
 
 import com.github.steveash.jg2p.util.CsvFactory
+import com.github.steveash.jg2p.util.GroupingIterable
+import com.google.common.base.Equivalence
 import com.google.common.collect.Lists
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -29,7 +31,7 @@ class RerankExampleCsvReader {
 
   private static final Logger log = LoggerFactory.getLogger(RerankExampleCsvReader.class);
 
-  List<RerankExample> readFrom(String exampleCsvFile) {
+  List<List<RerankExample>> readFrom(String exampleCsvFile) {
     def exs = Lists.newArrayList()
     new File(exampleCsvFile).withReader { r ->
       def deser = CsvFactory.make().createDeserializer()
@@ -37,8 +39,7 @@ class RerankExampleCsvReader {
       deser.open(r)
       while (deser.hasNext()) {
         RerankExample ex = deser.next()
-        if (ex.encodingA.phones == null || ex.encodingB.phones == null || ex.encodingA.phones.isEmpty() ||
-            ex.encodingB.phones.isEmpty()) {
+        if (ex.encoding.phones == null || ex.encoding.phones.isEmpty() ) {
           log.warn("Problem with example on line $count got $ex skipping...")
         } else {
           exs.add(ex)
@@ -51,6 +52,9 @@ class RerankExampleCsvReader {
       }
       log.info("Got ${exs.size()} inputs to train on from many lines of input")
     }
-    return exs;
+    def gi = GroupingIterable.groupOver(exs, {RerankExample a, RerankExample b -> a.sequence == b.sequence} as Equivalence)
+    def outputList = Lists.newArrayList(gi)
+    log.info("Got " + outputList.size() + " grouped example lists from reader")
+    return outputList
   }
 }

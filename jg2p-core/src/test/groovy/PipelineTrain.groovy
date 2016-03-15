@@ -49,6 +49,7 @@ opts.initCrfFromModelFile = "../resources/pip_pron.dat"
 //opts.initCrfFromModelFile = inFile
 opts.trainPronouncer = opts.trainTrainingAligner = opts.trainTestingAligner = false
 //opts.trainReranker = true
+opts.writeOutputRerankExampleCsv = "../resources/pip_rre.csv"
 def outFile = "../resources/pipe_22_F10_1.dat"
 
 def log = LoggerFactory.getLogger("psaurus")

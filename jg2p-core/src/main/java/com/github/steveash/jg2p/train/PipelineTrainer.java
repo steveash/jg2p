@@ -63,7 +63,7 @@ public class PipelineTrainer {
   private AlignTagModel loadedTestAligner;
   private PhonemeCrfModel loadedPronouncer;
   private LangModel loadedGraphone;
-  private List<RerankExample> loadedRerankerCsv;
+  private List<List<RerankExample>> loadedRerankerCsv;
   private Rerank3Model loadedReranker;
 
   public void train(List<InputRecord> inputs, TrainOptions opts, PipelineModel model) {
@@ -95,9 +95,9 @@ public class PipelineTrainer {
       if (!opts.trainGraphoneModel) {
         loadedGraphone = ModelReadWrite.readGraphoneFrom(opts.initGraphoneModelFromFile);
       }
-//      if (opts.trainReranker && isNotBlank(opts.useInputRerankExampleCsv)) {
-//        loadedRerankerCsv = new RerankExampleCsvReader().readFrom(this.opts.useInputRerankExampleCsv);
-//      }
+      if (opts.trainReranker && isNotBlank(opts.useInputRerankExampleCsv)) {
+        loadedRerankerCsv = new RerankExampleCsvReader().readFrom(this.opts.useInputRerankExampleCsv);
+      }
       if (!opts.trainReranker) {
         loadedReranker = ModelReadWrite.readRerankerFrom(opts.initRerankerFromFile);
       }
@@ -131,10 +131,10 @@ public class PipelineTrainer {
   }
 
   private Collection<List<RerankExample>> collectExamples(PipelineModel modelSoFar) {
-//    if (isNotBlank(this.opts.useInputRerankExampleCsv)) {
-//      log.info("Using the reranker examples csv " + this.opts.useInputRerankExampleCsv);
-//      return checkNotNull(loadedRerankerCsv, "shouldve already been loaded in init()");
-//    }
+    if (isNotBlank(this.opts.useInputRerankExampleCsv)) {
+      log.info("Using the reranker examples csv " + this.opts.useInputRerankExampleCsv);
+      return checkNotNull(loadedRerankerCsv, "shouldve already been loaded in init()");
+    }
     // we need to collect some
     RerankExampleCollector collector = new RerankExampleCollector(modelSoFar.getRerankEncoder(), this.opts);
     return collector.makeExamples(this.inputs);

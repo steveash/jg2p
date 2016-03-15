@@ -22,6 +22,9 @@ import com.google.common.primitives.Doubles;
 import com.github.steveash.jg2p.PhoneticEncoder;
 import com.github.steveash.jg2p.Word;
 
+import net.sf.jsefa.csv.annotation.CsvDataType;
+import net.sf.jsefa.csv.annotation.CsvField;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,16 +38,33 @@ import javax.annotation.Nullable;
  *
  * @author Steve Ash
  */
+@CsvDataType
 public class RerankExample {
 
   private static final Logger log = LoggerFactory.getLogger(RerankExample.class);
 
-  private PhoneticEncoder.Encoding encoding;
-  private boolean uniqueMatchingMode;
-  private int dupCount;
-  private double languageModelScore;
-  private List<String> wordGraphs;
+  @CsvField(pos = 1)
+  private int sequence; // just used when reading/writing examples for training
+  @CsvField(pos = 2)
   private boolean isRelevant; // set when training, otherwise not
+  @CsvField(pos = 3)
+  private PhoneticEncoder.Encoding encoding;
+  @CsvField(pos = 4)
+  private boolean uniqueMatchingMode;
+  @CsvField(pos = 5)
+  private int dupCount;
+  @CsvField(pos = 6)
+  private double languageModelScore;
+  @CsvField(pos = 7)
+  private List<String> wordGraphs;
+
+  public int getSequence() {
+    return sequence;
+  }
+
+  public void setSequence(int sequence) {
+    this.sequence = sequence;
+  }
 
   public PhoneticEncoder.Encoding getEncoding() {
     return encoding;
@@ -96,6 +116,12 @@ public class RerankExample {
 
   public static List<RerankExample> makeExamples(RerankableResult rrResult, Word xWord,
                                                  @Nullable Set<List<String>> goodPhones) {
+    return makeExamples(rrResult, xWord, goodPhones, 0);
+  }
+
+  public static List<RerankExample> makeExamples(
+      RerankableResult rrResult, Word xWord,
+      @Nullable Set<List<String>> goodPhones, int sequence) {
 
     List<RerankExample> outs = Lists.newArrayListWithCapacity(rrResult.overallResultCount());
     for (int i = 0; i < rrResult.overallResultCount(); i++) {

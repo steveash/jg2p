@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory
 def inputFile = "g014b2b.train"
 //def inputFile = "cmudict.2kA.txt"
 //def inputFile = "g014b2b.test"
-def inputs = InputReader.makePSaurusReader().readFromClasspath(inputFile).take(1000)
+def inputs = InputReader.makePSaurusReader().readFromClasspath(inputFile)
 //def inputs = InputReader.makeDefaultFormatReader().readFromClasspath(inputFile)
 
 def opts = new TrainOptions()

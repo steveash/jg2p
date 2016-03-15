@@ -77,16 +77,22 @@ class RerankExampleCollector {
         }
         def goodPhones = recs.collect { InputRecord rec -> rec.yWord.value }.toSet()
         def outs = RerankExample.makeExamples(rrResult, xWord, goodPhones)
+        if (outs.every {!it.relevant}) {
+          skipped.incrementAndGet()
+          return;
+        }
 
         synchronized (exs) {
           exs.add(outs)
         }
 
         if (limiter.tryAcquire()) {
-          log.info "Completed " + newTotal + " of " + inputs.size() + " " + Percent.print(newTotal, inputs.size())
+          log.info "Completed " + total.get() + " of " + inputs.size() + " " + Percent.print(newTotal, inputs.size())
         }
       }
     }
+
+    log.info("Finished all " + total.get() + " entries, skipped " + skipped.get() + " of them")
 
     synchronized (exs) {
 //      if (isNotBlank(opts.writeOutputRerankExampleCsv)) {

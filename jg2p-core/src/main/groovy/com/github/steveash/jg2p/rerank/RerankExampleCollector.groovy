@@ -17,6 +17,7 @@
 package com.github.steveash.jg2p.rerank
 
 import com.github.steveash.jg2p.Word
+import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.InputRecord
 import com.github.steveash.jg2p.align.TrainOptions
 import com.github.steveash.jg2p.util.CsvFactory
@@ -54,7 +55,7 @@ class RerankExampleCollector {
   }
 
   Collection<List<RerankExample>> makeExamples(List<InputRecord> inputs) {
-    assert Ordering.natural().isOrdered(inputs)
+    assert InputRecord.OrderByX.isOrdered(inputs) : "the inputs aren't ordered! what happened?"
 
     Iterable<List<InputRecord>> gi = GroupingIterable.groupOver(inputs, InputRecord.EqualByX)
     log.info("Collecting reranking examples from " + inputs.size() + " grouped inputs")

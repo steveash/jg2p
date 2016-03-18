@@ -20,6 +20,7 @@ import com.github.steveash.jg2p.util.CsvFactory
 import com.github.steveash.jg2p.util.GroupingIterable
 import com.google.common.base.Equivalence
 import com.google.common.collect.Lists
+import groovy.transform.CompileStatic
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -27,18 +28,19 @@ import org.slf4j.LoggerFactory
  * Reads reranker examples for training from a csv file
  * @author Steve Ash
  */
+@CompileStatic
 class RerankExampleCsvReader {
 
   private static final Logger log = LoggerFactory.getLogger(RerankExampleCsvReader.class);
 
   List<List<RerankExample>> readFrom(String exampleCsvFile) {
-    def exs = Lists.newArrayList()
+    def exs = Lists.newArrayListWithExpectedSize(1800000)
     new File(exampleCsvFile).withReader { r ->
       def deser = CsvFactory.make().createDeserializer()
       def count = 0;
       deser.open(r)
       while (deser.hasNext()) {
-        RerankExample ex = deser.next()
+        RerankExample ex = (RerankExample) deser.next()
         if (ex.encoding.phones == null || ex.encoding.phones.isEmpty() ) {
           log.warn("Problem with example on line $count got $ex skipping...")
         } else {
@@ -52,7 +54,13 @@ class RerankExampleCsvReader {
       }
       log.info("Got ${exs.size()} inputs to train on from many lines of input")
     }
-    def gi = GroupingIterable.groupOver(exs, {RerankExample a, RerankExample b -> a.sequence == b.sequence} as Equivalence)
+    def gi = GroupingIterable.groupOver(exs, {RerankExample a, RerankExample b ->
+      if (a.sequence == 0 && b.sequence == 0) {
+        a.wordGraphs.equals(b.wordGraphs)
+      } else {
+        a.sequence == b.sequence
+      }
+    } as Equivalence)
     def outputList = Lists.newArrayList(gi)
     log.info("Got " + outputList.size() + " grouped example lists from reader")
     return outputList

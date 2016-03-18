@@ -62,9 +62,9 @@ public class Rerank3Trainer {
     RankMaxEntTrainer trainer = new RankMaxEntTrainer(10.0);
 //    AdaBoostTrainer trainer = new AdaBoostTrainer(new MaxEntL1Trainer(), 10);
     RankMaxEnt model = (RankMaxEnt) trainer.train(instances);
-    Trial trial = new Trial(model, instances);
-    log.info("Trained reranker. Final accuracy on itself: " + trial.getAccuracy());
-    log.info(new ConfusionMatrix(trial).toString());
+//    Trial trial = new Trial(model, instances);
+//    log.info("Trained reranker. Final accuracy on itself: " + trial.getAccuracy());
+//    log.info(new ConfusionMatrix(trial).toString());
     return new Rerank3Model(model);
   }
 
@@ -72,7 +72,7 @@ public class Rerank3Trainer {
     InstanceList instances = new InstanceList(pipe, trainingData.size());
     int count = 0;
     for (List<RerankExample> data : trainingData) {
-      instances.addThruPipe(new Instance(data, 1 /*just putting something here triggers pipe*/, null, null));
+      instances.addThruPipe(new Instance(data, 1 /*just putting something here triggers pipe*/, null, data.get(0).getWordGraphs()));
       count += 1;
 
       if (count % 10000 == 0) {

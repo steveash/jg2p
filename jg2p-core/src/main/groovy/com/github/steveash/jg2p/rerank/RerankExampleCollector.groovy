@@ -76,7 +76,7 @@ class RerankExampleCollector {
             exs.each { serial.write(it) }
           }
           serial.close(false)
-          log.info("Done writing examples to $file")
+          log.info("Done writing examples to $outputFile")
         }
       }
       gi.eachParallel { List inRecs ->

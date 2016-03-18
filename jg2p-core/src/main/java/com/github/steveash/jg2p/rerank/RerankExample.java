@@ -142,6 +142,7 @@ public class RerankExample {
       rr.setLanguageModelScore(entry.getLangModelScore());
       rr.setUniqueMatchingMode(entry.getHasMatchingUniqueModePhones());
       rr.setWordGraphs(xWord.getValue());
+      rr.setSequence(sequence);
       if (goodPhones != null) {
         rr.setRelevant(goodPhones.contains(entry.getEncoding().phones));
       }

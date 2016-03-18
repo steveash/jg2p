@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory
 //def testFile = "g014b2b.train"
 //def testFile = "cmudict.2kA.txt"
 def testFile = "g014b2b.test"
-def modelFile = "../resources/pipe_22_F9_1.dat"
+def modelFile = "../resources/pipe_22_F10_2.dat"
 
 //def test = InputReader.makeDefaultFormatReader().readFromClasspath(testFile)
 def test = InputReader.makePSaurusReader().readFromClasspath(testFile)

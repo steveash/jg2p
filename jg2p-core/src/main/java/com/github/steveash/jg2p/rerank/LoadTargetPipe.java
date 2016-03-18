@@ -66,7 +66,7 @@ public class LoadTargetPipe extends Pipe {
       // there are multiple labels
       Label[] labels = new Label[goodIndexes.size()];
       for (int i = 0; i < goodIndexes.size(); i++) {
-        labels[i] = targetDict.lookupLabel(Integer.toString(goodIndexes.get(0)));
+        labels[i] = targetDict.lookupLabel(Integer.toString(goodIndexes.get(i)));
       }
       inst.setTarget(new Labels(labels));
     }

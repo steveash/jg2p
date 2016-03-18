@@ -49,6 +49,9 @@ public class PipelineModelProxy implements Externalizable {
     this.model = model;
   }
 
+  public PipelineModelProxy() {
+  }
+
   @Override
   public void writeExternal(ObjectOutput out) throws IOException {
     log.info("Writing the proxy out...");

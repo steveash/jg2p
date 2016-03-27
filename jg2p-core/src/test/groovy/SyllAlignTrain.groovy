@@ -1,11 +1,3 @@
-import com.github.steveash.jg2p.Word
-import com.github.steveash.jg2p.align.AlignerTrainer
-import com.github.steveash.jg2p.align.AlignerTrainerMainTest
-import com.github.steveash.jg2p.align.InputRecord
-import com.github.steveash.jg2p.align.TrainOptions
-import com.github.steveash.jg2p.align.XyWalker
-import groovy.transform.CompileStatic
-
 /*
  * Copyright 2016 Steve Ash
  *
@@ -22,6 +14,17 @@ import groovy.transform.CompileStatic
  * limitations under the License.
  */
 
+import com.github.steveash.jg2p.Word
+import com.github.steveash.jg2p.align.AlignModel
+import com.github.steveash.jg2p.align.AlignerTrainer
+import com.github.steveash.jg2p.align.InputRecord
+import com.github.steveash.jg2p.align.TrainOptions
+import com.github.steveash.jg2p.align.WindowXyWalker
+import com.github.steveash.jg2p.syll.SWord
+import com.github.steveash.jg2p.syll.SyllPreserving
+import com.github.steveash.jg2p.syll.SyllTagTrainer
+import com.github.steveash.jg2p.util.ReadWrite
+
 /**
  * @author Steve Ash
  */
@@ -30,36 +33,9 @@ import groovy.transform.CompileStatic
 // build input records using that
 // build a XyWalker that excludes any phones that would split a syllable boundary
 
-class SWord extends Word {
-
-  private List<Integer> boundaries = [] // records the indexes of the phones right after a syll break
-
-  SWord(String sstring) {
-    super(convertToPhones(sstring))
-    // need to record the syllable boundaries
-    def phones = sstring.split("\\|")
-    int realIndex = 0
-    for (int i = 0; i < phones.size(); i++) {
-      if (phones[i].contains("-")) {
-        boundaries << realIndex
-      } else {
-        realIndex += 1
-      }
-    }
-  }
-
-  static List<String> convertToPhones(String entry) {
-    entry.split("\\|").findAll {!it.contains("-")}.toList()
-  }
-
-  @Override
-  public String toString() {
-    return "SWord-${boundaries}-${super.toString()}";
-  }
-}
 
 def recs = new File("../resources/syllables.train.txt").readLines()
-    .findAll {it.trim().size() > 0}
+    .findAll { it.trim().size() > 0 }
     .collect { line ->
   def fields = line.split("\t")
   if (fields[1].trim().contains(" ") || fields[1].trim().contains("-")) {
@@ -67,25 +43,43 @@ def recs = new File("../resources/syllables.train.txt").readLines()
   } else {
     return new InputRecord(Word.fromNormalString(fields[1].trim()), new SWord(fields[2].trim()))
   }
-}.findAll {it != null}
+}.findAll { it != null }
 
 //recs.take(10).each {println it}
 
-@CompileStatic
-class SyllPreserving implements XyWalker {
+def opts = new TrainOptions()
+opts.maxXGram = 4
+opts.maxYGram = 2
+opts.onlyOneGrams = false
+opts.maxPronouncerTrainingIterations = 200
+opts.useCityBlockPenalty = true
+opts.useWindowWalker = true
+def ww = new WindowXyWalker(opts.makeGramOptions())
+def sp = new SyllPreserving(ww)
 
-  private final XyWalker delegate;
+def at = new AlignerTrainer(opts, sp)
+def model = at.train(recs)
+ReadWrite.writeTo(model, new File("../resources/syllalignmodel.dat"))
+//def model = ReadWrite.readFromFile(AlignModel, new File("../resources/syllalignmodel.dat"))
 
-  @Override
-  void forward(Word x, Word y, XyWalker.Visitor visitor) {
-
-  }
-
-  @Override
-  void backward(Word x, Word y, XyWalker.Visitor visitor) {
-
+int skipCount = 0
+new File("../resources/syllables.align.txt").withPrintWriter { pw ->
+// now get the 1-best and let's tag it
+  for (InputRecord rec : recs) {
+//    if (rec.left.asSpaceString != "s q u a r e n e s s") continue
+    def aligned = model.align(rec.left, rec.right, 1)
+    if (aligned.empty) continue;
+    def align = aligned.first()
+    try {
+      def sylls = SyllTagTrainer.makeSyllMarksFor(align, (SWord) rec.right)
+      pw.println(align.XAsPipeString + "\t" + align.YAsPipeString + "\t" + align.getAsPipeString(sylls))
+    } catch (Exception e) {
+      println "Problem getting syllables for " + align + " to " + rec.right + " skipping " + e.message
+      skipCount += 1
+    }
   }
 }
+println "done, skipped $skipCount"
 
 //def to = new TrainOptions()
 //def at = new AlignerTrainer(to)

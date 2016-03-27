@@ -38,4 +38,15 @@ class WordTest {
     assert "s t" == w.gram(0, 2)
     assert "v e" == w.gram(3, 2)
   }
+
+  @Test
+  public void shouldGramCache() throws Exception {
+    def w = Word.fromNormalString("steve")
+    for (int i = 0; i < w.unigramCount(); i++) {
+      assert w.gram(i, 1) == w.gramRaw(i, 1)
+      if (i < (w.unigramCount() - 1)) {
+        assert w.gram(i, 2) == w.gramRaw(i, 2)
+      }
+    }
+  }
 }

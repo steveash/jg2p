@@ -26,6 +26,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 
+import com.github.steveash.jg2p.util.StringTable;
+
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -41,7 +43,9 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class Word implements Iterable<String>, Comparable<Word> {
   private static final Splitter splitter = Splitter.on(' ').trimResults().omitEmptyStrings();
   private static final Joiner joiner = Joiner.on(' ');
+  private static final Joiner noJoiner = Joiner.on("");
   private static final CharMatcher spaces = CharMatcher.is(' ').precomputed();
+  private static final int MAX_CACHED_GRAM_SIZE = 2;
 
   public static Word fromSpaceSeparated(String spaceSeparated) {
     return new Word(splitter.splitToList(spaceSeparated));
@@ -60,6 +64,7 @@ public class Word implements Iterable<String>, Comparable<Word> {
   }
 
   private final List<String> value;
+//  private final StringTable gramCache;
 
   public static void throwIfNotUnigram(List<String> grams) {
     boolean gotOne = false;
@@ -85,13 +90,31 @@ public class Word implements Iterable<String>, Comparable<Word> {
 
   protected Word(List<String> value) {
     this.value = value;
+    // cache the common grams len 1-2
+//    this.gramCache = new StringTable(value.size(), MAX_CACHED_GRAM_SIZE);
+//    for (int i = 0; i < value.size(); i++) {
+//      for (int j = 0; j < MAX_CACHED_GRAM_SIZE && (i + j) < value.size(); j++) {
+//        this.gramCache.set(i, j, gramRaw(i, j + 1).intern());
+//      }
+//    }
   }
 
   public String getAsSpaceString() {
     return joiner.join(value);
   }
 
+  public String getAsNoSpaceString() {
+    return noJoiner.join(value);
+  }
+
   public String gram(int index, int size) {
+//    if (size <= MAX_CACHED_GRAM_SIZE) {
+//      return gramCache.get(index, size - 1);
+//    }
+    return gramRaw(index, size);
+  }
+
+  public String gramRaw(int index, int size) {
     StringBuilder sb = new StringBuilder(size * 4);
     for (int i = index; i < index + size; i++) {
       sb.append(value.get(i));

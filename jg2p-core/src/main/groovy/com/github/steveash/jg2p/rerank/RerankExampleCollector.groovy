@@ -27,6 +27,7 @@ import groovyx.gpars.GParsPool
 import groovyx.gpars.dataflow.Dataflow
 import groovyx.gpars.dataflow.DataflowQueue
 import groovyx.gpars.dataflow.operator.PoisonPill
+import groovyx.gpars.group.DefaultPGroup
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -61,9 +62,11 @@ class RerankExampleCollector {
     Iterable<List<InputRecord>> gi = GroupingIterable.groupOver(inputs, InputRecord.EqualByX)
     log.info("Collecting reranking examples from " + inputs.size() + " grouped inputs")
     def outputFile = makeOutputFile()
-    GParsPool.withPool {
+    GParsPool.withPool { GParsPool pool ->
+
+      def group = new DefaultPGroup(1)
       def dfout = new DataflowQueue()
-      def writer = Dataflow.task {
+      def writer = group.task {
         outputFile.withPrintWriter { pw ->
           def serial = CsvFactory.make().createSerializer()
           serial.open(pw)
@@ -109,6 +112,7 @@ class RerankExampleCollector {
       log.info("Waiting for writer to catch up...")
       dfout << PoisonPill.instance
       writer.get()
+      group.shutdown()
     }
 
     log.info("Finished all " + total.get() + " entries, skipped " + skipped.get() + " of them")

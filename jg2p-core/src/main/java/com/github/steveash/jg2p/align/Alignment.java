@@ -21,6 +21,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
@@ -55,6 +56,7 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
   private final double score;
   private final Word input;
 
+
   public Alignment(Word input, double score) {
     this.input = input;
     this.graphones = Lists.newArrayList();
@@ -69,6 +71,10 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
 
   public List<Pair<String, String>> getGraphones() {
     return graphones;
+  }
+
+  public Iterable<Pair<List<String>, List<String>>> getGraphonesSplit() {
+    return Iterables.transform(graphones, splitBoth);
   }
 
   void append(String xGram, String yGram) {
@@ -127,6 +133,10 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
     return pipeJoiner.join(transform(graphones, SELECT_LEFT));
   }
 
+  public String getAsPipeString(Iterable<String> symbols) {
+    return pipeJoiner.join(symbols);
+  }
+
   public String getWordAsSpaceString() {
     return input.getAsSpaceString();
   }
@@ -135,7 +145,7 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
     return input.getValue();
   }
 
-  public Pair<Word,Word> xyWordPair() {
+  public Pair<Word, Word> xyWordPair() {
     return Pair.of(input, Word.fromGrams(getYTokens()));
   }
 
@@ -170,8 +180,25 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
     return marks;
   }
 
-  public String getXBoundaryMarksAsString() {
+  public List<Boolean> getXStartMarks() {
     List<Boolean> marks = getXBoundaryMarks();
+    List<Boolean> starts = Lists.newArrayListWithCapacity(marks.size());
+    starts.add(true); // first spot is always a start
+    for (int i = 1; i < marks.size(); i++) {
+      starts.add(marks.get(i - 1));
+    }
+    return starts;
+  }
+
+  public String getXBoundaryMarksAsString() {
+    return getBoolsAsString(getXBoundaryMarks());
+  }
+
+  public String getXStartMarksAsString() {
+    return getBoolsAsString(getXStartMarks());
+  }
+
+  protected String getBoolsAsString(List<Boolean> marks) {
     StringBuilder sb = new StringBuilder(marks.size());
     for (Boolean mark : marks) {
       sb.append(mark ? "1" : "0");
@@ -212,10 +239,18 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
     return Double.compare(this.score, that.score);
   }
 
-  private static final Predicate<Pair<String,String>> nonEmptyXGraphones = new Predicate<Pair<String, String>>() {
+  private static final Predicate<Pair<String, String>> nonEmptyXGraphones = new Predicate<Pair<String, String>>() {
     @Override
     public boolean apply(Pair<String, String> input) {
       return isNotBlank(input.getLeft());
     }
   };
+
+  private static final Function<Pair<String, String>, Pair<List<String>, List<String>>> splitBoth =
+      new Function<Pair<String, String>, Pair<List<String>, List<String>>>() {
+        @Override
+        public Pair<List<String>, List<String>> apply(Pair<String, String> input) {
+          return Pair.of(spaceSplit.splitToList(input.getLeft()), spaceSplit.splitToList(input.getRight()));
+        }
+      };
 }

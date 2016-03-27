@@ -32,6 +32,7 @@ public class GramOptions implements Serializable {
   private boolean includeEpsilonYs = false;
   private boolean onlyOneGrams = true;  // if you have X>1 && Y>1 then only allow 1:y or x:1 not 2:2, 3:2, etc.
   private int windowPadding = 0;  // how many epsilons might you allow when enumerating possible alignments
+  private boolean cityBlockPenalty = false;
 
   public GramOptions(int minXGram, int maxXGram, int minYGram, int maxYGram, boolean includeXEpsilons,
                      boolean includeEpsilonYs, boolean onlyOneGrams, int windowPadding) {
@@ -114,5 +115,21 @@ public class GramOptions implements Serializable {
 
   public void setWindowPadding(int windowPadding) {
     this.windowPadding = windowPadding;
+  }
+
+  public boolean isCityBlockPenalty() {
+    return cityBlockPenalty;
+  }
+
+  public void setCityBlockPenalty(boolean cityBlockPenalty) {
+    this.cityBlockPenalty = cityBlockPenalty;
+  }
+
+  public Penalizer makePenalizer() {
+    if (cityBlockPenalty) {
+      return CityBlockPenalizer.Instance;
+    } else {
+      return NullPenalizer.Instance;
+    }
   }
 }

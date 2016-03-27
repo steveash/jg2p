@@ -32,13 +32,16 @@ import java.util.List;
  */
 public class AlignerViterbi {
 
+
   public AlignerViterbi(GramOptions opts, ProbTable probs) {
     this.opts = opts;
     this.probs = probs;
+    this.penalizer = opts.makePenalizer();
   }
 
   private final GramOptions opts;
   private final ProbTable probs;
+  private final Penalizer penalizer;
 
   public List<Alignment> align(Word x, Word y, int bestPathCount) {
     PathXYTable t = new PathXYTable(x.unigramCount() + 1, y.unigramCount() + 1, bestPathCount);
@@ -50,7 +53,7 @@ public class AlignerViterbi {
         if (xx > 0 && opts.isIncludeXEpsilons()) {
           for (int i = 1; (i <= opts.getMaxXGram()) && (xx - i >= 0); i++) {
             String xGram = x.gram(xx - i, i);
-            double score = DoubleMath.log2(probs.prob(xGram, Grams.EPSILON)) * i;
+            double score = DoubleMath.log2(penalizer.penalize(xGram, Grams.EPSILON, probs.prob(xGram, Grams.EPSILON))); // what was this * i business
             t.extendPath(xx, yy, xx - i, yy, PathXYTable.Entry.sample(score, i, 0));
           }
         }
@@ -58,7 +61,7 @@ public class AlignerViterbi {
         if (yy > 0 && opts.isIncludeEpsilonYs()) {
           for (int j = 1; (j <= opts.getMaxYGram()) && (yy - j >= 0); j++) {
             String yGram = y.gram(yy - j, j);
-            double score = DoubleMath.log2(probs.prob(Grams.EPSILON, yGram)) * j;
+            double score = DoubleMath.log2(penalizer.penalize(Grams.EPSILON, yGram, probs.prob(Grams.EPSILON, yGram))); // * j;
             t.extendPath(xx, yy, xx, yy - j, PathXYTable.Entry.sample(score, 0, j));
           }
         }
@@ -69,7 +72,7 @@ public class AlignerViterbi {
               String xGram = x.gram(xx - i, i);
               String yGram = y.gram(yy - j, j);
 
-              double score = DoubleMath.log2(probs.prob(xGram, yGram)) * Math.max(i, j);
+              double score = DoubleMath.log2(penalizer.penalize(xGram, yGram, probs.prob(xGram, yGram))); // * Math.max(i, j);
               t.extendPath(xx, yy, xx - i, yy - j, PathXYTable.Entry.sample(score, i, j));
             }
           }

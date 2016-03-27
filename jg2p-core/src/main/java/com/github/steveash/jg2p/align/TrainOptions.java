@@ -175,8 +175,10 @@ public class TrainOptions implements Cloneable {
   }
 
   public GramOptions makeGramOptions() {
-    return new GramOptions(minXGram, maxXGram, minYGram, maxYGram, includeXEpsilons, includeEpsilonYs, onlyOneGrams,
-                           windowPadding);
+    GramOptions gopts = new GramOptions(minXGram, maxXGram, minYGram, maxYGram, includeXEpsilons, includeEpsilonYs,
+                                        onlyOneGrams, windowPadding);
+    if (useCityBlockPenalty) gopts.setCityBlockPenalty(true);
+    return gopts;
   }
 
   public InputReader makeReader() {

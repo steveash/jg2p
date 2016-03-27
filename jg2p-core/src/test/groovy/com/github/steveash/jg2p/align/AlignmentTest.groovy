@@ -39,4 +39,19 @@ class AlignmentTest {
     def a2 = new Alignment(s2, Zipper.upTo(["S T", "E V E"], ""), 0)
     assert a2.getXBoundaryMarksAsString() == "01001"
   }
+
+  @Test
+  public void shouldProduceStarts() throws Exception {
+    def s = Word.fromNormalString("STEVE")
+    def a = new Alignment(s, Zipper.upTo(["S T", "E", "V", "E"], ""), 0)
+    assert a.getXStartMarksAsString() == "10111"
+
+    def s1 = Word.fromNormalString("STEVE")
+    def a1 = new Alignment(s1, Zipper.upTo(["S T", "E V", "E"], ""), 0)
+    assert a1.getXStartMarksAsString() == "10101"
+
+    def s2 = Word.fromNormalString("STEVE")
+    def a2 = new Alignment(s2, Zipper.upTo(["S T", "E V E"], ""), 0)
+    assert a2.getXStartMarksAsString() == "10100"
+  }
 }

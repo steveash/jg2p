@@ -54,7 +54,7 @@ public class AlignerTrainer {
   private ProbTable labelledProbs;
   private final Set<Pair<String, String>> allowed;
   private final Set<Pair<String,String>> blocked;
-  private final boolean cityBlockPenalty;
+  private final Penalizer penalizer;
 
   public AlignerTrainer(TrainOptions trainOpts) {
     this(trainOpts, null);
@@ -85,7 +85,7 @@ public class AlignerTrainer {
       this.blocked = null;
     }
     this.walker = w;
-    this.cityBlockPenalty = trainOpts.useCityBlockPenalty;
+    this.penalizer = gramOpts.makePenalizer();
   }
 
 //  private static XyWalker decorateForAllowed(TrainOptions trainOpts, XyWalker w) {
@@ -191,14 +191,7 @@ public class AlignerTrainer {
   }
 
   private double penalize(String xGram, String yGram, double prob) {
-    if (!cityBlockPenalty) {
-      return prob;
-    }
-    int xCount = Grams.countInGram(xGram);
-    int yCount = Grams.countInGram(yGram);
-    if (xCount < 1) xCount = 1;
-    if (yCount < 1) yCount = 1;
-    return Math.pow(prob, xCount + yCount);
+    return penalizer.penalize(xGram, yGram, prob);
   }
 
   private double maximization() {

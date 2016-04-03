@@ -65,7 +65,7 @@ public class SyllCounter {
         state = 1;
       }
     } else if (c == SyllTagTrainer.CodaChar) {
-      Preconditions.checkState(state != 0);
+//      Preconditions.checkState(state != 0); should never happen but just in case
       state = 2;
     } else {
       throw new IllegalArgumentException("invalid syllable code " + syllChar);

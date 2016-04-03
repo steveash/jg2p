@@ -78,10 +78,18 @@ public class TrainOptions implements Cloneable {
   public int windowPadding = 0;
 
   /**
+   * Syllable aligner options; syllable aligner is used to train the alignment model, then a
+   * special syll-aligner-tagger is trained for runtime alignemtn + tagging of syllable structure
+   */
+
+  @Option(name = "--syllableTagger")
+  public boolean useSyllableTagger = false;
+
+  /**
    * pronouncer options
    **/
   @Option(name = "--maxCrfTrainingIterations")
-  public int maxPronouncerTrainingIterations = 100;
+  public int maxPronouncerTrainingIterations = 175;
 
   @Option(name = "--trimFeaturesUnderPercentile")
   public int trimFeaturesUnderPercentile = 0;
@@ -106,12 +114,6 @@ public class TrainOptions implements Cloneable {
 
   @Option(name = "--writeOutputRerankExampleCsv")
   public String writeOutputRerankExampleCsv = null;
-
-  @Option(name = "--maxExamplesForReranker")
-  public int maxExamplesForReranker = 50000;
-
-  @Option(name = "--maxPairsPerExampleForReranker")
-  public int maxPairsPerExampleForReranker = 12;
 
   /**
    * where to get the serialized model files to use or at least start from
@@ -167,6 +169,14 @@ public class TrainOptions implements Cloneable {
 
   @Option(name = "--format")
   public InputFormat format = InputFormat.TAB;
+
+  public void trainAll() {
+    this.trainTrainingAligner = true;
+    this.trainTestingAligner = true;
+    this.trainPronouncer = true;
+    this.trainGraphoneModel = true;
+    this.trainReranker = true;
+  }
 
   public void afterParametersSet() {
     if (outputFile == null) {

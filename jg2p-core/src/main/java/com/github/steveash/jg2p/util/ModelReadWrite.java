@@ -26,6 +26,7 @@ import com.github.steveash.jg2p.aligntag.AlignTagModel;
 import com.github.steveash.jg2p.lm.LangModel;
 import com.github.steveash.jg2p.rerank.Rerank3Model;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
+import com.github.steveash.jg2p.syll.SyllTagModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,10 +54,13 @@ public class ModelReadWrite {
     throw badModel(file, model);
   }
 
-  public static AlignTagModel readTestAlignerFrom(String file) {
+  public static Aligner readTestAlignerFrom(String file) {
     Object model = read(file);
     if (model instanceof AlignTagModel) {
       return (AlignTagModel) model;
+    }
+    if (model instanceof SyllTagModel) {
+      return (Aligner) model;
     }
     if (model instanceof PhoneticEncoder) {
       Aligner aligner = ((PhoneticEncoder) model).getAligner();

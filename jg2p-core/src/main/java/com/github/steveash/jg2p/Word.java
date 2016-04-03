@@ -17,6 +17,7 @@
 package com.github.steveash.jg2p;
 
 import com.google.common.base.CharMatcher;
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.AbstractIterator;
@@ -28,9 +29,13 @@ import com.google.common.collect.Ordering;
 
 import com.github.steveash.jg2p.util.StringTable;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -41,11 +46,11 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * @author Steve Ash
  */
 public class Word implements Iterable<String>, Comparable<Word> {
-  private static final Splitter splitter = Splitter.on(' ').trimResults().omitEmptyStrings();
-  private static final Joiner joiner = Joiner.on(' ');
-  private static final Joiner noJoiner = Joiner.on("");
-  private static final CharMatcher spaces = CharMatcher.is(' ').precomputed();
-  private static final int MAX_CACHED_GRAM_SIZE = 2;
+  protected static final Splitter splitter = Splitter.on(' ').trimResults().omitEmptyStrings();
+  protected static final Joiner joiner = Joiner.on(' ');
+  protected static final Joiner noJoiner = Joiner.on("");
+  protected static final CharMatcher spaces = CharMatcher.is(' ').precomputed();
+  protected static final int MAX_CACHED_GRAM_SIZE = 2;
 
   public static Word fromSpaceSeparated(String spaceSeparated) {
     return new Word(splitter.splitToList(spaceSeparated));
@@ -155,6 +160,15 @@ public class Word implements Iterable<String>, Comparable<Word> {
 
   public List<String> getValue() {
     return value;
+  }
+
+  public List<Pair<String,String>> getLeftOnlyPairs() {
+    return Lists.transform(value, new Function<String, Pair<String, String>>() {
+      @Override
+      public Pair<String, String> apply(String input) {
+        return Pair.of(input, "");
+      }
+    });
   }
 
   @Override

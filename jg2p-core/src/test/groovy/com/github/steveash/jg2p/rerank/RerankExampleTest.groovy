@@ -28,9 +28,15 @@ class RerankExampleTest extends GroovyTestCase {
   void testCsvInOut() {
     def abc = ImmutableList.of("A", "B", "C")
     def encA = PhoneticEncoder.Encoding.createEncoding(abc, abc, abc, 2.123, 3.456, 10.0)
-    def encB = PhoneticEncoder.Encoding.createEncoding(abc, abc, abc, 2.123, 3.456, 10.0)
 
-    def ex = new RerankExample(encA, true, 1, encB, true, 2, abc, "A")
+    def ex = new RerankExample()
+    ex.dupCount = 1
+    ex.encoding = encA
+    ex.languageModelScore = 0.001
+    ex.uniqueMatchingMode = true
+    ex.wordGraphs = abc
+    ex.sequence = 1
+    ex.relevant = true
 
     def factory = CsvFactory.make();
     def serializer = factory.createSerializer()

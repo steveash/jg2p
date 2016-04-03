@@ -26,6 +26,7 @@ import com.google.common.io.LineProcessor;
 import com.google.common.io.Resources;
 
 import com.github.steveash.jg2p.Word;
+import com.github.steveash.jg2p.syll.SWord;
 
 import java.io.File;
 import java.io.IOException;
@@ -132,7 +133,14 @@ public class InputReader {
     public InputRecord parse(String line) {
       Iterator<String> iter = tabSplit.split(line).iterator();
       Word x = Word.fromNormalString(iter.next());
-      Word y = Word.fromSpaceSeparated(iter.next());
+      String phones = iter.next();
+      Word y;
+      if (iter.hasNext()) {
+        String sylls = iter.next();
+        y = new SWord(phones, sylls);
+      } else {
+        y = Word.fromSpaceSeparated(phones);
+      }
       return new InputRecord(x, y);
     }
   };

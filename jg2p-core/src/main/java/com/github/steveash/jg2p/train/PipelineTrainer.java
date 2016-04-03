@@ -18,14 +18,14 @@ package com.github.steveash.jg2p.train;
 
 import com.github.steveash.jg2p.PipelineModel;
 import com.github.steveash.jg2p.align.AlignModel;
+import com.github.steveash.jg2p.align.Aligner;
 import com.github.steveash.jg2p.align.AlignerTrainer;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.align.InputRecord;
 import com.github.steveash.jg2p.align.TrainOptions;
-import com.github.steveash.jg2p.aligntag.AlignTagModel;
 import com.github.steveash.jg2p.aligntag.AlignTagTrainer;
-import com.github.steveash.jg2p.lm.LangModelTrainer;
 import com.github.steveash.jg2p.lm.LangModel;
+import com.github.steveash.jg2p.lm.LangModelTrainer;
 import com.github.steveash.jg2p.rerank.Rerank3Model;
 import com.github.steveash.jg2p.rerank.Rerank3Trainer;
 import com.github.steveash.jg2p.rerank.RerankExample;
@@ -33,6 +33,8 @@ import com.github.steveash.jg2p.rerank.RerankExampleCollector;
 import com.github.steveash.jg2p.rerank.RerankExampleCsvReader;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 import com.github.steveash.jg2p.seq.PhonemeCrfTrainer;
+import com.github.steveash.jg2p.syll.SyllTagModel;
+import com.github.steveash.jg2p.syll.SyllTagTrainer;
 import com.github.steveash.jg2p.util.ModelReadWrite;
 
 import org.slf4j.Logger;
@@ -60,7 +62,7 @@ public class PipelineTrainer {
 
   // if we load any then they show up here
   private AlignModel loadedTrainingAligner;
-  private AlignTagModel loadedTestAligner;
+  private Aligner loadedTestAligner;
   private PhonemeCrfModel loadedPronouncer;
   private LangModel loadedGraphone;
   private List<List<RerankExample>> loadedRerankerCsv;
@@ -160,10 +162,21 @@ public class PipelineTrainer {
     return AlignTagTrainer.makeAlignmentInputFromRaw(this.inputs, alignModel, this.opts);
   }
 
-  private AlignTagModel makeTestAligner() {
+  private Aligner makeTestAligner() {
     if (opts.trainTestingAligner) {
-      AlignTagTrainer alignTagTrainer = new AlignTagTrainer();
-      return alignTagTrainer.train(this.alignedInputs);
+      if (!opts.useSyllableTagger) {
+        AlignTagTrainer alignTagTrainer = new AlignTagTrainer();
+        return alignTagTrainer.train(this.alignedInputs);
+      }
+      SyllTagTrainer syllTagTrainer = new SyllTagTrainer();
+      if (loadedTestAligner != null) {
+        if (loadedTestAligner instanceof SyllTagModel) {
+          syllTagTrainer.setInitFrom((SyllTagModel) loadedTestAligner);
+        } else {
+          log.warn("Cant init the syll tag from a model that isn't a syll mode, training from scratch");
+        }
+      }
+      return syllTagTrainer.train(this.alignedInputs, null, true);
     }
     return checkNotNull(loadedTestAligner, "shouldve already been loaded in init()");
   }

@@ -16,13 +16,18 @@
 
 package com.github.steveash.jg2p;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 import com.github.steveash.jg2p.align.GramOptions;
 import com.github.steveash.jg2p.util.NestedLoopPairIterable;
 
 import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.List;
 
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.transform;
@@ -35,6 +40,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  */
 public class Grams {
   public static final String EPSILON = "";
+  private static final Splitter splitter = Splitter.on(CharMatcher.WHITESPACE).trimResults().omitEmptyStrings();
 
   private Grams() { }
 
@@ -102,4 +108,20 @@ public class Grams {
       return Pair.of(EPSILON, input);
     }
   };
+
+  /**
+   * Takes an input list of grams and flattens to a list of unigrams; if all input grams
+   * are unigrams then the resulting list is identical
+   * @param grams
+   * @return
+   */
+  public static List<String> flattenGrams(List<String> grams) {
+    List<String> result = Lists.newArrayListWithExpectedSize(grams.size());
+    for (String gram : grams) {
+      for (String uni : splitter.split(gram)) {
+        result.add(uni);
+      }
+    }
+    return result;
+  }
 }

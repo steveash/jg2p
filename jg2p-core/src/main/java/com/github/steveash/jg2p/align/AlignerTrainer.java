@@ -19,8 +19,8 @@ package com.github.steveash.jg2p.align;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 
-import com.github.steveash.jg2p.Grams;
 import com.github.steveash.jg2p.Word;
+import com.github.steveash.jg2p.syll.SyllPreserving;
 import com.github.steveash.jg2p.util.DoubleTable;
 import com.github.steveash.jg2p.util.ReadWrite;
 
@@ -69,6 +69,9 @@ public class AlignerTrainer {
         w = new WindowXyWalker(gramOpts);
       } else {
         w = new FullXyWalker(gramOpts);
+      }
+      if (trainOpts.useSyllableTagger) {
+        w = new SyllPreserving(w);
       }
     } else {
       w = overrideWalker;

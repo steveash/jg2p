@@ -17,6 +17,7 @@
 package com.github.steveash.jg2p.seq;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 import com.github.steveash.jg2p.util.TokenSeqUtil;
 
@@ -28,6 +29,7 @@ import cc.mallet.types.Token;
 import cc.mallet.types.TokenSequence;
 
 import static com.github.steveash.jg2p.seq.TokenWindow.makeTokenWindowsForInts;
+import static com.github.steveash.jg2p.util.TokenSeqUtil.tokenToString;
 
 /**
  * Creates features using a window that varies by starting point (relative to current) and width
@@ -52,13 +54,14 @@ public class NeighborTokenFeature extends Pipe {
   @Override
   public Instance pipe(Instance carrier) {
     TokenSequence ts = (TokenSequence) carrier.getData();
+    List<String> ss = Lists.transform(ts, tokenToString);
     for (int i = 0; i < ts.size(); i++) {
       Token t = ts.get(i);
       for (int j = 0; j < windows.size(); j++) {
         TokenWindow window = windows.get(j);
-        String windStr = getWindow(ts, i, window);
+        String windStr = getWindow(ss, i, window);
         if (windStr == null) continue;
-          String feature = windStr + "@" + window.offset;
+          String feature = prefix() + windStr + "@" + window.offset;
           if (includeCurrent) {
             feature += "^" + t.getText();
           }
@@ -68,7 +71,11 @@ public class NeighborTokenFeature extends Pipe {
     return carrier;
   }
 
-  protected String getWindow(TokenSequence ts, int i, TokenWindow window) {
-    return TokenSeqUtil.getWindow(ts, i, window.offset, window.width);
+  protected String prefix() {
+    return "";
+  }
+
+  protected String getWindow(List<String> ts, int i, TokenWindow window) {
+    return TokenSeqUtil.getWindowFromStrings(ts, i, window.offset, window.width);
   }
 }

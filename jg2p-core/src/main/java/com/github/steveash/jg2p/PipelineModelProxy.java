@@ -17,7 +17,7 @@
 package com.github.steveash.jg2p;
 
 import com.github.steveash.jg2p.align.AlignModel;
-import com.github.steveash.jg2p.aligntag.AlignTagModel;
+import com.github.steveash.jg2p.align.Aligner;
 import com.github.steveash.jg2p.lm.LangModel;
 import com.github.steveash.jg2p.rerank.Rerank3Model;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
@@ -79,7 +79,7 @@ public class PipelineModelProxy implements Externalizable {
     }
     this.model = new PipelineModel();
     this.model.setTrainingAlignerModel((AlignModel) in.readObject());
-    this.model.setTestingAlignerModel((AlignTagModel) in.readObject());
+    this.model.setTestingAlignerModel((Aligner) in.readObject());
     this.model.setPronouncerModel((PhonemeCrfModel) in.readObject());
     this.model.setGraphoneModel((LangModel) in.readObject());
     this.model.setRerankerModel((Rerank3Model) in.readObject());

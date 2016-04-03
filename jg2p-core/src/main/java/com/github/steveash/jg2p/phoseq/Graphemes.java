@@ -19,13 +19,16 @@ package com.github.steveash.jg2p.phoseq;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 
+import static com.google.common.base.CharMatcher.anyOf;
+import static com.google.common.base.CharMatcher.inRange;
+
 /**
  * @author Steve Ash
  */
 public class Graphemes {
 
-  public static final CharMatcher vowels = CharMatcher.anyOf("AEIOUY").precomputed();
-  public static final CharMatcher consonants = CharMatcher.inRange('A', 'Z').and(vowels.negate()).precomputed();
+  public static final CharMatcher vowels = anyOf("AEIOUYaeiouy").precomputed();
+  public static final CharMatcher consonants = (inRange('A', 'Z').or(inRange('a', 'z'))).and(vowels.negate()).precomputed();
   private static final CharMatcher other = CharMatcher.ANY.and(vowels.or(consonants).negate()).precomputed();
 
   public static boolean isVowel(String graph) {

@@ -30,6 +30,8 @@ import cc.mallet.types.TokenSequence;
  */
 public class NeighborShapeFeature extends NeighborTokenFeature {
 
+  private static final long serialVersionUID = 2972915957372872389L;
+
   public NeighborShapeFeature(boolean includeCurrent, int... neighbors) {
     super(includeCurrent, neighbors);
   }
@@ -39,11 +41,15 @@ public class NeighborShapeFeature extends NeighborTokenFeature {
   }
 
   @Override
-  protected String getWindow(TokenSequence ts, int i, TokenWindow window) {
+  protected String getWindow(List<String> ts, int i, TokenWindow window) {
     String winStr = super.getWindow(ts, i, window);
     if (winStr == null) return null;
 
     return TokenSeqUtil.convertShape(winStr);
   }
 
+  @Override
+  protected String prefix() {
+    return "Y_";
+  }
 }

@@ -62,8 +62,7 @@ class RerankExampleCollector {
     Iterable<List<InputRecord>> gi = GroupingIterable.groupOver(inputs, InputRecord.EqualByX)
     log.info("Collecting reranking examples from " + inputs.size() + " grouped inputs")
     def outputFile = makeOutputFile()
-    GParsPool.withPool { GParsPool pool ->
-
+    GParsPool.withPool {
       def group = new DefaultPGroup(1)
       def dfout = new DataflowQueue()
       def writer = group.task {

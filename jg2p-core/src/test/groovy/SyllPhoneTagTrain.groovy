@@ -13,25 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import cc.mallet.classify.Trial
-import com.github.steveash.jg2p.align.InputRecord
 import com.github.steveash.jg2p.syll.PhoneSyllTagModel
 import com.github.steveash.jg2p.syll.PhoneSyllTagTrainer
 import com.github.steveash.jg2p.syll.SWord
-import com.github.steveash.jg2p.syll.SyllTagTrainer
 import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.collect.Sets
 import org.apache.commons.lang3.ArrayUtils
 
 /**
+ * This loads syllable data from the celex->arpabet input files and learns a syll phone tagger
+ * which just predicts syllable boundaries with 98% accuracy
  * @author Steve Ash
  */
-
-// construct a Word subclass that records the syllable boundaries
-// build input records using that
-// build a XyWalker that excludes any phones that would split a syllable boundary
 
 Collection<SWord> trainRecs = loadFile("../resources/syllables.train.txt")
 Collection<SWord> testRecs = loadFile("../resources/syllables.test.txt")

@@ -32,6 +32,8 @@ package com.github.steveash.jg2p.syll;/*
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
+import com.google.common.primitives.Ints;
 
 import com.github.steveash.jg2p.Word;
 
@@ -52,10 +54,13 @@ public class SWord extends Word {
 
   private int[] bounds;
 
-  public SWord(String sstring) {
-    super(convertToPhones(sstring));
+  /**
+   * @param celexString this is the celex pipe delimited with hypthen syll markers format
+   */
+  public SWord(String celexString) {
+    super(convertToPhones(celexString));
     // need to record the syllable boundaries
-    String[] phones = sstring.split("\\|");
+    String[] phones = celexString.split("\\|");
     int realIndex = 0;
     ArrayList<Integer> boundaries = Lists.newArrayList();
     for (int i = 0; i < phones.length; i++) {
@@ -66,6 +71,16 @@ public class SWord extends Word {
       }
     }
     this.bounds = ArrayUtils.toPrimitive(boundaries.toArray(new Integer[0]));
+  }
+
+  public SWord(String spaceSepWord, String spaceSepSyllStarts) {
+    super(splitter.splitToList(spaceSepWord));
+    List<Integer> bs = Lists.newArrayList();
+    for (String val : splitter.split(spaceSepSyllStarts)) {
+      bs.add(Integer.parseInt(val));
+    }
+    Preconditions.checkArgument(bs.size() > 0, "must pass at least one syllable boundary");
+    this.bounds = Ints.toArray(Ordering.natural().sortedCopy(bs));
   }
 
   public static List<String> convertToPhones(String entry) {

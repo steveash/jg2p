@@ -19,6 +19,7 @@ package com.github.steveash.jg2p;
 import com.google.common.base.Throwables;
 
 import com.github.steveash.jg2p.align.AlignModel;
+import com.github.steveash.jg2p.align.Aligner;
 import com.github.steveash.jg2p.aligntag.AlignTagModel;
 import com.github.steveash.jg2p.lm.LangModel;
 import com.github.steveash.jg2p.rerank.Rerank3Model;
@@ -46,7 +47,7 @@ public class PipelineModel implements Serializable {
   private static final long serialVersionUID = 863270402760625113L;
 
   private AlignModel trainingAlignerModel = null;
-  private AlignTagModel testingAlignerModel = null;
+  private Aligner testingAlignerModel = null;
   private PhonemeCrfModel pronouncerModel = null;
   private LangModel graphoneModel = null;
   private Rerank3Model rerankerModel = null;
@@ -59,11 +60,11 @@ public class PipelineModel implements Serializable {
     this.trainingAlignerModel = trainingAlignerModel;
   }
 
-  public AlignTagModel getTestingAlignerModel() {
+  public Aligner getTestingAlignerModel() {
     return testingAlignerModel;
   }
 
-  public void setTestingAlignerModel(AlignTagModel testingAlignerModel) {
+  public void setTestingAlignerModel(Aligner testingAlignerModel) {
     this.testingAlignerModel = testingAlignerModel;
   }
 

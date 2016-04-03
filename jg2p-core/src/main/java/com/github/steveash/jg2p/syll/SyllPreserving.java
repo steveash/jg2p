@@ -28,6 +28,10 @@ public class SyllPreserving implements XyWalker {
 
   @Override
   public void forward(Word x, final Word y, final Visitor visitor) {
+    if (!(y instanceof SWord)) {
+      throw new IllegalArgumentException(
+          "cant use the syllable preserving without using input readers that read syllable info");
+    }
     delegate.forward(x, y, new Visitor() {
       @Override
       public void visit(int xxBefore, int xxAfter, String xGram, int yyBefore, int yyAfter, String yGram) {

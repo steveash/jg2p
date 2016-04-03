@@ -15,7 +15,6 @@
  */
 
 import com.github.steveash.jg2p.Word
-import com.github.steveash.jg2p.align.AlignModel
 import com.github.steveash.jg2p.align.AlignerTrainer
 import com.github.steveash.jg2p.align.InputRecord
 import com.github.steveash.jg2p.align.TrainOptions
@@ -26,23 +25,21 @@ import com.github.steveash.jg2p.syll.SyllTagTrainer
 import com.github.steveash.jg2p.util.ReadWrite
 
 /**
+ * Takes the syllable input file, trains an aligner, then uses that to assign graphone -> syllable
+ * tags and writes those to an output file for inspection
  * @author Steve Ash
  */
 
-// construct a Word subclass that records the syllable boundaries
-// build input records using that
-// build a XyWalker that excludes any phones that would split a syllable boundary
-
-
-def recs = new File("../resources/syllables.train.txt").readLines()
+def recs = new File("../resources/g014b2b.train.syll").readLines()
     .findAll { it.trim().size() > 0 }
     .collect { line ->
   def fields = line.split("\t")
-  if (fields[1].trim().contains(" ") || fields[1].trim().contains("-")) {
-    return null
-  } else {
-    return new InputRecord(Word.fromNormalString(fields[1].trim()), new SWord(fields[2].trim()))
-  }
+//  if (fields[0].trim().contains(" ") || fields[1].trim().contains("-")) {
+//    return null
+//  } else {
+    return new InputRecord(Word.fromNormalString(fields[0].trim()),
+                           new SWord(fields[1].trim(), fields[2].trim()))
+//  }
 }.findAll { it != null }
 
 //recs.take(10).each {println it}
@@ -71,7 +68,8 @@ new File("../resources/syllables.align.txt").withPrintWriter { pw ->
     if (aligned.empty) continue;
     def align = aligned.first()
     try {
-      def sylls = SyllTagTrainer.makeSyllMarksFor(align, (SWord) rec.right)
+      align = align.withSyllWord((SWord) rec.right)
+      def sylls = SyllTagTrainer.makeSyllMarksFor(align)
       pw.println(align.XAsPipeString + "\t" + align.YAsPipeString + "\t" + align.getAsPipeString(sylls))
     } catch (Exception e) {
       println "Problem getting syllables for " + align + " to " + rec.right + " skipping " + e.message

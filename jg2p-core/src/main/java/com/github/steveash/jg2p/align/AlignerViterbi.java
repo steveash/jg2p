@@ -22,6 +22,7 @@ import com.google.common.math.DoubleMath;
 
 import com.github.steveash.jg2p.Grams;
 import com.github.steveash.jg2p.Word;
+import com.github.steveash.jg2p.syll.SWord;
 
 import java.util.Collections;
 import java.util.List;
@@ -111,7 +112,11 @@ public class AlignerViterbi {
       yy -= entry.yBackRef;
       entry = t.get(xx, yy, entry.pathBackRef);
     }
-    return a.finish();
+    Alignment finish = a.finish();
+    if (y instanceof SWord) {
+      finish = finish.withSyllWord((SWord) y);
+    }
+    return finish;
   }
 
 

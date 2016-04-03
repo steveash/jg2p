@@ -3,7 +3,6 @@ import com.github.steveash.jg2p.align.InputRecord
 import com.github.steveash.jg2p.syll.PhoneSyllTagModel
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Joiner
-import com.sun.corba.se.spi.orbutil.fsm.Input
 
 /*
  * Copyright 2016 Steve Ash
@@ -22,13 +21,15 @@ import com.sun.corba.se.spi.orbutil.fsm.Input
  */
 
 /**
+ * Takes the trained syll phone model and runs through the input cmu data in order to assign syllable
+ * boundaries based on that
  * @author Steve Ash
  */
 
 def model = ReadWrite.readFromFile(PhoneSyllTagModel, new File("../resources/syllphonetag.dat"))
-def test = InputReader.makePSaurusReader().readFromClasspath("g014b2b.train")
+def test = InputReader.makePSaurusReader().readFromClasspath("g014b2b.test")
 def joiner = Joiner.on(" ")
-new File("../resources/g014b2b.train.syll").withPrintWriter { pw ->
+new File("../resources/g014b2b.test.syll").withPrintWriter { pw ->
   for (InputRecord record : test) {
     def starts = model.syllStarts(record.yWord)
     pw.println(record.xWord.asNoSpaceString + "\t" + record.yWord.asSpaceString + "\t" + joiner.join(starts))

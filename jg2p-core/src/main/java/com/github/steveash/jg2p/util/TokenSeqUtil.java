@@ -41,6 +41,7 @@ public class TokenSeqUtil {
     return getWindowFromStrings(ss, current, windowOffset, windowWidth);
   }
 
+  // this skips over spaces so it doesn't matter if gram strings are space separated or not
   public static String getWindowFromStrings(List<String> ts, int current, int windowOffset, int windowWidth) {
     if (windowOffset < 0) {
       return getBakwardWindowFromString(ts, current, windowOffset, windowWidth);
@@ -128,7 +129,7 @@ public class TokenSeqUtil {
     }
   }
 
-  private static final Function<Token, String> tokenToString = new Function<Token, String>() {
+  public static final Function<Token, String> tokenToString = new Function<Token, String>() {
     @Override
     public String apply(Token input) {
       return input.getText();

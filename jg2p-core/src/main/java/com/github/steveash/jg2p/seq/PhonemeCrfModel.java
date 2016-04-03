@@ -19,6 +19,7 @@ package com.github.steveash.jg2p.seq;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 
+import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.util.GramBuilder;
 
 import java.io.Serializable;
@@ -45,8 +46,8 @@ public class PhonemeCrfModel implements Serializable {
     this.tduc = tduc;
   }
 
-  public List<TagResult> tag(List<String> xTokens, int nBest) {
-    Instance instance = new Instance(xTokens, null, null, null);
+  public List<TagResult> tag(Alignment alignment, int nBest) {
+    Instance instance = new Instance(alignment, null, null, null);
     instance = tduc.getInputPipe().instanceFrom(instance);
 
     Sequence inSeq = (Sequence) instance.getData();

@@ -26,6 +26,8 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 import com.github.steveash.jg2p.Word;
+import com.github.steveash.jg2p.syll.SWord;
+import com.github.steveash.jg2p.syll.SyllTagTrainer;
 import com.github.steveash.jg2p.util.Funcs;
 import com.github.steveash.jg2p.util.Zipper;
 
@@ -33,6 +35,8 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Iterator;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
@@ -55,18 +59,25 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
   private final List<Pair<String, String>> graphones; // the pair of grapheme + phoneme
   private final double score;
   private final Word input;
+  // these are only used when we're dealing with syllable words
+  private final List<String> graphoneSyllableGrams;
+  private final SWord syllWord;
 
 
   public Alignment(Word input, double score) {
-    this.input = input;
-    this.graphones = Lists.newArrayList();
-    this.score = score;
+    this(input, Lists.<Pair<String, String>>newArrayList(), score);
   }
 
   public Alignment(Word input, List<Pair<String, String>> finalList, double score) {
+    this(input, finalList, score, null, null);
+  }
+
+  public Alignment(Word input, List<Pair<String, String>> finalList, double score, List<String> graphoneSyllableGrams, SWord syllWord) {
     this.input = input;
     this.graphones = finalList;
     this.score = score;
+    this.graphoneSyllableGrams = graphoneSyllableGrams;
+    this.syllWord = syllWord;
   }
 
   public List<Pair<String, String>> getGraphones() {
@@ -75,6 +86,27 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
 
   public Iterable<Pair<List<String>, List<String>>> getGraphonesSplit() {
     return Iterables.transform(graphones, splitBoth);
+  }
+
+  // one entry per X graphone with grams for Onset, Nucleus, and Coda (O,N,C). Thus graphSyllGrams.size
+  // == graphones.size and for each entry in the graphone and graphoneSyllGrams -- the gram count is equal
+  @Nullable
+  public List<String> getGraphoneSyllableGrams() {
+    if (graphoneSyllableGrams != null) {
+      return graphoneSyllableGrams;
+    }
+    if (syllWord != null) {
+      return SyllTagTrainer.makeSyllGramsFromMarks(this);
+    }
+    return null;
+  }
+
+  public SWord getSyllWord() {
+    return syllWord;
+  }
+
+  public Word getInputWord() {
+    return input;
   }
 
   void append(String xGram, String yGram) {
@@ -122,6 +154,7 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
   public String toString() {
     return getXAsPipeString() + " -> " +
            getYAsPipeString() +
+           (graphoneSyllableGrams == null ? "" : " /" + pipeJoiner.join(graphoneSyllableGrams)  + "/") +
            String.format(" (score %.4f)", score);
   }
 
@@ -209,6 +242,10 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
   private List<String> getNextX(Iterator<Pair<String, String>> iter) {
     Pair<String, String> graphone = iter.next();
     return spaceSplit.splitToList(graphone.getLeft());
+  }
+
+  public Alignment withSyllWord(SWord sword) {
+    return new Alignment(this.input, this.graphones, this.score, this.graphoneSyllableGrams, sword);
   }
 
   @Override

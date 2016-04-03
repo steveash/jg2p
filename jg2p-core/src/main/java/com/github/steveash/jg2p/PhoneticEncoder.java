@@ -17,6 +17,7 @@
 package com.github.steveash.jg2p;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
@@ -180,8 +181,8 @@ public class PhoneticEncoder implements Serializable {
   public Result complexEncode(Word input) {
     Result result = new Result();
     List<Alignment> alignments = aligner.inferAlignments(input, bestAlignments);
-    if (includeOneToOne) {
-      alignments.add(makeOneToOne(input));
+    if (includeOneToOne && !alignments.isEmpty()) {
+      alignments.add(makeOneToOne(input, alignments.get(0)));
     }
     Set<Alignment> deduped = Sets.newHashSet(alignments);
     List<Encoding> results = Lists.newArrayListWithCapacity(bestTaggings * alignments.size() + 1);
@@ -190,7 +191,7 @@ public class PhoneticEncoder implements Serializable {
       AlignResult ar = new AlignResult(alignment);
       result.alignResults.add(ar);
       List<String> graphemes = alignment.getAllXTokensAsList();
-      List<TagResult> tagResults = phoneTagger.tag(graphemes, bestTaggings);
+      List<TagResult> tagResults = phoneTagger.tag(alignment, bestTaggings);
       for (TagResult tagResult : tagResults) {
         if (!results.isEmpty() && tagResult.sequenceLogProbability() < tagMinScore) {
           continue;
@@ -226,8 +227,16 @@ public class PhoneticEncoder implements Serializable {
     return result.overallResults;
   }
 
-  private Alignment makeOneToOne(Word input) {
-    return new Alignment(input, Zipper.upTo(input.getValue(), ""), 0);
+  private Alignment makeOneToOne(Word input, Alignment sample) {
+
+    if (sample.getGraphoneSyllableGrams() == null) {
+      return new Alignment(input, Zipper.upTo(input.getValue(), ""), 0);
+    }
+    // to make a 1-1 we still need syllables (if this is a syllable aligner so use the sample
+    // to make the syllables ignoring the alignment
+    List<String> flattened = Grams.flattenGrams(sample.getGraphoneSyllableGrams());
+    Preconditions.checkState(flattened.size() == input.unigramCount());
+    return new Alignment(input, Zipper.upTo(input.getValue(), ""), 0, flattened, null);
   }
 
   public PhoneticEncoder withAligner(Aligner aligner) {

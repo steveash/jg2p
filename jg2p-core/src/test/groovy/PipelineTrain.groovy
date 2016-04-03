@@ -26,32 +26,33 @@ import org.slf4j.LoggerFactory
  * Driver for the whole end-to-end training process
  * @author Steve Ash
  */
-def inputFile = "g014b2b.train"
+def inputFile = "g014b2b.train.syll"
 //def inputFile = "cmudict.2kA.txt"
 //def inputFile = "g014b2b.test"
 def inputs = InputReader.makePSaurusReader().readFromClasspath(inputFile)
 //def inputs = InputReader.makeDefaultFormatReader().readFromClasspath(inputFile)
 
 def opts = new TrainOptions()
-opts.maxXGram = 2
+opts.maxXGram = 4
 opts.maxYGram = 2
-opts.onlyOneGrams = true
-opts.maxPronouncerTrainingIterations = 200
-opts.useCityBlockPenalty = false
+opts.onlyOneGrams = false
+opts.maxPronouncerTrainingIterations = 100
+opts.useCityBlockPenalty = true
 opts.useWindowWalker = true
-def inFile = "/home/steve/Downloads/pip2_pron.dat"
-opts.initTrainingAlignerFromFile = "../resources/pip_trainalign.dat"
-opts.initTestingAlignerFromFile = "../resources/pip_testalign.dat"
-opts.initCrfFromModelFile = "../resources/pip_pron.dat"
+opts.useSyllableTagger = true
+def inFile = "../resources/pipe_22_F10_3.dat"
+//opts.initTrainingAlignerFromFile = inFile
+//opts.initTestingAlignerFromFile = inFile
+opts.initCrfFromModelFile = inFile
 //opts.initRerankerFromFile = "../resources/pip_rr.dat"
 //opts.graphoneLanguageModelOrder = 8
 //opts.graphoneLanguageModelOrderForTraining = 8
-//opts.initCrfFromModelFile = inFile
-opts.trainPronouncer = opts.trainTrainingAligner = opts.trainTestingAligner = false
-opts.useInputRerankExampleCsv = "../resources/pip_rre.csv"
+//opts.trainPronouncer = opts.trainTrainingAligner = opts.trainTestingAligner = false
+opts.trainAll();
+//opts.useInputRerankExampleCsv = "../resources/pip_rre.csv"
 //opts.trainReranker = true
 //opts.writeOutputRerankExampleCsv = "../resources/pip_rre.csv"
-def outFile = "../resources/pipe_22_F10_1.dat"
+def outFile = "../resources/pipe_42sy_F10_1.dat"
 
 def log = LoggerFactory.getLogger("psaurus")
 out = new GroovyLogger(log)

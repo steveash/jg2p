@@ -26,7 +26,7 @@ public class CityBlockPenalizer implements Penalizer {
   public static final CityBlockPenalizer Instance = new CityBlockPenalizer();
 
   private static final int EPS_PENALTY = 2;
-  private static final double PENALTY_SCALE = 0.85;
+  private static final double PENALTY_SCALE = 1.0;
 
   @Override
   public double penalize(String xGram, String yGram, double prob) {

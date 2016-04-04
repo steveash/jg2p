@@ -25,6 +25,17 @@ import org.apache.commons.lang3.StringUtils
  */
 class EvalPrinter {
 
+  public static void writeExamples(File output, EvalStats stats) {
+    output.withPrintWriter() { pw ->
+      stats.examples.keySet().sort().each { edits ->
+        def exs = stats.examples.get(edits)
+        exs.each {
+          output.println(edits + "\t" + it.toString())
+        }
+      }
+    }
+  }
+
   public static void printTo(SimpleWriter pw, EvalStats stats, String label) {
     def totalWords = stats.words.get()
     pw.println(StringUtils.center(" " + label + " ", 80, '*'));

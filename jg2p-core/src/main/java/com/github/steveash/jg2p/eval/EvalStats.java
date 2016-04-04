@@ -47,7 +47,7 @@ public class EvalStats {
   final Multiset<Integer> wordOptionsHisto = ConcurrentHashMultiset.create();
   final Multiset<Integer> resultsSizeHisto = ConcurrentHashMultiset.create();
   final ConcurrentMap<Integer,AtomicInteger> exampleCounter = Maps.newConcurrentMap();
-  final ConcurrentMap<Integer,List<PhoneticEncoder.Encoding>> examples = Maps.newConcurrentMap();
+  final ConcurrentMap<Integer,List<String>> examples = Maps.newConcurrentMap();
   final AtomicLong words = new AtomicLong(0);
   final AtomicLong zeroResultWords = new AtomicLong(0);
   final AtomicLong top1CorrectWords = new AtomicLong(0);
@@ -68,7 +68,7 @@ public class EvalStats {
   {
     for (int i = 0; i <= MAX_EDITS_EXAMPLES; i++) {
       exampleCounter.put(i, new AtomicInteger(0));
-      examples.put(i, new ArrayList<PhoneticEncoder.Encoding>(MAX_EXAMPLES));
+      examples.put(i, new ArrayList<String>(MAX_EXAMPLES));
     }
   }
 
@@ -83,6 +83,7 @@ public class EvalStats {
 
     int minEdits = Integer.MAX_VALUE;
     int minPhonesForEdits = Integer.MAX_VALUE;
+    String rightPhones = "";
     for (Word good : test.getAcceptableYWords()) {
       if (resultPhones.equals(good)) {
         top1CorrectWords.getAndIncrement();
@@ -96,6 +97,7 @@ public class EvalStats {
         if (edits < minEdits) {
           minEdits = edits;
           minPhonesForEdits = good.unigramCount();
+          rightPhones = good.getAsSpaceString();
         }
       }
     }
@@ -105,9 +107,9 @@ public class EvalStats {
     int editsForExamples = Math.min(MAX_EDITS_EXAMPLES, minEdits);
     int totalExamples = exampleCounter.get(editsForExamples).getAndIncrement();
     if (totalExamples < MAX_EXAMPLES) {
-      List<PhoneticEncoder.Encoding> exs = examples.get(editsForExamples);
+      List<String> exs = examples.get(editsForExamples);
       synchronized (exs) {
-        exs.add(topResult);
+        exs.add(topResult.toString() + " expected " + rightPhones);
       }
     }
     return newTotal;

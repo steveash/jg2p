@@ -36,23 +36,23 @@ def opts = new TrainOptions()
 opts.maxXGram = 4
 opts.maxYGram = 2
 opts.onlyOneGrams = false
-opts.maxPronouncerTrainingIterations = 100
 opts.useCityBlockPenalty = true
 opts.useWindowWalker = true
 opts.useSyllableTagger = true
-def inFile = "../resources/pipe_22_F10_3.dat"
-//opts.initTrainingAlignerFromFile = inFile
-//opts.initTestingAlignerFromFile = inFile
+opts.maxPronouncerTrainingIterations = 150
+def inFile = "../resources/pipe_42sy_F10_2.dat"
+opts.initTrainingAlignerFromFile = inFile
+opts.initTestingAlignerFromFile = inFile
 opts.initCrfFromModelFile = inFile
 //opts.initRerankerFromFile = "../resources/pip_rr.dat"
-//opts.graphoneLanguageModelOrder = 8
-//opts.graphoneLanguageModelOrderForTraining = 8
-//opts.trainPronouncer = opts.trainTrainingAligner = opts.trainTestingAligner = false
-opts.trainAll();
+opts.graphoneLanguageModelOrder = 8
+opts.graphoneLanguageModelOrderForTraining = 8
+opts.trainPronouncer = opts.trainTrainingAligner = opts.trainTestingAligner = false
+//opts.trainAll();
 //opts.useInputRerankExampleCsv = "../resources/pip_rre.csv"
 //opts.trainReranker = true
 //opts.writeOutputRerankExampleCsv = "../resources/pip_rre.csv"
-def outFile = "../resources/pipe_42sy_F10_1.dat"
+def outFile = "../resources/pipe_42sy_F10_3.dat"
 
 def log = LoggerFactory.getLogger("psaurus")
 out = new GroovyLogger(log)

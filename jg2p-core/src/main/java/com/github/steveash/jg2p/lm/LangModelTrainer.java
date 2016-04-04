@@ -26,6 +26,7 @@ import com.github.steveash.kylm.model.immutable.ImmutableLM;
 import com.github.steveash.kylm.model.immutable.ImmutableLMConverter;
 import com.github.steveash.kylm.model.ngram.NgramLM;
 import com.github.steveash.kylm.model.ngram.smoother.KNSmoother;
+import com.github.steveash.kylm.model.ngram.smoother.MKNSmoother;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +53,7 @@ public class LangModelTrainer {
   }
 
   public LangModel trainFor(Collection<Alignment> inputs) {
-    KNSmoother smoother = new KNSmoother();
+    MKNSmoother smoother = new MKNSmoother();
     smoother.setSmoothUnigrams(true);
     NgramLM lm = new NgramLM(modelOrder, smoother);
     Iterable<String[]> trainInput = FluentIterable.from(inputs).transform(new Function<Alignment, String[]>() {

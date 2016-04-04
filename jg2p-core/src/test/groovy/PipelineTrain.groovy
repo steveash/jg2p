@@ -45,8 +45,8 @@ opts.initTrainingAlignerFromFile = inFile
 opts.initTestingAlignerFromFile = inFile
 opts.initCrfFromModelFile = inFile
 //opts.initRerankerFromFile = "../resources/pip_rr.dat"
-opts.graphoneLanguageModelOrder = 8
-opts.graphoneLanguageModelOrderForTraining = 8
+opts.graphoneLanguageModelOrder = 9
+opts.graphoneLanguageModelOrderForTraining = 9
 opts.trainPronouncer = opts.trainTrainingAligner = opts.trainTestingAligner = false
 //opts.trainAll();
 //opts.useInputRerankExampleCsv = "../resources/pip_rre.csv"

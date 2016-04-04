@@ -53,7 +53,7 @@ public class LangModelTrainer {
   }
 
   public LangModel trainFor(Collection<Alignment> inputs) {
-    MKNSmoother smoother = new MKNSmoother();
+    KNSmoother smoother = new KNSmoother();
     smoother.setSmoothUnigrams(true);
     NgramLM lm = new NgramLM(modelOrder, smoother);
     Iterable<String[]> trainInput = FluentIterable.from(inputs).transform(new Function<Alignment, String[]>() {

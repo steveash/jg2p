@@ -26,6 +26,7 @@ public class CityBlockPenalizer implements Penalizer {
   public static final CityBlockPenalizer Instance = new CityBlockPenalizer();
 
   private static final int EPS_PENALTY = 2;
+  private static final double PENALTY_SCALE = 0.85;
 
   @Override
   public double penalize(String xGram, String yGram, double prob) {
@@ -37,6 +38,6 @@ public class CityBlockPenalizer implements Penalizer {
     if (yCount < 1) {
       yCount = EPS_PENALTY;
     }
-    return Math.pow(prob, xCount + yCount);
+    return Math.pow(prob, (xCount + yCount) * PENALTY_SCALE);
   }
 }

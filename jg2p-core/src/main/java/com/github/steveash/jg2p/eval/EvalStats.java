@@ -66,7 +66,7 @@ public class EvalStats {
       });
 
   {
-    for (int i = 0; i < MAX_EDITS_EXAMPLES; i++) {
+    for (int i = 0; i <= MAX_EDITS_EXAMPLES; i++) {
       exampleCounter.put(i, new AtomicInteger(0));
       examples.put(i, new ArrayList<PhoneticEncoder.Encoding>(MAX_EXAMPLES));
     }

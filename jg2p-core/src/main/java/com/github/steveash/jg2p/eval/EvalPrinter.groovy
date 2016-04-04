@@ -19,18 +19,22 @@ package com.github.steveash.jg2p.eval
 import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.SimpleWriter
 import org.apache.commons.lang3.StringUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * @author Steve Ash
  */
 class EvalPrinter {
 
+  private static final Logger log = LoggerFactory.getLogger(EvalPrinter.class);
+
   public static void writeExamples(File output, EvalStats stats) {
     output.withPrintWriter() { pw ->
       stats.examples.keySet().sort().each { edits ->
         def exs = stats.examples.get(edits)
         exs.each {
-          output.println(edits + "\t" + it.toString())
+          pw.println(edits + "\t" + it.toString())
         }
       }
     }

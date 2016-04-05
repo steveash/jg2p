@@ -249,20 +249,20 @@ public class PhonemeCrfTrainer {
     return new SerialPipes(ImmutableList.of(
         new AlignmentToTokenSequence(alpha, labelAlpha),   // convert to token sequence
         new TokenSequenceLowercase(),                       // make all lowercase
-//        new NeighborTokenFeature(true, makeNeighbors()),         // grab neighboring graphemes
-//        new NeighborShapeFeature(true, makeShapeNeighs()),
-        new WindowFeature(false, 4),
-        new WindowFeature(true, 6),
+        new NeighborTokenFeature(true, makeNeighbors()),         // grab neighboring graphemes
+        new NeighborShapeFeature(true, makeShapeNeighs()),
+//        new WindowFeature(false, 4),
+//        new WindowFeature(true, 6),
         new NeighborSyllableFeature(-2, -1, 1, 2),
         new SyllCountingFeature(),
-        new SyllMarkingFeature(),
+//        new SyllMarkingFeature(),
         new EndingVowelFeature(),
         new SonorityFeature(),
-//        new SurroundingTokenFeature2(false, 1, 1),
+        new SurroundingTokenFeature2(false, 1, 1),
 //        new SurroundingTokenFeature2(true, 1, 1),
-//        new SurroundingTokenFeature2(false, 2, 2),
+        new SurroundingTokenFeature2(false, 2, 2),
 //        new SurroundingTokenFeature2(false, 3, 2),
-//        new SurroundingTokenFeature2(true, 3, 3),
+        new SurroundingTokenFeature2(true, 3, 3),
 //        new SurroundingTokenFeature2(true, 4, 4),
 //        new LeadingTrailingFeature(),
         new TokenSequenceToFeature(),                       // convert the strings in the text to features
@@ -292,13 +292,14 @@ public class PhonemeCrfTrainer {
     return ImmutableList.of(
         new TokenWindow(1, 1),
         new TokenWindow(1, 2),
-//        new TokenWindow(2, 1),
+        new TokenWindow(2, 1),
         new TokenWindow(1, 3),
+        new TokenWindow(3, 1),
         new TokenWindow(1, 4),
-        new TokenWindow(4, 1),
+//        new TokenWindow(4, 1),
         new TokenWindow(-1, 1),
         new TokenWindow(-2, 2),
-//        new TokenWindow(-2, 1),
+        new TokenWindow(-2, 1),
         new TokenWindow(-3, 3),
         new TokenWindow(-4, 4),
         new TokenWindow(-5, 5)

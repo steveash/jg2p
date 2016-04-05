@@ -40,7 +40,7 @@ import javax.annotation.Nullable;
  * @author Steve Ash
  */
 public class EvalStats {
-  private static final int MAX_EXAMPLES = 10;
+  private static final int MAX_EXAMPLES = 50;
   private static final int MAX_EDITS_EXAMPLES = 5;
 
   // histogram of the count of pronunciations per word

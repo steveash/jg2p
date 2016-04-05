@@ -41,14 +41,14 @@ opts.useWindowWalker = true
 opts.useSyllableTagger = true
 opts.maxPronouncerTrainingIterations = 150
 def inFile = "../resources/pipe_42sy_F10_3.dat"
-//opts.initTrainingAlignerFromFile = inFile
-//opts.initTestingAlignerFromFile = inFile
+opts.initTrainingAlignerFromFile = inFile
+opts.initTestingAlignerFromFile = inFile
 opts.initCrfFromModelFile = inFile
 //opts.initRerankerFromFile = "../resources/pip_rr.dat"
 opts.graphoneLanguageModelOrder = 8
 opts.graphoneLanguageModelOrderForTraining = 8
-//opts.trainPronouncer = opts.trainTrainingAligner = opts.trainTestingAligner = false
-opts.trainAll();
+opts.trainTrainingAligner = opts.trainTestingAligner = false
+//opts.trainAll();
 //opts.useInputRerankExampleCsv = "../resources/pip_rre.csv"
 //opts.trainReranker = true
 //opts.writeOutputRerankExampleCsv = "../resources/pip_rre.csv"

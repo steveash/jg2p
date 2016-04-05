@@ -20,6 +20,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
+import com.github.steveash.jg2p.Grams;
 import com.github.steveash.jg2p.phoseq.Graphemes;
 
 import java.util.List;
@@ -34,6 +35,22 @@ import static com.google.common.base.CharMatcher.WHITESPACE;
  * @author Steve Ash
  */
 public class TokenSeqUtil {
+
+  public static int countBefore(List<String> grams, int current) {
+    int count = 0;
+    for (int i = 0; i < grams.size() && i < current; i++) {
+      count += Grams.countInGram(grams.get(i));
+    }
+    return count;
+  }
+
+  public static int countAfter(List<String> grams, int current) {
+    int count = 0;
+    for (int i = current + 1; i < grams.size(); i++) {
+      count += Grams.countInGram(grams.get(i));
+    }
+    return count;
+  }
 
   @Nullable
   public static String getWindow(List<Token> ts, int current, int windowOffset, int windowWidth) {

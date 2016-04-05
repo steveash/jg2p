@@ -249,8 +249,10 @@ public class PhonemeCrfTrainer {
     return new SerialPipes(ImmutableList.of(
         new AlignmentToTokenSequence(alpha, labelAlpha),   // convert to token sequence
         new TokenSequenceLowercase(),                       // make all lowercase
-        new NeighborTokenFeature(true, makeNeighbors()),         // grab neighboring graphemes
-        new NeighborShapeFeature(true, makeShapeNeighs()),
+//        new NeighborTokenFeature(true, makeNeighbors()),         // grab neighboring graphemes
+//        new NeighborShapeFeature(true, makeShapeNeighs()),
+        new WindowFeature(false, 4),
+        new WindowFeature(true, 6),
         new NeighborSyllableFeature(-2, -1, 1, 2),
         new SyllCountingFeature(),
         new SyllMarkingFeature(),
@@ -258,9 +260,9 @@ public class PhonemeCrfTrainer {
         new SonorityFeature(),
 //        new SurroundingTokenFeature2(false, 1, 1),
 //        new SurroundingTokenFeature2(true, 1, 1),
-        new SurroundingTokenFeature2(false, 2, 2),
+//        new SurroundingTokenFeature2(false, 2, 2),
 //        new SurroundingTokenFeature2(false, 3, 2),
-        new SurroundingTokenFeature2(true, 3, 3),
+//        new SurroundingTokenFeature2(true, 3, 3),
 //        new SurroundingTokenFeature2(true, 4, 4),
 //        new LeadingTrailingFeature(),
         new TokenSequenceToFeature(),                       // convert the strings in the text to features

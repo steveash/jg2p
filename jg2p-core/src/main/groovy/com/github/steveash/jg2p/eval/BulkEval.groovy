@@ -67,10 +67,10 @@ class BulkEval {
         stats.resultsSizeHisto.add(results.size())
         int currentTotal;
         if (results.isEmpty()) {
-          currentTotal = stats.onNewResult(group, null)
+          currentTotal = stats.onNewResult(group, null, -1)
         } else {
-          currentTotal = stats.onNewResult(group, results[0])
-          updateTopK(results, group, stats)
+          int rank = updateTopK(results, group, stats)
+          currentTotal = stats.onNewResult(group, results[0], rank)
           updateIrs(results, group, stats)
         }
 
@@ -132,14 +132,15 @@ class BulkEval {
     return ranks;
   }
 
-  private def updateTopK(List<PhoneticEncoder.Encoding> results, InputRecordGroup group, EvalStats stats) {
+  private int updateTopK(List<PhoneticEncoder.Encoding> results, InputRecordGroup group, EvalStats stats) {
     // try to find what rank is the matching
     for (int i = 0; i < results.size(); i++) {
       if (group.isMatching(results[i].phones)) {
         stats.counters.add(String.format("RIGHT_TOP_%02d", i))
-        return
+        return i;
       }
     }
     stats.counters.add("RIGHT_TOP_NONE")
+    return -1;
   }
 }

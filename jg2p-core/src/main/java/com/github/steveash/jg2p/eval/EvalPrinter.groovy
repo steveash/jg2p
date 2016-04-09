@@ -31,11 +31,10 @@ class EvalPrinter {
 
   public static void writeExamples(File output, EvalStats stats) {
     output.withPrintWriter() { pw ->
-      stats.examples.keySet().sort().each { edits ->
-        def exs = stats.examples.get(edits)
-        exs.each {
-          pw.println(edits + "\t" + it.toString())
-        }
+      pw.println("word\tedits\trank\tprediction\texpected")
+      stats.badCases.sort {it.inputWord}.each { bad ->
+        pw.println(bad.inputWord + "\t" + bad.edits + "\t" + bad.matchedRank + "\t" +
+                   bad.alignedPrediction + "\t" + bad.expectedPhones)
       }
     }
   }

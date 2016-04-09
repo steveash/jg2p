@@ -21,17 +21,14 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ConcurrentHashMultiset;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
+import com.google.common.collect.Sets;
 
 import com.github.steveash.jg2p.PhoneticEncoder;
 import com.github.steveash.jg2p.Word;
 import com.github.steveash.jg2p.util.ListEditDistance;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.annotation.Nullable;
@@ -40,14 +37,27 @@ import javax.annotation.Nullable;
  * @author Steve Ash
  */
 public class EvalStats {
-  private static final int MAX_EXAMPLES = 50;
-  private static final int MAX_EDITS_EXAMPLES = 5;
+
+  public static class EvalExample {
+    final String inputWord;
+    final String alignedPrediction;
+    final String expectedPhones;
+    final int edits;
+    final int matchedRank; // 0 = top result, -1 not in top-k results
+
+    public EvalExample(String inputWord, String alignedPrediction, String expectedPhones, int edits, int matchedRank) {
+      this.inputWord = inputWord;
+      this.alignedPrediction = alignedPrediction;
+      this.expectedPhones = expectedPhones;
+      this.edits = edits;
+      this.matchedRank = matchedRank;
+    }
+  }
 
   // histogram of the count of pronunciations per word
   final Multiset<Integer> wordOptionsHisto = ConcurrentHashMultiset.create();
   final Multiset<Integer> resultsSizeHisto = ConcurrentHashMultiset.create();
-  final ConcurrentMap<Integer,AtomicInteger> exampleCounter = Maps.newConcurrentMap();
-  final ConcurrentMap<Integer,List<String>> examples = Maps.newConcurrentMap();
+  final Set<EvalExample> badCases = Sets.newConcurrentHashSet();
   final AtomicLong words = new AtomicLong(0);
   final AtomicLong zeroResultWords = new AtomicLong(0);
   final AtomicLong top1CorrectWords = new AtomicLong(0);
@@ -65,14 +75,7 @@ public class EvalStats {
         }
       });
 
-  {
-    for (int i = 0; i <= MAX_EDITS_EXAMPLES; i++) {
-      exampleCounter.put(i, new AtomicInteger(0));
-      examples.put(i, new ArrayList<String>(MAX_EXAMPLES));
-    }
-  }
-
-  long onNewResult(InputRecordGroup test, @Nullable PhoneticEncoder.Encoding topResult) {
+  long onNewResult(InputRecordGroup test, @Nullable PhoneticEncoder.Encoding topResult, int matchedRank) {
     long newTotal = words.incrementAndGet();
     if (topResult == null) {
       zeroResultWords.incrementAndGet();
@@ -104,14 +107,12 @@ public class EvalStats {
     Preconditions.checkArgument(minEdits != Integer.MAX_VALUE);
     phones.addAndGet(minPhonesForEdits);
     top1PhoneEdits.addAndGet(minEdits);
-    int editsForExamples = Math.min(MAX_EDITS_EXAMPLES, minEdits);
-    int totalExamples = exampleCounter.get(editsForExamples).getAndIncrement();
-    if (totalExamples < MAX_EXAMPLES) {
-      List<String> exs = examples.get(editsForExamples);
-      synchronized (exs) {
-        exs.add(topResult.toString() + " expected " + rightPhones);
-      }
-    }
+    badCases.add(new EvalExample(test.getTestWord().getAsNoSpaceString(),
+                                 topResult.toString(),
+                                 rightPhones,
+                                 minEdits,
+                                 matchedRank
+                                 ));
     return newTotal;
   }
 

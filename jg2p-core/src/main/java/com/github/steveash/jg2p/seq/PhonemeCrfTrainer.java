@@ -254,7 +254,7 @@ public class PhonemeCrfTrainer {
 //        new WindowFeature(false, 4),
 //        new WindowFeature(true, 6),
         new NeighborSyllableFeature(-2, -1, 1, 2),
-        new SyllCountingFeature(),
+//        new SyllCountingFeature(),
 //        new SyllMarkingFeature(),
         new EndingVowelFeature(),
         new SonorityFeature(),

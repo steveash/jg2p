@@ -40,7 +40,7 @@ opts.useCityBlockPenalty = true
 opts.useWindowWalker = true
 opts.useSyllableTagger = true
 opts.maxPronouncerTrainingIterations = 400
-def inFile = "../resources/pipe_42sy_F10_2.dat"
+def inFile = "../resources/pipe_42sy_F10_5.dat"
 opts.initTrainingAlignerFromFile = inFile
 opts.initTestingAlignerFromFile = inFile
 opts.initCrfFromModelFile = inFile
@@ -52,8 +52,8 @@ opts.trainTrainingAligner = opts.trainTestingAligner = false
 //opts.trainAll();
 //opts.useInputRerankExampleCsv = "../resources/pip_rre.csv"
 //opts.trainReranker = true
-opts.writeOutputRerankExampleCsv = "../resources/rerank_inputs.csv"
-def outFile = "../resources/pipe_42sy_F10_5.dat"
+//opts.writeOutputRerankExampleCsv = "../resources/rerank_inputs.csv"
+def outFile = "../resources/pipe_42sy_F10_6.dat"
 
 def log = LoggerFactory.getLogger("psaurus")
 out = new GroovyLogger(log)

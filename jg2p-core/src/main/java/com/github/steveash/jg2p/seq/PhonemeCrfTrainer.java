@@ -135,7 +135,8 @@ public class PhonemeCrfTrainer {
       trainer.train(examples);
       trainer.shutdown();
     }
-
+    crf.getInputAlphabet().stopGrowth();
+    crf.getOutputAlphabet().stopGrowth();
     watch.stop();
     log.info("Training took " + watch);
     if (printEval) {
@@ -156,6 +157,7 @@ public class PhonemeCrfTrainer {
   }
 
   public PhonemeCrfModel buildModel() {
+
     return new PhonemeCrfModel(crf);
   }
 
@@ -174,6 +176,7 @@ public class PhonemeCrfTrainer {
   private static CRFTrainerByLabelLikelihood makeNewTrainerSingleThreaded(CRF crf) {
     CRFTrainerByLabelLikelihood trainer = new CRFTrainerByLabelLikelihood(crf);
     trainer.setGaussianPriorVariance(2);
+//    trainer.setUseHyperbolicPrior(true);
     trainer.setAddNoFactors(true);
     trainer.setUseSomeUnsupportedTrick(false);
     return trainer;

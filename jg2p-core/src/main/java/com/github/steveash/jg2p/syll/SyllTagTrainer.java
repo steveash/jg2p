@@ -292,6 +292,8 @@ public class SyllTagTrainer {
     watch.stop();
 
     log.info("Syll align Tag CRF Training took " + watch.toString());
+    crf.getInputAlphabet().stopGrowth();
+    crf.getOutputAlphabet().stopGrowth();
     return trainer;
   }
 

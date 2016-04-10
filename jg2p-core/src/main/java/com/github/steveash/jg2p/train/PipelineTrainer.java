@@ -33,13 +33,16 @@ import com.github.steveash.jg2p.rerank.RerankExampleCollector;
 import com.github.steveash.jg2p.rerank.RerankExampleCsvReader;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 import com.github.steveash.jg2p.seq.PhonemeCrfTrainer;
+import com.github.steveash.jg2p.syll.PhoneSyllTagModel;
 import com.github.steveash.jg2p.syll.SyllTagModel;
 import com.github.steveash.jg2p.syll.SyllTagTrainer;
 import com.github.steveash.jg2p.util.ModelReadWrite;
+import com.github.steveash.jg2p.util.ReadWrite;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -67,6 +70,7 @@ public class PipelineTrainer {
   private LangModel loadedGraphone;
   private List<List<RerankExample>> loadedRerankerCsv;
   private Rerank3Model loadedReranker;
+  private PhoneSyllTagModel phoneSyllTagModel;
 
   public void train(List<InputRecord> inputs, TrainOptions opts, PipelineModel model) {
     Collections.sort(inputs, InputRecord.OrderByX);
@@ -103,6 +107,9 @@ public class PipelineTrainer {
       if (!opts.trainReranker) {
         loadedReranker = ModelReadWrite.readRerankerFrom(opts.initRerankerFromFile);
       }
+      if (isNotBlank(opts.initPhoneSyllModelFromFile)) {
+        phoneSyllTagModel = ReadWrite.readFromFile(PhoneSyllTagModel.class, new File(opts.initPhoneSyllModelFromFile));
+      }
 
       log.info("All model files are loadable");
     } catch (Exception e) {
@@ -123,7 +130,11 @@ public class PipelineTrainer {
           modelSoFar.setGraphoneModel(graphoneModelForTraining);
         }
         Collection<List<RerankExample>> rrExamples = collectExamples(modelSoFar);
-        return new Rerank3Trainer().trainFor(rrExamples);
+        Rerank3Trainer trainer = new Rerank3Trainer();
+        if (phoneSyllTagModel != null) {
+          trainer.setPhoneSyllModel(phoneSyllTagModel);
+        }
+        return trainer.trainFor(rrExamples);
 
       } finally {
         modelSoFar.setGraphoneModel(existing);

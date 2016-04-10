@@ -28,6 +28,7 @@ import com.github.steveash.jg2p.align.Aligner;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 import com.github.steveash.jg2p.seq.TagResult;
+import com.github.steveash.jg2p.syll.SyllCounter;
 import com.github.steveash.jg2p.util.Zipper;
 
 import net.sf.jsefa.csv.annotation.CsvDataType;
@@ -94,13 +95,15 @@ public class PhoneticEncoder implements Serializable {
     public List<String> graphones;
         // the exact phones that came out of the CRF.  This is 1-1 with alignment i.e. alignment - split phones make
         // up the graphones of the word
+    @CsvField(pos = 10)
+    public int wordSyllCount; // how many syllables did the alignment predit?
 
     public Encoding() {
       // no arg constructor for the CSV serialization library
     }
 
     private Encoding(List<String> alignment, List<String> phones, List<String> graphones, double alignScore,
-                     double tagScore, double retagScore) {
+                     double tagScore, double retagScore, int syllCount) {
 
       this.alignment = alignment;
       this.phones = phones;
@@ -108,12 +111,13 @@ public class PhoneticEncoder implements Serializable {
       this.alignScore = alignScore;
       this.tagScore = tagScore;
       this.retagScore = retagScore;
+      this.wordSyllCount = syllCount;
     }
 
     public static Encoding createEncoding(List<String> alignment, List<String> phones, List<String> graphones,
-                                          double alignScore, double tagScore, double retagScore) {
+                                          double alignScore, double tagScore, double retagScore, int syllCount) {
 
-      Encoding encoding = new Encoding(alignment, phones, graphones, alignScore, tagScore, retagScore);
+      Encoding encoding = new Encoding(alignment, phones, graphones, alignScore, tagScore, retagScore, syllCount);
       return encoding;
     }
 
@@ -129,7 +133,7 @@ public class PhoneticEncoder implements Serializable {
     public Encoding withReplacedPhoneme(int index, String newPhoneme) {
       ArrayList<String> newPhones = Lists.newArrayList(this.phones);
       newPhones.set(index, newPhoneme);
-      Encoding result = createEncoding(this.alignment, newPhones, this.graphones, alignScore, tagScore, retagScore);
+      Encoding result = createEncoding(this.alignment, newPhones, this.graphones, alignScore, tagScore, retagScore, wordSyllCount);
       result.isPostProcessed = true;
       result.rank = this.rank;
       result.alignRank = this.alignRank;
@@ -196,8 +200,13 @@ public class PhoneticEncoder implements Serializable {
         if (!results.isEmpty() && tagResult.sequenceLogProbability() < tagMinScore) {
           continue;
         }
+        List<String> maybeSyll = alignment.getGraphoneSyllableGrams();
+        int syllCount = 0;
+        if (maybeSyll != null) {
+          syllCount = SyllCounter.countSyllablesInGrams(maybeSyll);
+        }
         Encoding e = Encoding.createEncoding(graphemes, tagResult.phones(), tagResult.phoneGrams(), alignment.getScore(),
-                                             tagResult.sequenceLogProbability(), tagResult.getLogScore2());
+                                             tagResult.sequenceLogProbability(), tagResult.getLogScore2(), syllCount);
         if (e.phones != null && !e.phones.isEmpty()) {
           results.add(e);
           ar.encodings.add(e);

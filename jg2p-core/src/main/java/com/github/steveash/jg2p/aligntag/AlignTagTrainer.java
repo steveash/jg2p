@@ -106,6 +106,8 @@ public class AlignTagTrainer {
     watch.stop();
 
     log.info("Align Tag CRF Training took " + watch.toString());
+    crf.getInputAlphabet().stopGrowth();
+    crf.getOutputAlphabet().stopGrowth();
     return trainer;
   }
 

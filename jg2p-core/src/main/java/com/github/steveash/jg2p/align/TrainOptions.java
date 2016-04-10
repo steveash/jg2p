@@ -137,6 +137,11 @@ public class TrainOptions implements Cloneable {
   @Option(name = "--initGraphoneFromModel")
   public String initGraphoneModelFromFile = null;
 
+  // if you want to load up the phone syllable tagger to use in the reranking model then
+  // you need to set this to the path to the
+  @Option(name = "--usePhoneSyllModel")
+  public String initPhoneSyllModelFromFile = null;
+
   /**
    * recipe flags that indicate which part of the training that is being completed
    **/

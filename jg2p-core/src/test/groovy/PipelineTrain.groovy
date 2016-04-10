@@ -44,6 +44,7 @@ def inFile = "../resources/pipe_42sy_F10_4.dat"
 opts.initTrainingAlignerFromFile = inFile
 opts.initTestingAlignerFromFile = inFile
 opts.initCrfFromModelFile = inFile
+//opts.initPhoneSyllModelFromFile = "../syllphonetag.dat"
 //opts.initRerankerFromFile = "../resources/pip_rr.dat"
 opts.graphoneLanguageModelOrder = 8
 opts.graphoneLanguageModelOrderForTraining = 8

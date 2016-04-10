@@ -17,20 +17,18 @@
 package com.github.steveash.jg2p.rerank;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+
+import com.github.steveash.jg2p.syll.PhoneSyllTagModel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import cc.mallet.classify.Classifier;
-import cc.mallet.classify.MaxEntL1Trainer;
 import cc.mallet.classify.RankMaxEnt;
 import cc.mallet.classify.RankMaxEntTrainer;
-import cc.mallet.classify.Trial;
-import cc.mallet.classify.evaluate.ConfusionMatrix;
 import cc.mallet.pipe.Pipe;
 import cc.mallet.pipe.SerialPipes;
 import cc.mallet.types.Alphabet;
@@ -47,10 +45,11 @@ public class Rerank3Trainer {
 
   private static final Logger log = LoggerFactory.getLogger(Rerank3Trainer.class);
 
-  private final Pipe pipe;
+  private Pipe pipe = null;
+  private PhoneSyllTagModel phoneSyllModel = null;
 
-  public Rerank3Trainer() {
-    pipe = makePipe();
+  public void setPhoneSyllModel(PhoneSyllTagModel phoneSyllModel) {
+    this.phoneSyllModel = phoneSyllModel;
   }
 
   /**
@@ -58,6 +57,7 @@ public class Rerank3Trainer {
    * prefer one side over the other
    */
   public Rerank3Model trainFor(Collection<List<RerankExample>> trainingData) {
+    pipe = makePipe();
     InstanceList instances = convert(trainingData);
     RankMaxEntTrainer trainer = new RankMaxEntTrainer(2.0);
 //    AdaBoostTrainer trainer = new AdaBoostTrainer(new MaxEntL1Trainer(), 10);
@@ -68,7 +68,7 @@ public class Rerank3Trainer {
     return new Rerank3Model(model);
   }
 
-  public InstanceList convert(Collection<List<RerankExample>> trainingData) {
+  private InstanceList convert(Collection<List<RerankExample>> trainingData) {
     InstanceList instances = new InstanceList(pipe, trainingData.size());
     int count = 0;
     for (List<RerankExample> data : trainingData) {
@@ -83,23 +83,29 @@ public class Rerank3Trainer {
     return instances;
   }
 
-  private static Pipe makePipe() {
+  private Pipe makePipe() {
     Alphabet alpha = new Alphabet();
     LabelAlphabet labelAlpha = new LabelAlphabet();
 
-    return new SerialPipes(ImmutableList.of(
-        new LoadTargetPipe(alpha, labelAlpha),
-        new RerankFeaturePipe(alpha, labelAlpha, Arrays.asList(
-            new DupsPipe(),
-            new ModePipe(),
-            new PrefixPipe(),
-            new RanksPipe(),
-            new ScoresPipe(),
-            new ShapePipe(),
-            new ShapePrefixPipe()
+    List<RerankFeature> features = Lists.newArrayList(
+        new DupsPipe(),
+        new ModePipe(),
+        new PrefixPipe(),
+        new RanksPipe(),
+        new ScoresPipe(),
+        new ShapePipe(),
+        new ShapePrefixPipe()
+
 //        new VowelBigramPipe(alpha, labelAlpha),
 //        new VowelPatternPipe(alpha, labelAlpha),
-        ))
+    );
+    if (phoneSyllModel != null) {
+      features.add(new SyllAgreeRerankFeature(phoneSyllModel));
+      log.info("Using the syll phone tagger in the reranker");
+    }
+    return new SerialPipes(ImmutableList.of(
+        new LoadTargetPipe(alpha, labelAlpha),
+        new RerankFeaturePipe(alpha, labelAlpha, features)
     ));
 
   }

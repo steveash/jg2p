@@ -260,7 +260,7 @@ public class PhonemeCrfTrainer {
 //        new SyllCountingFeature(),
 //        new SyllMarkingFeature(),
         new EndingVowelFeature(),
-        //new SonorityFeature(),
+        new SonorityFeature(),
         new SurroundingTokenFeature2(false, 1, 1),
 //        new SurroundingTokenFeature2(true, 1, 1),
         new SurroundingTokenFeature2(false, 2, 2),

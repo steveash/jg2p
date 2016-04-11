@@ -253,15 +253,15 @@ public class PhonemeCrfTrainer {
         new AlignmentToTokenSequence(alpha, labelAlpha),   // convert to token sequence
         new TokenSequenceLowercase(),                       // make all lowercase
         new NeighborTokenFeature(true, makeNeighbors()),         // grab neighboring graphemes
-//        new NeighborShapeFeature(true, makeShapeNeighs()),
+        new NeighborShapeFeature(true, makeShapeNeighs()),
 //        new WindowFeature(false, 4),
 //        new WindowFeature(true, 6),
-        new NeighborSyllableFeature(-2, -1, 1, 2),
-//        new SyllCountingFeature(),
+//        new NeighborSyllableFeature(-2, -1, 1, 2),
+        new SyllCountingFeature(),
         new SyllMarkingFeature(),
         new EndingVowelFeature(),
-//        new SonorityFeature2(true),
-//        new SonorityFeature2(false),
+        new SonorityFeature2(true),
+        new SonorityFeature2(false),
         new SurroundingTokenFeature2(false, 1, 1),
 //        new SurroundingTokenFeature2(true, 1, 1),
         new SurroundingTokenFeature2(false, 2, 2),

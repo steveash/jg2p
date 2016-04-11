@@ -6,6 +6,7 @@ import com.github.steveash.jg2p.eval.EvalPrinter
 import com.github.steveash.jg2p.util.GroovyLogger
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Stopwatch
+import org.apache.commons.lang3.time.DateFormatUtils
 import org.slf4j.LoggerFactory
 
 /*
@@ -27,7 +28,7 @@ import org.slf4j.LoggerFactory
 //def testFile = "g014b2b.train"
 //def testFile = "cmudict.2kA.txt"
 def testFile = "g014b2b.test"
-def modelFile = "../resources/pipe_42sy_F10_5.dat"
+def modelFile = "../resources/pipe_42sy_F10_6.dat"
 
 //def test = InputReader.makeDefaultFormatReader().readFromClasspath(testFile)
 def test = InputReader.makePSaurusReader().readFromClasspath(testFile)
@@ -47,5 +48,6 @@ def eval = new BulkEval(enc)
 def stats = eval.groupAndEval(test)
 watch.stop()
 log.info("Finished eval took $watch")
-EvalPrinter.writeExamples(new File("target/badexamples.txt"), stats)
+def ts = DateFormatUtils.format(new Date(), "yyyyMMddHHmmss")
+EvalPrinter.writeExamples(new File("target/badexamples-${ts}.txt"), stats)
 EvalPrinter.printTo(out, stats, modelFile)

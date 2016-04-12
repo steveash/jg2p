@@ -94,6 +94,9 @@ public class TrainOptions implements Cloneable {
   @Option(name = "--trimFeaturesUnderPercentile")
   public int trimFeaturesUnderPercentile = 0;
 
+  @Option(name = "--trimFeaturesByGradient")
+  public double trimFeaturesByGradientGain = 0;
+
   /**
    * Graphone language model options
    */

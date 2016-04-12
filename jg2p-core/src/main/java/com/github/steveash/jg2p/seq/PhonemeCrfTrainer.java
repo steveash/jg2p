@@ -16,15 +16,17 @@
 
 package com.github.steveash.jg2p.seq;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+import com.google.common.io.Files;
 
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.align.TrainOptions;
+import com.github.steveash.jg2p.util.CrfGradientGain;
 import com.github.steveash.jg2p.util.GramBuilder;
 import com.github.steveash.jg2p.util.ModelReadWrite;
 import com.github.steveash.jg2p.util.ReadWrite;
@@ -34,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.List;
 
@@ -51,6 +54,7 @@ import cc.mallet.types.Alphabet;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
+import cc.mallet.types.RankedFeatureVector;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -64,45 +68,37 @@ public class PhonemeCrfTrainer {
   private static final Logger log = LoggerFactory.getLogger(PhonemeCrfTrainer.class);
 
   public static PhonemeCrfTrainer open(TrainOptions opts) {
-    Pipe pipe = makePipe();
-    PhonemeCrfTrainer pct = new PhonemeCrfTrainer(pipe, opts);
+    PhonemeCrfTrainer pct = new PhonemeCrfTrainer(opts);
     return pct;
   }
 
-  private static enum State {Initializing, Training}
 
-  private final Pipe pipe;
   private final TrainOptions opts;
-  private State state = State.Initializing;
 
   private CRF crf = null;
+  private CRF crfFrom = null;
   private TransducerTrainer lastTrainer = null;
 
-  private boolean printEval = false;
-
-  private PhonemeCrfTrainer(Pipe pipe, TrainOptions opts) {
-    this.pipe = pipe;
+  private PhonemeCrfTrainer(TrainOptions opts) {
     this.opts = opts;
-  }
-
-  private void initializeFor(InstanceList examples) {
-    Preconditions.checkState(state == State.Initializing, "can only initialize once");
-    this.crf = new CRF(pipe, null);
-    crf.addOrderNStates(examples, new int[]{1}, null, null, null, null, false);
-    crf.addStartState();
-    //    crf.setWeightsDimensionDensely();
-    crf.setWeightsDimensionAsIn(examples, false);
-    //    crf.setWeightsDimensionWithFilterAsIn(examples, 2);
-
     if (opts.initCrfFromModelFile != null) {
       try {
         log.info("Loading initial weights from " + opts.initCrfFromModelFile);
-        CRF crfFrom = readCrfFrom();
-        crf.initializeApplicableParametersFrom(crfFrom);
-
+        this.crfFrom = readCrfFrom();
       } catch (Exception e) {
         throw Throwables.propagate(e);
       }
+    }
+  }
+
+  private void initializeFor(InstanceList examples) {
+    this.crf = new CRF(examples.getPipe(), null);
+    crf.addOrderNStates(examples, new int[]{1}, null, null, null, null, false);
+    crf.addStartState();
+    crf.setWeightsDimensionAsIn(examples, false);
+
+    if (crfFrom != null) {
+      crf.initializeApplicableParametersFrom(crfFrom);
     }
   }
 
@@ -111,23 +107,25 @@ public class PhonemeCrfTrainer {
   }
 
   public void trainFor(Collection<Alignment> inputs) {
-    InstanceList examples = makeExamplesFromAligns(inputs);
-    trainForInstances(examples);
+    // this pipe is the default pipe with new alphabet
+    Stopwatch watch = Stopwatch.createStarted();
+    trainRound(inputs, new Alphabet());
+
+    crf.getInputAlphabet().stopGrowth();
+    crf.getOutputAlphabet().stopGrowth();
+    watch.stop();
+    log.info("Training took " + watch);
   }
 
-  public void trainForInstances(InstanceList examples) {
-    if (state == State.Initializing) {
-      initializeFor(examples);
-    }
-    state = State.Training;
-    Stopwatch watch = Stopwatch.createStarted();
+  private void trainRound(Collection<Alignment> inputs, Alphabet alpha) {
+    SerialPipes initialPipe = makePipe(alpha);
+    InstanceList examples = makeExamplesFromAligns(initialPipe, inputs);
+    initializeFor(examples);
+
     CRFTrainerByThreadedLabelLikelihood trainer = makeNewTrainer(crf);
-//    CRFTrainerByLabelLikelihood trainer = makeNewTrainerSingleThreaded(crf);
     this.lastTrainer = trainer;
 
     trainer.train(examples, opts.maxPronouncerTrainingIterations);
-//    trainer.train(examples, 8, 250, new double[]{0.15, 1.0});
-//    trainer.train(examples, 8, new double[]{0.15, 1.0});
     trainer.shutdown(); // just closes the pool; next call to train will create a new one
 
     if (opts.trimFeaturesUnderPercentile > 0) {
@@ -135,22 +133,30 @@ public class PhonemeCrfTrainer {
       trainer.train(examples);
       trainer.shutdown();
     }
-    crf.getInputAlphabet().stopGrowth();
-    crf.getOutputAlphabet().stopGrowth();
-    watch.stop();
-    log.info("Training took " + watch);
-    if (printEval) {
-      log.info("Accuracy on training data: " + accuracyFor(examples));
+    if (opts.trimFeaturesByGradientGain != 0) {
+
+      // calc the gradients, report some stats on them, then move on for now
+      log.info("Writing gradiants to grads.txt");
+      RankedFeatureVector rfv = CrfGradientGain.gradientGainFrom(examples, crf);
+      try {
+        try (PrintWriter writer = new PrintWriter(Files.newWriter(new File("grads.txt"), Charsets.UTF_8))) {
+
+          for( int i = 0; i<rfv.singleSize();i++) {
+            Object objectAtRank = rfv.getObjectAtRank(i);
+            double gradAtRank = rfv.getValueAtRank(i);
+            writer.println(String.format("%s,%.5f", objectAtRank.toString(), gradAtRank));
+          }
+        }
+      } catch (IOException e) {
+        throw Throwables.propagate(e);
+      }
+      log.info("Skipping gradiant work momentarily");
+      this.crfFrom = this.crf;
+      // do another training round with the modified alphabet and dont grow it
     }
   }
 
-  public double accuracyFor(Collection<Alignment> inputs) {
-    InstanceList examples = makeExamplesFromAligns(inputs);
-    return accuracyFor(examples);
-  }
-
-  public double accuracyFor(InstanceList examples) {
-    Preconditions.checkState(state == State.Training, "cant call before training");
+  private double accuracyFor(InstanceList examples) {
     TokenAccuracyEvaluator teval = new TokenAccuracyEvaluator(examples, "train");
     teval.evaluate(lastTrainer);
     return teval.getAccuracy("train");
@@ -159,10 +165,6 @@ public class PhonemeCrfTrainer {
   public PhonemeCrfModel buildModel() {
 
     return new PhonemeCrfModel(crf);
-  }
-
-  public void setPrintEval(boolean printEval) {
-    this.printEval = printEval;
   }
 
   private static CRFTrainerByThreadedLabelLikelihood makeNewTrainer(CRF crf) {
@@ -204,7 +206,7 @@ public class PhonemeCrfTrainer {
     log.info("Wrote for whole data");
   }
 
-  private InstanceList makeExamplesFromAligns(Iterable<Alignment> alignsToTrain) {
+  private InstanceList makeExamplesFromAligns(Pipe pipe, Iterable<Alignment> alignsToTrain) {
     int count = 0;
     InstanceList instances = new InstanceList(pipe);
     for (Alignment align : alignsToTrain) {
@@ -244,8 +246,7 @@ public class PhonemeCrfTrainer {
     }
   }
 
-  private static Pipe makePipe() {
-    Alphabet alpha = new Alphabet();
+  private SerialPipes makePipe(Alphabet alpha) {
     Target2LabelSequence labelPipe = new Target2LabelSequence();
     LabelAlphabet labelAlpha = (LabelAlphabet) labelPipe.getTargetAlphabet();
 
@@ -270,7 +271,7 @@ public class PhonemeCrfTrainer {
 //        new SurroundingTokenFeature2(true, 4, 4),
 //        new LeadingTrailingFeature(),
         new TokenSequenceToFeature(),                       // convert the strings in the text to features
-        new TokenSequence2FeatureVectorSequence(alpha, true, true),
+        new TokenSequence2FeatureVectorSequence(alpha, true, false),
         labelPipe
     ));
   }

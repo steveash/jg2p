@@ -48,7 +48,7 @@ class RerankExampleCsvReader {
         }
 
         count += 1
-        if (count % 5000 == 0) {
+        if (count % 50000 == 0) {
           log.info("Parsed $count input reranker example csv records...")
         }
       }

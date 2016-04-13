@@ -16,28 +16,26 @@
 
 package com.github.steveash.jg2p.seq;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.Files;
 
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.align.TrainOptions;
-import com.github.steveash.jg2p.util.CrfGradientGain;
 import com.github.steveash.jg2p.util.GramBuilder;
 import com.github.steveash.jg2p.util.ModelReadWrite;
 import com.github.steveash.jg2p.util.ReadWrite;
 
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import cc.mallet.fst.CRF;
@@ -54,8 +52,12 @@ import cc.mallet.types.Alphabet;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
-import cc.mallet.types.RankedFeatureVector;
 
+import static com.github.steveash.jg2p.util.CrfGradientGain.featureCountsFrom;
+import static com.github.steveash.jg2p.util.CrfGradientGain.featureSumFrom;
+import static com.github.steveash.jg2p.util.CrfGradientGain.gradientGainFrom;
+import static com.github.steveash.jg2p.util.CrfGradientGain.gradientGainRatioFrom;
+import static com.github.steveash.jg2p.util.CrfGradientGain.writeRankedToFile;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
@@ -137,19 +139,11 @@ public class PhonemeCrfTrainer {
 
       // calc the gradients, report some stats on them, then move on for now
       log.info("Writing gradiants to grads.txt");
-      RankedFeatureVector rfv = CrfGradientGain.gradientGainFrom(examples, crf);
-      try {
-        try (PrintWriter writer = new PrintWriter(Files.newWriter(new File("grads.txt"), Charsets.UTF_8))) {
-
-          for( int i = 0; i<rfv.singleSize();i++) {
-            Object objectAtRank = rfv.getObjectAtRank(i);
-            double gradAtRank = rfv.getValueAtRank(i);
-            writer.println(String.format("%s,%.5f", objectAtRank.toString(), gradAtRank));
-          }
-        }
-      } catch (IOException e) {
-        throw Throwables.propagate(e);
-      }
+      String dateString = DateFormatUtils.format(new Date(), "yyMMddmmss");
+      writeRankedToFile(gradientGainFrom(examples, crf), new File("grads" + dateString + ".txt"));
+      writeRankedToFile(gradientGainRatioFrom(examples, crf), new File("gradratio" + dateString + ".txt"));
+      writeRankedToFile(featureCountsFrom(examples), new File("featcounts" + dateString + ".txt"));
+      writeRankedToFile(featureSumFrom(examples), new File("featsums" + dateString + ".txt"));
       log.info("Skipping gradiant work momentarily");
       this.crfFrom = this.crf;
       // do another training round with the modified alphabet and dont grow it

@@ -24,11 +24,13 @@ import com.google.common.collect.ImmutableList;
 
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.align.TrainOptions;
+import com.github.steveash.jg2p.util.CrfGradientGain;
 import com.github.steveash.jg2p.util.GramBuilder;
 import com.github.steveash.jg2p.util.ModelReadWrite;
 import com.github.steveash.jg2p.util.ReadWrite;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +43,7 @@ import java.util.List;
 import cc.mallet.fst.CRF;
 import cc.mallet.fst.CRFTrainerByLabelLikelihood;
 import cc.mallet.fst.CRFTrainerByThreadedLabelLikelihood;
+import cc.mallet.fst.SumLattice;
 import cc.mallet.fst.TokenAccuracyEvaluator;
 import cc.mallet.fst.TransducerTrainer;
 import cc.mallet.pipe.Pipe;
@@ -52,6 +55,7 @@ import cc.mallet.types.Alphabet;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
+import cc.mallet.types.RankedFeatureVector;
 
 import static com.github.steveash.jg2p.util.CrfGradientGain.featureCountsFrom;
 import static com.github.steveash.jg2p.util.CrfGradientGain.featureSumFrom;
@@ -140,8 +144,10 @@ public class PhonemeCrfTrainer {
       // calc the gradients, report some stats on them, then move on for now
       log.info("Writing gradiants to grads.txt");
       String dateString = DateFormatUtils.format(new Date(), "yyMMddmmss");
-      writeRankedToFile(gradientGainFrom(examples, crf), new File("grads" + dateString + ".txt"));
-      writeRankedToFile(gradientGainRatioFrom(examples, crf), new File("gradratio" + dateString + ".txt"));
+      Pair<RankedFeatureVector, RankedFeatureVector> pair = CrfGradientGain.gradientsFrom(examples, crf);
+
+      writeRankedToFile(pair.getLeft(), new File("grads" + dateString + ".txt"));
+      writeRankedToFile(pair.getRight(), new File("gradratio" + dateString + ".txt"));
       writeRankedToFile(featureCountsFrom(examples), new File("featcounts" + dateString + ".txt"));
       writeRankedToFile(featureSumFrom(examples), new File("featsums" + dateString + ".txt"));
       log.info("Skipping gradiant work momentarily");

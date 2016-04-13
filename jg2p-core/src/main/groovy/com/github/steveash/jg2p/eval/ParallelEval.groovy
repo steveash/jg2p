@@ -38,12 +38,17 @@ class ParallelEval {
     this.crf = crf
   }
 
-  List<SumLattice> parallelSum(InstanceList ilist) {
+  static interface SumVisitor {
+    void visit(int index, Instance inst, SumLattice lattice);
+  }
+
+  void parallelSum(InstanceList ilist, SumVisitor visitor) {
     def alpha = (LabelAlphabet) ilist.getTargetAlphabet()
     GParsPool.withPool {
-      GParsPoolUtil.collectParallel(ilist) { Instance inst ->
-        crf.getSumLatticeFactory().newSumLattice(crf, (Sequence) inst.getData(), null, null, alpha);
+      GParsPoolUtil.eachWithIndexParallel(ilist) { Instance inst, int index ->
+        def latt = crf.getSumLatticeFactory().newSumLattice(crf, (Sequence) inst.getData(), null, null, alpha);
+        visitor.visit(index, inst, latt)
       }
-    } as List<SumLattice>
+    }
   }
 }

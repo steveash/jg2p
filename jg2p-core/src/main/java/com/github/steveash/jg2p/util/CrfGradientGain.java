@@ -23,13 +23,14 @@ import com.google.common.io.Files;
 
 import com.github.steveash.jg2p.eval.ParallelEval;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import cc.mallet.fst.CRF;
 import cc.mallet.fst.SumLattice;
@@ -41,8 +42,6 @@ import cc.mallet.types.Label;
 import cc.mallet.types.LabelSequence;
 import cc.mallet.types.LabelVector;
 import cc.mallet.types.RankedFeatureVector;
-
-import static kylmshade.a.a.e.d;
 
 /**
  * @author Steve Ash
@@ -56,74 +55,34 @@ public class CrfGradientGain {
    * instance list must have the target labels as LabelSequence
    */
   public static RankedFeatureVector gradientGainFrom(InstanceList ilist, CRF crf) {
-    log.info("Calculating gradiant gains...");
-    List<SumLattice> results = new ParallelEval(crf).parallelSum(ilist);
-    log.info("Finished collecting results, sorting...");
-
     int numFeatures = ilist.getDataAlphabet().size();
     double[] gradientgains = new double[numFeatures];
-    int fli; // feature location index
-    // Populate targetFeatureCount, et al
-    for (int i = 0; i < ilist.size(); i++) {
-      Instance inst = ilist.get(i);
-      LabelSequence targetSeq = (LabelSequence) inst.getTarget();
-      FeatureVectorSequence fvs = (FeatureVectorSequence) inst.getData();
-      double instanceWeight = ilist.getInstanceWeight(i);
-      SumLattice lattice = results.get(i);
-      Preconditions.checkState(targetSeq.size() == fvs.size(), "input output size diff");
-      for (int j = 0; j < targetSeq.size(); j++) {
-        // The code below relies on labelWeights summing to 1 over all labels!
-        LabelVector predicated = lattice.getLabelingAtPosition(j);
-        Label expected = targetSeq.getLabelAtPosition(j);
-        FeatureVector fv = fvs.get(j);
-        for (int ll = 0; ll < predicated.numLocations(); ll++) {
-          int li = predicated.indexAtLocation(ll);
-          double expectedWeight = (expected.getBestIndex() == li ? 1.0 : 0.0);
-          double labelWeightDiff = Math.abs(expectedWeight - predicated.value(li));
-          for (int fl = 0; fl < fv.numLocations(); fl++) {
-            fli = fv.indexAtLocation(fl);
-            gradientgains[fli] += fv.valueAtLocation(fl) * labelWeightDiff * instanceWeight;
-          }
-        }
-      }
-    }
+    fillResults(ilist, crf, gradientgains, null, null);
     return new RankedFeatureVector(ilist.getDataAlphabet(), gradientgains);
   }
 
   public static RankedFeatureVector gradientGainRatioFrom(InstanceList ilist, CRF crf) {
-    log.info("Calculating gradiant gains...");
-    List<SumLattice> results = new ParallelEval(crf).parallelSum(ilist);
-    log.info("Finished collecting results, sorting...");
-
     int numFeatures = ilist.getDataAlphabet().size();
     double[] gradientgains = new double[numFeatures];
     double[] gradientlosses = new double[numFeatures];
-    int fli; // feature location index
-    // Populate targetFeatureCount, et al
-    for (int i = 0; i < ilist.size(); i++) {
-      Instance inst = ilist.get(i);
-      LabelSequence targetSeq = (LabelSequence) inst.getTarget();
-      FeatureVectorSequence fvs = (FeatureVectorSequence) inst.getData();
-      double instanceWeight = ilist.getInstanceWeight(i);
-      SumLattice lattice = results.get(i);
-      Preconditions.checkState(targetSeq.size() == fvs.size(), "input output size diff");
-      for (int j = 0; j < targetSeq.size(); j++) {
-        // The code below relies on labelWeights summing to 1 over all labels!
-        LabelVector predicated = lattice.getLabelingAtPosition(j);
-        Label expected = targetSeq.getLabelAtPosition(j);
-        FeatureVector fv = fvs.get(j);
-        for (int ll = 0; ll < predicated.numLocations(); ll++) {
-          int li = predicated.indexAtLocation(ll);
-          double[] toUpdate = (expected.getBestIndex() == li ? gradientgains : gradientlosses);
-          double expectedWeight = (expected.getBestIndex() == li ? 1.0 : 0.0);
-          double labelWeightDiff = Math.abs(expectedWeight - predicated.value(li));
-          for (int fl = 0; fl < fv.numLocations(); fl++) {
-            fli = fv.indexAtLocation(fl);
-            toUpdate[fli] += fv.valueAtLocation(fl) * labelWeightDiff * instanceWeight;
-          }
-        }
-      }
-    }
+    fillResults(ilist, crf, null, gradientgains, gradientlosses);
+
+    return makeRatioVector(ilist, numFeatures, gradientgains, gradientlosses);
+  }
+
+  public static Pair<RankedFeatureVector, RankedFeatureVector> gradientsFrom(InstanceList ilist, CRF crf) {
+    int numFeatures = ilist.getDataAlphabet().size();
+    double[] gradientgains = new double[numFeatures];
+    double[] pos = new double[numFeatures];
+    double[] neg = new double[numFeatures];
+    fillResults(ilist, crf, gradientgains, pos, neg);
+    return Pair.of(new RankedFeatureVector(ilist.getDataAlphabet(), gradientgains),
+                   makeRatioVector(ilist, numFeatures, pos, neg));
+  }
+
+  private static RankedFeatureVector makeRatioVector(InstanceList ilist, int numFeatures,
+                                                     double[] gradientgains,
+                                                     double[] gradientlosses) {
     double[] ratios = new double[numFeatures];
     for (int i = 0; i < numFeatures; i++) {
       double pos = gradientgains[i];
@@ -131,6 +90,48 @@ public class CrfGradientGain {
       ratios[i] = (pos + 1.0) / (neg + 1.0);
     }
     return new RankedFeatureVector(ilist.getDataAlphabet(), ratios);
+  }
+
+  private static void fillResults(final InstanceList ilist, CRF crf, final double[] abssum, final double[] pos,
+                                  final double[] neg) {
+    // Populate targetFeatureCount, et al
+    final AtomicLong count = new AtomicLong(0);
+    new ParallelEval(crf).parallelSum(ilist, new ParallelEval.SumVisitor() {
+      @Override
+      public void visit(int index, Instance inst, SumLattice lattice) {
+        LabelSequence targetSeq = (LabelSequence) inst.getTarget();
+        FeatureVectorSequence fvs = (FeatureVectorSequence) inst.getData();
+        double instanceWeight = ilist.getInstanceWeight(index);
+        Preconditions.checkState(targetSeq.size() == fvs.size(), "input output size diff");
+        for (int j = 0; j < targetSeq.size(); j++) {
+          // The code below relies on labelWeights summing to 1 over all labels!
+          LabelVector predicated = lattice.getLabelingAtPosition(j);
+          Label expected = targetSeq.getLabelAtPosition(j);
+          FeatureVector fv = fvs.get(j);
+          for (int ll = 0; ll < predicated.numLocations(); ll++) {
+            int li = predicated.indexAtLocation(ll);
+            double[] toUpdate = (expected.getBestIndex() == li ? pos : neg);
+            double expectedWeight = (expected.getBestIndex() == li ? 1.0 : 0.0);
+            double labelWeightDiff = Math.abs(expectedWeight - predicated.value(li));
+            synchronized (count) {
+              for (int fl = 0; fl < fv.numLocations(); fl++) {
+                int fli = fv.indexAtLocation(fl);
+                if (abssum != null) {
+                  abssum[fli] += fv.valueAtLocation(fl) * labelWeightDiff * instanceWeight;
+                }
+                if (toUpdate != null) {
+                  toUpdate[fli] += fv.valueAtLocation(fl) * labelWeightDiff * instanceWeight;
+                }
+              }
+            }
+          }
+        }
+        long newCount = count.incrementAndGet();
+        if (newCount % 10000 == 0) {
+          log.info("Processed " + newCount + " examples for grad accum...");
+        }
+      }
+    });
   }
 
   public static RankedFeatureVector featureCountsFrom(InstanceList ilist) {

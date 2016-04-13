@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableList;
 
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.align.TrainOptions;
-import com.github.steveash.jg2p.util.CrfGradientGain;
+import com.github.steveash.jg2p.util.FeatureSelections;
 import com.github.steveash.jg2p.util.GramBuilder;
 import com.github.steveash.jg2p.util.ModelReadWrite;
 import com.github.steveash.jg2p.util.ReadWrite;
@@ -43,7 +43,6 @@ import java.util.List;
 import cc.mallet.fst.CRF;
 import cc.mallet.fst.CRFTrainerByLabelLikelihood;
 import cc.mallet.fst.CRFTrainerByThreadedLabelLikelihood;
-import cc.mallet.fst.SumLattice;
 import cc.mallet.fst.TokenAccuracyEvaluator;
 import cc.mallet.fst.TransducerTrainer;
 import cc.mallet.pipe.Pipe;
@@ -57,11 +56,9 @@ import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.RankedFeatureVector;
 
-import static com.github.steveash.jg2p.util.CrfGradientGain.featureCountsFrom;
-import static com.github.steveash.jg2p.util.CrfGradientGain.featureSumFrom;
-import static com.github.steveash.jg2p.util.CrfGradientGain.gradientGainFrom;
-import static com.github.steveash.jg2p.util.CrfGradientGain.gradientGainRatioFrom;
-import static com.github.steveash.jg2p.util.CrfGradientGain.writeRankedToFile;
+import static com.github.steveash.jg2p.util.FeatureSelections.featureCountsFrom;
+import static com.github.steveash.jg2p.util.FeatureSelections.featureSumFrom;
+import static com.github.steveash.jg2p.util.FeatureSelections.writeRankedToFile;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
@@ -144,7 +141,7 @@ public class PhonemeCrfTrainer {
       // calc the gradients, report some stats on them, then move on for now
       log.info("Writing gradiants to grads.txt");
       String dateString = DateFormatUtils.format(new Date(), "yyMMddmmss");
-      Pair<RankedFeatureVector, RankedFeatureVector> pair = CrfGradientGain.gradientsFrom(examples, crf);
+      Pair<RankedFeatureVector, RankedFeatureVector> pair = FeatureSelections.gradientsFrom(examples, crf);
 
       writeRankedToFile(pair.getLeft(), new File("grads" + dateString + ".txt"));
       writeRankedToFile(pair.getRight(), new File("gradratio" + dateString + ".txt"));

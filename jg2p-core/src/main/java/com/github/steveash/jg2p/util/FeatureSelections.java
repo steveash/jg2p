@@ -46,9 +46,9 @@ import cc.mallet.types.RankedFeatureVector;
 /**
  * @author Steve Ash
  */
-public class CrfGradientGain {
+public class FeatureSelections {
 
-  private static final Logger log = LoggerFactory.getLogger(CrfGradientGain.class);
+  private static final Logger log = LoggerFactory.getLogger(FeatureSelections.class);
 
   /**
    * Returns a ranked feature vector of the gradient gain for the given training data on the given trained CRF.  The
@@ -154,7 +154,7 @@ public class CrfGradientGain {
       if (data instanceof FeatureVectorSequence) {
         FeatureVectorSequence fvs = (FeatureVectorSequence) data;
         for (int j = 0; j < fvs.size(); j++) {
-          countVector(counts, fvs.get(i), countInstances);
+          countVector(counts, fvs.get(j), countInstances);
         }
       } else {
         throw new IllegalArgumentException("Currently only handles FeatureVectorSequence data");

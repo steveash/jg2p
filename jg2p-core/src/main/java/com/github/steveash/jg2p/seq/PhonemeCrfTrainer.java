@@ -51,6 +51,8 @@ import cc.mallet.pipe.Target2LabelSequence;
 import cc.mallet.pipe.TokenSequence2FeatureVectorSequence;
 import cc.mallet.pipe.TokenSequenceLowercase;
 import cc.mallet.types.Alphabet;
+import cc.mallet.types.FeatureSelection;
+import cc.mallet.types.FeatureSelector;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
@@ -112,7 +114,7 @@ public class PhonemeCrfTrainer {
   public void trainFor(Collection<Alignment> inputs) {
     // this pipe is the default pipe with new alphabet
     Stopwatch watch = Stopwatch.createStarted();
-    trainRound(inputs, new Alphabet());
+    trainRound(inputs, new Alphabet(), 0);
 
     crf.getInputAlphabet().stopGrowth();
     crf.getOutputAlphabet().stopGrowth();
@@ -120,7 +122,7 @@ public class PhonemeCrfTrainer {
     log.info("Training took " + watch);
   }
 
-  private void trainRound(Collection<Alignment> inputs, Alphabet alpha) {
+  private void trainRound(Collection<Alignment> inputs, Alphabet alpha, int trainRound) {
     SerialPipes initialPipe = makePipe(alpha);
     InstanceList examples = makeExamplesFromAligns(initialPipe, inputs);
     initializeFor(examples);
@@ -131,24 +133,34 @@ public class PhonemeCrfTrainer {
     trainer.train(examples, opts.maxPronouncerTrainingIterations);
     trainer.shutdown(); // just closes the pool; next call to train will create a new one
 
-    if (opts.trimFeaturesUnderPercentile > 0) {
+    if (trainRound == 0 && opts.trimFeaturesUnderPercentile > 0) {
       trainer.getCRF().pruneFeaturesBelowPercentile(opts.trimFeaturesUnderPercentile);
       trainer.train(examples);
       trainer.shutdown();
     }
-    if (opts.trimFeaturesByGradientGain != 0) {
+    if (trainRound == 0 && opts.trimFeaturesByGradientGain > 0) {
 
       // calc the gradients, report some stats on them, then move on for now
-      log.info("Writing gradiants to grads.txt");
-      String dateString = DateFormatUtils.format(new Date(), "yyMMddmmss");
-      Pair<RankedFeatureVector, RankedFeatureVector> pair = FeatureSelections.gradientsFrom(examples, crf);
+      log.info("Trimming based on gradiant gain ratio...");
+//      String dateString = DateFormatUtils.format(new Date(), "yyMMddmmss");
+      RankedFeatureVector rfv = FeatureSelections.gradientGainRatioFrom(examples, crf);
 
-      writeRankedToFile(pair.getLeft(), new File("grads" + dateString + ".txt"));
-      writeRankedToFile(pair.getRight(), new File("gradratio" + dateString + ".txt"));
-      writeRankedToFile(featureCountsFrom(examples), new File("featcounts" + dateString + ".txt"));
-      log.info("Skipping gradiant work momentarily");
+//      writeRankedToFile(pair.getLeft(), new File("grads" + dateString + ".txt"));
+//      writeRankedToFile(pair.getRight(), new File("gradratio" + dateString + ".txt"));
+//      writeRankedToFile(featureCountsFrom(examples), new File("featcounts" + dateString + ".txt"));
+
+      Alphabet newDict = new Alphabet();
+      for (int i = 0; i < rfv.singleSize(); i++) {
+        double ratio = rfv.value(i);
+        if (ratio > opts.trimFeaturesByGradientGain) {
+          newDict.lookupIndex(alpha.lookupObject(i), true);
+        }
+      }
+      log.info("Feature selection before count " + alpha.size() + " after " + newDict.size());
+      newDict.stopGrowth();
       this.crfFrom = this.crf;
-      // do another training round with the modified alphabet and dont grow it
+
+      trainRound(inputs, newDict, trainRound + 1);
     }
   }
 

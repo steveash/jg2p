@@ -49,7 +49,7 @@ opts.initPhoneSyllModelFromFile = "../resources/syllphonetag.dat"
 opts.graphoneLanguageModelOrder = 8
 opts.graphoneLanguageModelOrderForTraining = 8
 opts.trainTrainingAligner = opts.trainTestingAligner = false
-opts.trimFeaturesByGradientGain = 1.0
+opts.trimFeaturesByGradientGain = 1.9
 
 //opts.trainAll();
 //opts.useInputRerankExampleCsv = "../resources/pip_rre.csv"

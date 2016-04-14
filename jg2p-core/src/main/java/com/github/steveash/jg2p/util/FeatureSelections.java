@@ -112,7 +112,8 @@ public class FeatureSelections {
             int li = predicated.indexAtLocation(ll);
             double[] toUpdate = (expected.getBestIndex() == li ? pos : neg);
             double expectedWeight = (expected.getBestIndex() == li ? 1.0 : 0.0);
-            double labelWeightDiff = Math.abs(expectedWeight - predicated.value(li));
+            double predWeight = predicated.value(li);
+            double labelWeightDiff = Math.abs(expectedWeight - predWeight);
             synchronized (count) {
               for (int fl = 0; fl < fv.numLocations(); fl++) {
                 int fli = fv.indexAtLocation(fl);
@@ -120,7 +121,7 @@ public class FeatureSelections {
                   abssum[fli] += fv.valueAtLocation(fl) * labelWeightDiff * instanceWeight;
                 }
                 if (toUpdate != null) {
-                  toUpdate[fli] += fv.valueAtLocation(fl) * labelWeightDiff * instanceWeight;
+                  toUpdate[fli] += fv.valueAtLocation(fl) * predWeight * instanceWeight;
                 }
               }
             }

@@ -146,7 +146,6 @@ public class PhonemeCrfTrainer {
       writeRankedToFile(pair.getLeft(), new File("grads" + dateString + ".txt"));
       writeRankedToFile(pair.getRight(), new File("gradratio" + dateString + ".txt"));
       writeRankedToFile(featureCountsFrom(examples), new File("featcounts" + dateString + ".txt"));
-      writeRankedToFile(featureSumFrom(examples), new File("featsums" + dateString + ".txt"));
       log.info("Skipping gradiant work momentarily");
       this.crfFrom = this.crf;
       // do another training round with the modified alphabet and dont grow it

@@ -94,10 +94,9 @@ public class Rerank3Trainer {
         new RanksPipe(),
         new ScoresPipe(),
         new ShapePipe(),
-        new ShapePrefixPipe()
-
-//        new VowelBigramPipe(alpha, labelAlpha),
-//        new VowelPatternPipe(alpha, labelAlpha),
+        new ShapePrefixPipe(),
+        new VowelBigramPipe(),
+        new VowelPatternPipe()
     );
     if (phoneSyllModel != null) {
       features.add(new SyllAgreeRerankFeature(phoneSyllModel));

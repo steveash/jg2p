@@ -49,13 +49,13 @@ opts.initPhoneSyllModelFromFile = "../resources/syllphonetag.dat"
 opts.graphoneLanguageModelOrder = 8
 opts.graphoneLanguageModelOrderForTraining = 8
 opts.trainTrainingAligner = opts.trainTestingAligner = false
-opts.trimFeaturesByGradientGain = 1.9
+opts.trimFeaturesByGradientGain = 2.1
 
 //opts.trainAll();
 //opts.useInputRerankExampleCsv = "../resources/pip_rre.csv"
 //opts.trainReranker = true
 //opts.writeOutputRerankExampleCsv = "../resources/rerank_inputs.csv"
-def outFile = "../resources/pipe_42sy_F10_7.dat"
+def outFile = "../resources/pipe_42sy_F10_8.dat"
 
 def log = LoggerFactory.getLogger("psaurus")
 out = new GroovyLogger(log)

@@ -25,6 +25,7 @@ import com.github.steveash.jg2p.lm.LangModel;
 import com.github.steveash.jg2p.rerank.Rerank3Model;
 import com.github.steveash.jg2p.rerank.RerankableEncoder;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
+import com.github.steveash.jg2p.syll.SyllTagModel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,6 +100,13 @@ public class PipelineModel implements Serializable {
 
   public RerankableEncoder getRerankEncoder() {
     return new RerankableEncoder(getPhoneticEncoder(), checkNotNull(getGraphoneModel(), "must have a graphone mode"));
+  }
+
+  public void makeSparse() {
+//    this.pronouncerModel.getCrf().makeParametersHashSparse();
+//    if (this.testingAlignerModel instanceof SyllTagModel) {
+//      ((SyllTagModel) this.testingAlignerModel).getCrf().makeParametersHashSparse();
+//    }
   }
 
   private Object writeReplace() {

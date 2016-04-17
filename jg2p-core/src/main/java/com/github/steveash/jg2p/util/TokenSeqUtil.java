@@ -159,9 +159,11 @@ public class TokenSeqUtil {
     for (int i = 0; i < winStr.length(); i++) {
       char c = winStr.charAt(i);
       if (Graphemes.consonants.matches(c)) {
-        sb.append('c');
+//        sb.append('c');
+        sb.append('p');
       } else if (Graphemes.vowels.matches(c)) {
-        sb.append('v');
+//        sb.append('v');
+        sb.append('p');
       } else if (WHITESPACE.matches(c)) {
         sb.append('s');
       } else {

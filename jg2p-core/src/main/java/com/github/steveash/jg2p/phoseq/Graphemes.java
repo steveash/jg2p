@@ -19,6 +19,8 @@ package com.github.steveash.jg2p.phoseq;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 
+import com.github.steveash.jg2p.Word;
+
 import static com.google.common.base.CharMatcher.anyOf;
 import static com.google.common.base.CharMatcher.inRange;
 
@@ -41,4 +43,33 @@ public class Graphemes {
     return consonants.matches(graph.toUpperCase().charAt(0));
   }
 
+  public static boolean isAllVowelsOrConsonants(Word word) {
+    for (int i = 0; i < word.unigramCount(); i++) {
+      String gram = word.gramAt(i);
+      if (other.matchesAllOf(gram)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public static boolean isAllVowels(Word word) {
+    for (int i = 0; i < word.unigramCount(); i++) {
+      String gram = word.gramAt(i);
+      if (!vowels.matchesAllOf(gram)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public static boolean isAllConsonants(Word word) {
+    for (int i = 0; i < word.unigramCount(); i++) {
+      String gram = word.gramAt(i);
+      if (!consonants.matchesAllOf(gram)) {
+        return false;
+      }
+    }
+    return true;
+  }
 }

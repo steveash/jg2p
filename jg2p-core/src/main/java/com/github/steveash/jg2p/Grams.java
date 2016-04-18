@@ -124,4 +124,8 @@ public class Grams {
     }
     return result;
   }
+
+  public static Iterable<String> gramToUni(String gram) {
+    return splitter.split(gram);
+  }
 }

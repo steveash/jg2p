@@ -25,26 +25,42 @@ import com.google.common.collect.HashMultiset
 
 // lets make two histograms one with first two vowels patterns that we get right
 // one with the first two vowel patterns that we get wrong
-def wr = new File ("../resources/badexamples-20160413051113.txt")
-def rg = new File("../resources/g014b2b.test")
+def bad = new File ("../resources/badexamples-20160413051113.txt")
+def goo = new File("../resources/g014b2b.test")
 
-wr = wr.readLines().drop(1).collect {it.split("\\t")}.collectEntries {
+bad = bad.readLines().drop(1).collect {it.split("\\t")}.collectEntries {
   [Word.fromNormalString(it[0]), Word.fromSpaceSeparated(it[3].split("->")[1].trim())]
 }
-rg = rg.readLines().collect {it.split("\\t")}.collectEntries {
+goo = goo.readLines().collect {it.split("\\t")}.collectEntries {
   [Word.fromNormalString(it[0]),Word.fromSpaceSeparated(it[1])]
 }
 
+int splitCount = 0;
+int mergedCount = 0
+goo.each {Word k, Word v ->
+  for (int i = 0; i < v.unigramCount(); i++) {
+    if (i < (v.unigramCount() - 1) && v.getValue()[i] == 'EH' && v.getValue()[i+1] == 'R') {
+      splitCount += 1
+      return
+    }
+    if (v.getValue()[i] == 'ER') {
+      mergedCount += 1
+      return
+    }
+  }
+}
+println "Words with split $splitCount, words with merged $mergedCount"
+/*
 def only2 = [:]
-wr.each {k, v ->
-  def exp = rg[k]
+bad.each {k, v ->
+  def exp = goo[k]
   if (isOnlyWrongFirst2(v, exp)) {
     only2.put(k, v)
   }
 }
 println "The only 1 bucket is " + only2.size()
 
-def rgx = rg.collectEntries { k, v -> [k, xform(v)]}
+def rgx = goo.collectEntries { k, v -> [k, xform(v)]}
 def o2x = only2.collectEntries {k, v -> [k, xform(v)]}
 
 o2x.keySet().each { rgx.remove(it) }
@@ -100,3 +116,4 @@ def xform(Word input) {
   return sb.toString()
 //  return CharMatcher.anyOf("c").collapseFrom(sb.toString(), 'c' as char)
 }
+*/

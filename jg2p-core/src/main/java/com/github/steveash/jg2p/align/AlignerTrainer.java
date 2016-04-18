@@ -48,6 +48,7 @@ public class AlignerTrainer {
 
   private final ProbTable counts = new ProbTable();
   private final ProbTable probs = new ProbTable();
+  private final ProbTable originalCounts = new ProbTable();
   private final TrainOptions trainOpts;
   private final GramOptions gramOpts;
   private final XyWalker walker;
@@ -254,10 +255,13 @@ public class AlignerTrainer {
 
   private void initCounts(List<InputRecord> records) {
     // we init counts for any allowed transitions and collect all of the transitions that we block
+    counts.clear();
+    originalCounts.clear();
     for (InputRecord record : records) {
       walker.forward(record.getLeft(), record.getRight(), new XyWalker.Visitor() {
         @Override
         public void visit(int xxBefore, int xxAfter, String xGram, int yyBefore, int yyAfter, String yGram) {
+          originalCounts.addProb(xGram, yGram, 1.0);
           if (allowed == null) {
             counts.addProb(xGram, yGram, 1.0);
             return;
@@ -271,6 +275,17 @@ public class AlignerTrainer {
         }
       });
     }
+  }
+
+  public int numberOfLowSupportAlignments(Alignment align, int lowSupport) {
+    int count = 0;
+    for (Pair<String, String> pair : align.getGraphones()) {
+      double result = originalCounts.prob(pair.getLeft(), pair.getRight());
+      if (result > 0 && result <= lowSupport) {
+        count += 1;
+      }
+    }
+    return count;
   }
 
   public static void main(String[] args) {

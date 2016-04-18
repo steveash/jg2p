@@ -21,21 +21,15 @@ import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 
-import com.github.steveash.jg2p.util.StringTable;
-
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -160,6 +154,10 @@ public class Word implements Iterable<String>, Comparable<Word> {
 
   public List<String> getValue() {
     return value;
+  }
+
+  public String gramAt(int index) {
+    return value.get(index);
   }
 
   public List<Pair<String,String>> getLeftOnlyPairs() {

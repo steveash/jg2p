@@ -43,8 +43,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
  */
 public class InputReader {
 
-  private static final Splitter tabSplit = Splitter.on('\t')
-      .trimResults().trimResults(CharMatcher.anyOf("'"));
+  private static final Splitter tabSplit = Splitter.on('\t').trimResults();
 
   public static interface LineReader {
 

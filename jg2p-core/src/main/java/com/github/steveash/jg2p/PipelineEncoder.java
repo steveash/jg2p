@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import com.github.steveash.jg2p.abb.PatternFacade;
+import com.github.steveash.jg2p.phoseq.Graphemes;
 import com.github.steveash.jg2p.rerank.RerankExample;
 import com.github.steveash.jg2p.rerank.RerankableEncoder;
 import com.github.steveash.jg2p.rerank.RerankableResult;
@@ -52,13 +53,14 @@ public class PipelineEncoder implements Encoder {
   @Override
   public List<PhoneticEncoder.Encoding> encode(Word input) {
     Optional<String> maybe = PatternFacade.maybeTranscode(input);
-    RerankableResult result = rerankEncoder.encode(input);
-    List<RerankExample> rre = RerankExample.makeExamples(result, input, null);
+    Word xformedInput = Graphemes.xformForEval(input);
+    RerankableResult result = rerankEncoder.encode(xformedInput);
+    List<RerankExample> rre = RerankExample.makeExamples(result, xformedInput, null);
     List<RerankerResult> reranked = model.getRerankerModel().probabilities(rre);
     List<PhoneticEncoder.Encoding> finalResults = Lists.transform(reranked, RerankerResult.SelectEncoding);
     if (maybe.isPresent()) {
       PhoneticEncoder.Encoding newFirst = PhoneticEncoder.Encoding.createEncoding(
-          input.getValue(), Word.fromSpaceSeparated(maybe.get()).getValue(), ImmutableList.<String>of(), 0, 0, 0, 0);
+          xformedInput.getValue(), Word.fromSpaceSeparated(maybe.get()).getValue(), ImmutableList.<String>of(), 0, 0, 0, 0);
       finalResults = ImmutableList.<PhoneticEncoder.Encoding>builder()
           .add(newFirst)
           .addAll(finalResults)

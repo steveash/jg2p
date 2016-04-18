@@ -30,7 +30,9 @@ import static com.google.common.base.CharMatcher.inRange;
 public class Graphemes {
 
   public static final CharMatcher vowels = anyOf("AEIOUYaeiouy").precomputed();
-  public static final CharMatcher consonants = (inRange('A', 'Z').or(inRange('a', 'z'))).and(vowels.negate()).precomputed();
+  public static final CharMatcher
+      consonants =
+      (inRange('A', 'Z').or(inRange('a', 'z'))).and(vowels.negate()).precomputed();
   private static final CharMatcher other = CharMatcher.ANY.and(vowels.or(consonants).negate()).precomputed();
 
   public static boolean isVowel(String graph) {
@@ -71,5 +73,17 @@ public class Graphemes {
       }
     }
     return true;
+  }
+
+  public static Word xformForEval(Word input) {
+    input.throwIfNotUnigram();
+    int originalSize = input.unigramCount();
+    if (originalSize <= 0) return input;
+
+    String lastChar = input.gramAt(originalSize - 1);
+    if (lastChar.equalsIgnoreCase("'")) {
+      return Word.fromGrams(input.getValue().subList(0, originalSize - 1));
+    }
+    return input;
   }
 }

@@ -16,9 +16,12 @@
 
 package com.github.steveash.jg2p.train;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 
 import com.github.steveash.jg2p.PipelineModel;
+import com.github.steveash.jg2p.Word;
 import com.github.steveash.jg2p.abb.Abbrev;
 import com.github.steveash.jg2p.abb.PatternFacade;
 import com.github.steveash.jg2p.align.AlignModel;
@@ -52,16 +55,16 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.filter;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
- * Trains the entire pipeline and uses TrainOptions to control overall what stages are loaded from
- * previous runs vs what is re-trained from scratch
+ * Trains the entire pipeline and uses TrainOptions to control overall what stages are loaded from previous runs vs what
+ * is re-trained from scratch
  *
  * @author Steve Ash
  */
 public class PipelineTrainer {
+
   private static final Logger log = LoggerFactory.getLogger(PipelineTrainer.class);
 
   private List<InputRecord> inputs;
@@ -93,9 +96,22 @@ public class PipelineTrainer {
       return true;
     }
   };
+  private static Function<InputRecord, InputRecord> trainingXforms = new Function<InputRecord, InputRecord>() {
+    @Override
+    public InputRecord apply(InputRecord input) {
+      Word maybeNew = Graphemes.xformForEval(input.xWord);
+      if (maybeNew != input.xWord) { // ref equals
+        return new InputRecord(maybeNew, input.yWord);
+      }
+      return input;
+    }
+  };
 
   public void train(List<InputRecord> inputs, TrainOptions opts, PipelineModel model) {
-    inputs = InputRecord.OrderByX.sortedCopy(filter(inputs, keepTrainable));
+    inputs = FluentIterable.from(inputs)
+        .filter(keepTrainable)
+        .transform(trainingXforms)
+        .toSortedList(InputRecord.OrderByX);
     this.inputs = inputs;
     this.opts = opts;
     validateInputs();
@@ -135,8 +151,9 @@ public class PipelineTrainer {
 
       log.info("All model files are loadable");
     } catch (Exception e) {
-      throw new IllegalStateException("Failed validating that all inputs can be read and parsed before wasting a lot of time"
-                                      + "trying to do training; please correct init model files", e);
+      throw new IllegalStateException(
+          "Failed validating that all inputs can be read and parsed before wasting a lot of time"
+          + "trying to do training; please correct init model files", e);
     }
   }
 

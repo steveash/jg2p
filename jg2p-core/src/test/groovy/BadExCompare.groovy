@@ -18,8 +18,8 @@ import org.apache.commons.lang3.StringUtils
  * limitations under the License.
  */
 
-def fileA = "../resources/badexamples-20160411165240.txt"
-def fileB = "../resources/badexamples-20160411171037.txt"
+def fileA = "../resources/badexamples_all_shapes.txt"
+def fileB = "../resources/badexamples-20160414143006-apparently-best-recently.txt"
 
 def rowsA = readRows(fileA)
 def rowsB = readRows(fileB)

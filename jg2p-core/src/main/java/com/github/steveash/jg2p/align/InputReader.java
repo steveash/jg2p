@@ -43,7 +43,8 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
  */
 public class InputReader {
 
-  private static final Splitter tabSplit = Splitter.on('\t');
+  private static final Splitter tabSplit = Splitter.on('\t')
+      .trimResults().trimResults(CharMatcher.anyOf("'"));
 
   public static interface LineReader {
 
@@ -165,6 +166,9 @@ public class InputReader {
 
       String y = line.substring(split + 2);
       y = CharMatcher.DIGIT.removeFrom(y);
+      if (x.charAt(x.length() - 1) == '\'') {
+        x = x.substring(0, x.length() - 1);
+      }
 
       Word xx = Word.fromNormalString(x);
       Word yy = Word.fromSpaceSeparated(y);

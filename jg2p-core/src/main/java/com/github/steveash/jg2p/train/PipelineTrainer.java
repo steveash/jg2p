@@ -16,7 +16,10 @@
 
 package com.github.steveash.jg2p.train;
 
+import com.google.common.base.Predicate;
+
 import com.github.steveash.jg2p.PipelineModel;
+import com.github.steveash.jg2p.abb.PatternFacade;
 import com.github.steveash.jg2p.align.AlignModel;
 import com.github.steveash.jg2p.align.Aligner;
 import com.github.steveash.jg2p.align.AlignerTrainer;
@@ -44,10 +47,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Iterables.filter;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
@@ -72,8 +75,18 @@ public class PipelineTrainer {
   private Rerank3Model loadedReranker;
   private PhoneSyllTagModel phoneSyllTagModel;
 
+  private static Predicate<? super InputRecord> keepTrainable = new Predicate<InputRecord>() {
+    @Override
+    public boolean apply(InputRecord input) {
+      if (PatternFacade.canTranscode(input.xWord)) {
+        return false;
+      }
+      return true;
+    }
+  };
+
   public void train(List<InputRecord> inputs, TrainOptions opts, PipelineModel model) {
-    Collections.sort(inputs, InputRecord.OrderByX);
+    inputs = InputRecord.OrderByX.sortedCopy(filter(inputs, keepTrainable));
     this.inputs = inputs;
     this.opts = opts;
     validateInputs();

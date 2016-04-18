@@ -29,15 +29,12 @@ import com.github.steveash.jg2p.util.GramBuilder;
 import com.github.steveash.jg2p.util.ModelReadWrite;
 import com.github.steveash.jg2p.util.ReadWrite;
 
-import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import cc.mallet.fst.CRF;
@@ -51,16 +48,11 @@ import cc.mallet.pipe.Target2LabelSequence;
 import cc.mallet.pipe.TokenSequence2FeatureVectorSequence;
 import cc.mallet.pipe.TokenSequenceLowercase;
 import cc.mallet.types.Alphabet;
-import cc.mallet.types.FeatureSelection;
-import cc.mallet.types.FeatureSelector;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.RankedFeatureVector;
 
-import static com.github.steveash.jg2p.util.FeatureSelections.featureCountsFrom;
-import static com.github.steveash.jg2p.util.FeatureSelections.featureSumFrom;
-import static com.github.steveash.jg2p.util.FeatureSelections.writeRankedToFile;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
@@ -267,7 +259,7 @@ public class PhonemeCrfTrainer {
 //        new WindowFeature(true, 6),
         new NeighborSyllableFeature(-2, -1, 1, 2),
         new SyllCountingFeature(),
-        //new SyllMarkingFeature(),
+//        new SyllMarkingFeature(),
         new EndingVowelFeature(),
         //new SonorityFeature2(true),
         //new SonorityFeature2(false),

@@ -19,6 +19,7 @@ package com.github.steveash.jg2p.train;
 import com.google.common.base.Predicate;
 
 import com.github.steveash.jg2p.PipelineModel;
+import com.github.steveash.jg2p.abb.Abbrev;
 import com.github.steveash.jg2p.abb.PatternFacade;
 import com.github.steveash.jg2p.align.AlignModel;
 import com.github.steveash.jg2p.align.Aligner;
@@ -29,6 +30,7 @@ import com.github.steveash.jg2p.align.TrainOptions;
 import com.github.steveash.jg2p.aligntag.AlignTagTrainer;
 import com.github.steveash.jg2p.lm.LangModel;
 import com.github.steveash.jg2p.lm.LangModelTrainer;
+import com.github.steveash.jg2p.phoseq.Graphemes;
 import com.github.steveash.jg2p.rerank.Rerank3Model;
 import com.github.steveash.jg2p.rerank.Rerank3Trainer;
 import com.github.steveash.jg2p.rerank.RerankExample;
@@ -80,6 +82,13 @@ public class PipelineTrainer {
     public boolean apply(InputRecord input) {
       if (PatternFacade.canTranscode(input.xWord)) {
         return false;
+      }
+      if (Graphemes.isAllVowelsOrConsonants(input.xWord)) {
+        if (input.yWord.getAsSpaceString().equalsIgnoreCase(Abbrev.transcribeAcronym(input.xWord))) {
+          // even things that we can't detect but are in fact abbrev should be excluded from
+          // training as it mucks with alignments
+          return false;
+        }
       }
       return true;
     }

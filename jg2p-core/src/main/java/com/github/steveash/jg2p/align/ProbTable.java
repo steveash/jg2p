@@ -57,6 +57,14 @@ public class ProbTable implements Iterable<Table.Cell<String,String,Double>>, Ex
     return xys;
   }
 
+  public static void mergeAll(Iterable<ProbTable> sources, ProbTable sink) {
+    for (ProbTable source : sources) {
+      for (Table.Cell<String, String, Double> cell : source) {
+        sink.addProb(cell.getRowKey(), cell.getColumnKey(), cell.getValue());
+      }
+    }
+  }
+
   private static void addAllPresent(ProbTable tbl, Set<Pair<String, String>> output) {
     for (Table.Cell<String, String, Double> aa : tbl) {
       if (aa.getValue() != null && aa.getValue() > 0) {

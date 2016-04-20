@@ -125,7 +125,7 @@ public class Grams {
     return result;
   }
 
-  public static Iterable<String> gramToUni(String gram) {
+  public static Iterable<String> iterateSymbols(String gram) {
     return splitter.split(gram);
   }
 }

@@ -17,10 +17,14 @@
 package com.github.steveash.jg2p.align;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 
 import com.github.steveash.jg2p.Word;
-import com.github.steveash.jg2p.syll.SyllPreserving;
 import com.github.steveash.jg2p.util.DoubleTable;
 import com.github.steveash.jg2p.util.ReadWrite;
 
@@ -33,9 +37,13 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import static com.github.steveash.jg2p.util.Assert.assertProb;
 import static com.google.common.collect.Tables.immutableCell;
+import static com.google.common.util.concurrent.MoreExecutors.listeningDecorator;
+import static java.util.concurrent.Executors.newCachedThreadPool;
 
 /**
  * Owns the training algorithms for an Aligner
@@ -71,9 +79,9 @@ public class AlignerTrainer {
       } else {
         w = new FullXyWalker(gramOpts);
       }
-      if (trainOpts.useSyllableTagger) {
-        w = new SyllPreserving(w);
-      }
+//      if (trainOpts.useSyllableTagger) {
+//        w = new SyllPreserving(w);
+//      }
     } else {
       w = overrideWalker;
     }
@@ -106,24 +114,29 @@ public class AlignerTrainer {
   }
 
   public AlignModel train(List<InputRecord> records, ProbTable labelledExamples) {
-    this.labelledProbs = labelledExamples.makeNormalizedCopy();
-    initCounts(records);
-    maximization(); // this just initializes the probabilities for the first time
+    ListeningExecutorService service = listeningDecorator(newCachedThreadPool());
+    try {
+      this.labelledProbs = labelledExamples.makeNormalizedCopy();
+      initCounts(records);
+      maximization(); // this just initializes the probabilities for the first time
 
-    int iteration = 0;
-    boolean keepTraining = true;
-    log.info("Starting EM rounds...");
-    while (keepTraining) {
-      iteration += 1;
+      int iteration = 0;
+      boolean keepTraining = true;
+      log.info("Starting EM rounds...");
+      while (keepTraining) {
+        iteration += 1;
 
-      expectation(records);
-      double thisChange = maximization();
+        expectation(records, service);
+        double thisChange = maximization();
 
-      keepTraining = !hasConverged(thisChange, iteration);
-      log.info("Completed EM round " + iteration + " mass delta " + String.format("%.15f", thisChange));
+        keepTraining = !hasConverged(thisChange, iteration);
+        log.info("Completed EM round " + iteration + " mass delta " + String.format("%.15f", thisChange));
+      }
+      log.info("Training complete in " + iteration + " rounds!");
+      return new AlignModel(gramOpts, probs);
+    } finally {
+      MoreExecutors.shutdownAndAwaitTermination(service, 60, TimeUnit.SECONDS);
     }
-    log.info("Training complete in " + iteration + " rounds!");
-    return new AlignModel(gramOpts, probs);
   }
 
   private boolean hasConverged(double thisChange, int iteration) {
@@ -137,13 +150,34 @@ public class AlignerTrainer {
     return false;
   }
 
-  private void expectation(List<InputRecord> records) {
-    for (InputRecord record : records) {
-      expectationForRecord(record);
+  private void expectation(List<InputRecord> records, ListeningExecutorService service) {
+    int workerCount = Runtime.getRuntime().availableProcessors();
+    List<ListenableFuture<ProbTable>> consumers = Lists.newArrayList();
+    for (List<InputRecord> partition : Lists.partition(records, workerCount)) {
+      consumers.add(service.submit(makeConsumer(partition)));
+    }
+    try {
+      List<ProbTable> results = Futures.allAsList(consumers).get();
+      ProbTable.mergeAll(results, counts);
+    } catch (Exception e) {
+      throw Throwables.propagate(e);
     }
   }
 
-  private void expectationForRecord(InputRecord record) {
+  private Callable<ProbTable> makeConsumer(final List<InputRecord> partition) {
+    return new Callable<ProbTable>() {
+      @Override
+      public ProbTable call() throws Exception {
+        ProbTable counts = new ProbTable();
+        for (InputRecord inputRecord : partition) {
+          expectationForRecord(inputRecord, counts);
+        }
+        return counts;
+      }
+    };
+  }
+
+  private void expectationForRecord(InputRecord record, final ProbTable outCounts) {
     Word x = record.xWord;
     Word y = record.yWord;
     int xsize = x.unigramCount();
@@ -167,7 +201,7 @@ public class AlignerTrainer {
                       beta.get(xxAfter, yyAfter) /
                       alphaXy;
 
-        counts.addProb(xGram, yGram, prob);
+        outCounts.addProb(xGram, yGram, prob);
       }
     });
   }

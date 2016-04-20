@@ -34,13 +34,13 @@ def inputs = InputReader.makePSaurusReader().readFromClasspath(inputFile)
 
 def opts = new TrainOptions()
 opts.maxXGram = 4
-opts.maxYGram = 2
+opts.maxYGram = 3
 opts.onlyOneGrams = false
 opts.useCityBlockPenalty = true
 opts.useWindowWalker = true
 opts.useSyllableTagger = true
 opts.maxPronouncerTrainingIterations = 400
-def inFile = "../resources/pipe_42sy_F10_7.dat"
+def inFile = "../resources/pipe_42sy_F10_8.dat"
 opts.initTrainingAlignerFromFile = inFile
 opts.initTestingAlignerFromFile = inFile
 opts.initCrfFromModelFile = inFile
@@ -55,7 +55,7 @@ opts.trainAll();
 //opts.useInputRerankExampleCsv = "../resources/pip_rre.csv"
 //opts.trainReranker = true
 //opts.writeOutputRerankExampleCsv = "../resources/rerank_inputs.csv"
-def outFile = "../resources/pipe_42sy_F10_8.dat"
+def outFile = "../resources/pipe_42sy_F10_9.dat"
 
 def log = LoggerFactory.getLogger("psaurus")
 out = new GroovyLogger(log)

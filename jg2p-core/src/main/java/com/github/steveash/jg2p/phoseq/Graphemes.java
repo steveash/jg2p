@@ -21,6 +21,8 @@ import com.google.common.base.Preconditions;
 
 import com.github.steveash.jg2p.Word;
 
+import javax.annotation.Nullable;
+
 import static com.google.common.base.CharMatcher.anyOf;
 import static com.google.common.base.CharMatcher.inRange;
 
@@ -34,6 +36,11 @@ public class Graphemes {
       consonants =
       (inRange('A', 'Z').or(inRange('a', 'z'))).and(vowels.negate()).precomputed();
   private static final CharMatcher other = CharMatcher.ANY.and(vowels.or(consonants).negate()).precomputed();
+
+  public static boolean isVowelOrConsonant(String graph) {
+    Preconditions.checkArgument(graph.length() == 1);
+    return !other.matches(graph.toUpperCase().charAt(0));
+  }
 
   public static boolean isVowel(String graph) {
     Preconditions.checkArgument(graph.length() == 1);
@@ -75,15 +82,28 @@ public class Graphemes {
     return true;
   }
 
+  @Nullable
+  public static Word trimTrailingAposS(Word input) {
+    int size = input.unigramCount();
+    if (size >= 3) {
+      if (input.gramAt(size - 2).equalsIgnoreCase("'")) {
+        if (input.gramAt(size - 1).equalsIgnoreCase("S")) {
+          return Word.fromGrams(input.getValue().subList(0, size - 2));
+        }
+      }
+    }
+    return null;
+  }
+
   public static Word xformForEval(Word input) {
     input.throwIfNotUnigram();
-    int originalSize = input.unigramCount();
-    if (originalSize <= 0) return input;
-
-    String lastChar = input.gramAt(originalSize - 1);
-    if (lastChar.equalsIgnoreCase("'")) {
-      return Word.fromGrams(input.getValue().subList(0, originalSize - 1));
-    }
+//    int originalSize = input.unigramCount();
+//    if (originalSize <= 0) return input;
+//
+//    String lastChar = input.gramAt(originalSize - 1);
+//    if (lastChar.equalsIgnoreCase("'")) {
+//      return Word.fromGrams(input.getValue().subList(0, originalSize - 1));
+//    }
     return input;
   }
 }

@@ -32,8 +32,16 @@ public class Abbrev {
 
   public static String transcribeAcronym(Word input) {
     AbbrevBuilder sb = new AbbrevBuilder(false);
-    for (int i = 0; i < input.unigramCount(); i++) {
+    int size = input.unigramCount();
+    boolean trailingPosEs = Graphemes.trimTrailingAposS(input) != null;
+    if (trailingPosEs) {
+      size -= 2;
+    }
+    for (int i = 0; i < size; i++) {
       sb.append(phonesForLetter(input.gramAt(i)));
+    }
+    if (trailingPosEs) {
+      sb.append("Z");
     }
     return sb.build();
   }
@@ -43,6 +51,10 @@ public class Abbrev {
   }
 
   public static boolean isAcronym(Word input) {
+    Word maybeTrimmed = Graphemes.trimTrailingAposS(input);
+    if (maybeTrimmed != null) {
+      input = maybeTrimmed;
+    }
     int size = input.unigramCount();
     if (size == 1) {
       return true;

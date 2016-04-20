@@ -44,13 +44,13 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class PartialPhones {
 
   public static final ImmutableSet<String> partialPhones = ImmutableSet.of(
-      "!" + Phonemes.PhoneClasses.M.code().toUpperCase(),
-      "!" + Phonemes.PhoneClasses.D.code().toUpperCase()
+      "!" + Phonemes.PhoneClass.M.code().toUpperCase(),
+      "!" + Phonemes.PhoneClass.D.code().toUpperCase()
   );
 
   public static final ImmutableSet<String> partialPhoneClasses = ImmutableSet.of(
-      Phonemes.PhoneClasses.M.code().toUpperCase(),
-      Phonemes.PhoneClasses.D.code().toUpperCase()
+      Phonemes.PhoneClass.M.code().toUpperCase(),
+      Phonemes.PhoneClass.D.code().toUpperCase()
   );
 
   public static String partialPhoneForPhone(String phone) {

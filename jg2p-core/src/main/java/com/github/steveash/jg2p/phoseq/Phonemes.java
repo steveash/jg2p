@@ -17,12 +17,11 @@
 package com.github.steveash.jg2p.phoseq;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Sets;
-
-import com.github.steveash.jg2p.util.GramBuilder;
 
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +33,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class Phonemes {
 
-  public enum PhoneClasses {
+  // M = monothong
+    // D = dipthong
+    // R = rcolor
+    // --- Consonants ---
+    // S = stops
+    // A = affricates
+    // F = fricatives
+    // N = nasal
+    // L = liquids
+    // I = semivowels
+  public enum PhoneClass {
     M, D, R, S, A, F, N, L, I;
 
     public String code() {
@@ -43,11 +52,11 @@ public class Phonemes {
   }
 
   public static boolean isVowel(String phone) {
-    String pc = getClassForPhone(phone);
+    PhoneClass pc = getClassSymbolForPhone(phone);
     switch (pc) {
-      case "M":
-      case "D":
-      case "R":
+      case M:
+      case D:
+      case R:
         return true;
       default:
         return false;
@@ -71,6 +80,10 @@ public class Phonemes {
 
   public static String getClassForPhone(String phone) {
     return checkNotNull(phoneToPhoneClass.get(phone.toUpperCase()), "invalid phone", phone);
+  }
+
+  public static PhoneClass getClassSymbolForPhone(String phone) {
+    return checkNotNull(codeToEnum.get(getClassForPhone(phone)), "cant map to symbol", phone);
   }
 
   public static ImmutableSet<String> getPhonesForClass(String phoneClass) {
@@ -131,6 +144,7 @@ public class Phonemes {
       .put("JH", "A")
       .build();
 
+  private static final ImmutableBiMap<String,PhoneClass> codeToEnum;
   private static final ImmutableSetMultimap<String,String> phoneClassToPhone;
   private static final ImmutableSet<String> simpleConsonantGraphs;
   static {
@@ -148,5 +162,10 @@ public class Phonemes {
     }
     simpleConsonantGraphs = ImmutableSet.copyOf(simpleCons);
     phoneClassToPhone = classBuilder.build();
+    ImmutableBiMap.Builder<String, PhoneClass> codeBuilder = ImmutableBiMap.builder();
+    for (PhoneClass phoneClass : PhoneClass.values()) {
+      codeBuilder.put(phoneClass.code(), phoneClass);
+    }
+    codeToEnum = codeBuilder.build();
   }
 }

@@ -17,6 +17,9 @@
 package com.github.steveash.jg2p.align;
 
 import com.github.steveash.jg2p.Grams;
+import com.github.steveash.jg2p.abb.Abbrev;
+import com.github.steveash.jg2p.phoseq.Graphemes;
+import com.github.steveash.jg2p.phoseq.Phonemes;
 
 /**
  * @author Steve Ash
@@ -38,6 +41,52 @@ public class CityBlockPenalizer implements Penalizer {
     if (yCount < 1) {
       yCount = EPS_PENALTY;
     }
-    return Math.pow(prob, (xCount + yCount) * PENALTY_SCALE);
+    double penalty = (xCount + yCount) * PENALTY_SCALE;
+    if (xCount == 1 && yCount == 1 && weirdSinglePairing(xGram, yGram)) {
+      penalty *= 1.4;
+    } else if (!isSpokenLetter(xGram, yGram) && weirdPhoneCombo(yGram)) {
+      penalty *= 1.4;
+    }
+    return Math.pow(prob, penalty);
+  }
+
+  private boolean weirdSinglePairing(String xGram, String yGram) {
+    return false;
+  }
+
+  private boolean isSpokenLetter(String xGram, String yGram) {
+    if (Grams.countInGram(xGram) == 1) {
+      if (Graphemes.isVowelOrConsonant(xGram)) {
+        String spokenPhones = Abbrev.phonesForLetter(xGram);
+        if (spokenPhones.equalsIgnoreCase(yGram)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private boolean weirdPhoneCombo(String yGram) {
+    boolean sawSoft = false;
+    boolean sawHard = false;
+    for (String phone : Grams.iterateSymbols(yGram)) {
+      // the HH is weird it says fricative but that just cannot be right
+      // lets just skip it entirely for now
+      if (phone.equalsIgnoreCase("HH")) continue;
+      Phonemes.PhoneClass pc = Phonemes.getClassSymbolForPhone(phone);
+      switch (pc) {
+        case S:
+        case A:
+        case F:
+        case N:
+        case L:
+          sawHard = true;
+          break;
+        default:
+          sawSoft = true;
+          break;
+      }
+    }
+    return sawSoft && sawHard;
   }
 }

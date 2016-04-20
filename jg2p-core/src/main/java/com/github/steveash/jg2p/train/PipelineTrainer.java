@@ -80,10 +80,15 @@ public class PipelineTrainer {
   private Rerank3Model loadedReranker;
   private PhoneSyllTagModel phoneSyllTagModel;
 
-  private static Predicate<? super InputRecord> keepTrainable = new Predicate<InputRecord>() {
+  public static Predicate<? super InputRecord> keepTrainable = new Predicate<InputRecord>() {
+    private final SkipTrainings skips = SkipTrainings.defaultSkips();
+
     @Override
     public boolean apply(InputRecord input) {
       if (PatternFacade.canTranscode(input.xWord)) {
+        return false;
+      }
+      if (skips.skip(input.xWord.getAsNoSpaceString())) {
         return false;
       }
       if (Graphemes.isAllVowelsOrConsonants(input.xWord)) {
@@ -96,7 +101,7 @@ public class PipelineTrainer {
       return true;
     }
   };
-  private static Function<InputRecord, InputRecord> trainingXforms = new Function<InputRecord, InputRecord>() {
+  public static Function<InputRecord, InputRecord> trainingXforms = new Function<InputRecord, InputRecord>() {
     @Override
     public InputRecord apply(InputRecord input) {
       Word maybeNew = Graphemes.xformForEval(input.xWord);

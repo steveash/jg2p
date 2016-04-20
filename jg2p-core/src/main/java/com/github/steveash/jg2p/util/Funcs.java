@@ -31,14 +31,14 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  */
 public class Funcs {
 
-  private static final Function selectLeft = new Function<Pair<?,?>, Object>() {
+  private static final Function selectLeft = new Function<Pair<?, ?>, Object>() {
     @Override
     public Object apply(Pair<?, ?> input) {
       return input.getLeft();
     }
   };
 
-  private static final Function selectRight = new Function<Pair<?,?>, Object>() {
+  private static final Function selectRight = new Function<Pair<?, ?>, Object>() {
     @Override
     public Object apply(Pair<?, ?> input) {
       return input.getRight();
@@ -53,18 +53,29 @@ public class Funcs {
   };
 
   @SuppressWarnings("unchecked")
-  public static <I,O> Function<Pair<I,O>, I> selectLeft() {
+  public static <I, O> Function<Pair<I, O>, I> selectLeft() {
     return selectLeft;
   }
 
   @SuppressWarnings("unchecked")
-  public static <I,O> Function<Pair<I,O>, O> selectRight() {
+  public static <I, O> Function<Pair<I, O>, O> selectRight() {
     return selectRight;
   }
 
   public static Predicate<String> onlyNonBlank() {
     return onlyNonBlank;
   }
+
+  public static Function<String, String> trimAndLower() {
+    return trimAndLowerFunc;
+  }
+
+  private static final Function<String, String> trimAndLowerFunc = new Function<String, String>() {
+    @Override
+    public String apply(String input) {
+      return input.trim().toLowerCase();
+    }
+  };
 
   public static Function<String, String> transformBlanks(final String blanksBecome) {
     return new Function<String, String>() {

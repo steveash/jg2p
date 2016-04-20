@@ -37,7 +37,7 @@ public class AbbrevBuilder {
       return this;
     }
     boolean firstThisTime = true;
-    for (String uni : Grams.gramToUni(gram)) {
+    for (String uni : Grams.iterateSymbols(gram)) {
       if (firstThisTime) {
         firstThisTime = false;
         if (lastGraph != null && lastGraph.equalsIgnoreCase(uni)) {

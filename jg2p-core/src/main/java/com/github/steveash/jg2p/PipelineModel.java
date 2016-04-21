@@ -103,10 +103,10 @@ public class PipelineModel implements Serializable {
   }
 
   public void makeSparse() {
-//    this.pronouncerModel.getCrf().makeParametersHashSparse();
-//    if (this.testingAlignerModel instanceof SyllTagModel) {
-//      ((SyllTagModel) this.testingAlignerModel).getCrf().makeParametersHashSparse();
-//    }
+    this.pronouncerModel.getCrf().makeParametersHashSparse();
+    if (this.testingAlignerModel instanceof SyllTagModel) {
+      ((SyllTagModel) this.testingAlignerModel).getCrf().makeParametersHashSparse();
+    }
   }
 
   private Object writeReplace() {

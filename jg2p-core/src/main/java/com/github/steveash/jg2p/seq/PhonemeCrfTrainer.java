@@ -251,7 +251,7 @@ public class PhonemeCrfTrainer {
     LabelAlphabet labelAlpha = (LabelAlphabet) labelPipe.getTargetAlphabet();
 
     return new SerialPipes(ImmutableList.of(
-        new AlignmentToTokenSequence(alpha, labelAlpha, true, true, true),   // convert to token sequence
+        new AlignmentToTokenSequence(alpha, labelAlpha, true, true, false),   // convert to token sequence
         new TokenSequenceLowercase(),                       // make all lowercase
         new NeighborTokenFeature(true, makeNeighbors()),         // grab neighboring graphemes
         new NeighborShapeFeature(true, makeShapeNeighs()),
@@ -259,7 +259,7 @@ public class PhonemeCrfTrainer {
 //        new WindowFeature(true, 6),
         new NeighborSyllableFeature(-2, -1, 1, 2),
 //        new SyllCountingFeature(),
-//        new SyllMarkingFeature(),
+        new SyllMarkingFeature(),
         new EndingVowelFeature(),
         //new SonorityFeature2(true),
         //new SonorityFeature2(false),

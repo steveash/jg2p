@@ -39,6 +39,7 @@ def watch = Stopwatch.createStarted()
 log.info("Starting eval of with $testFile with $modelFile")
 
 def model = ReadWrite.readFromFile(PipelineModel, new File(modelFile))
+model.makeSparse()
 //def enc = new GraphoneSortingEncoder(model)
 //def enc = PhoneticEncoder.adapt(model.phoneticEncoder)
 def enc = new PipelineEncoder(model)

@@ -263,15 +263,15 @@ public class PhonemeCrfTrainer {
         new EndingVowelFeature(),
         //new SonorityFeature2(true),
         //new SonorityFeature2(false),
-        new WindowFeature(false, 4),
+//        new WindowFeature(false, 4),
         new VowelWindowFeature(3, 2, "PRESYL_", -1, false),
         new VowelWindowFeature(3, 2, "PSTSYL_", 1, false),
         new VowelWindowFeature(3, 2, "LSTSYL_", 0, true),
-//        new SurroundingTokenFeature2(false, 1, 1),
+        new SurroundingTokenFeature2(false, 1, 1),
 //        new SurroundingTokenFeature2(true, 1, 1),
-//        new SurroundingTokenFeature2(false, 2, 2),
+        new SurroundingTokenFeature2(false, 2, 2),
 //        new SurroundingTokenFeature2(false, 3, 2),
-//        new SurroundingTokenFeature2(true, 3, 3),
+        new SurroundingTokenFeature2(true, 3, 3),
 //        new SurroundingTokenFeature2(true, 4, 4),
 //        new LeadingTrailingFeature(),
         new TokenSequenceToFeature(),                       // convert the strings in the text to features
@@ -304,14 +304,14 @@ public class PhonemeCrfTrainer {
         new TokenWindow(2, 1),
         new TokenWindow(1, 3),
         new TokenWindow(3, 1),
-//        new TokenWindow(1, 4),
+        new TokenWindow(1, 4),
         new TokenWindow(4, 1),
         new TokenWindow(-1, 1),
         new TokenWindow(-2, 2),
         new TokenWindow(-2, 1),
         new TokenWindow(-3, 3),
-        new TokenWindow(-4, 1)
-//        new TokenWindow(-4, 4),
+        new TokenWindow(-4, 1),
+        new TokenWindow(-4, 4)
 //        new TokenWindow(-5, 5)
 
 //        new TokenWindow(-2, 2),

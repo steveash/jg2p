@@ -19,6 +19,7 @@ package com.github.steveash.jg2p.seq;
 import com.google.common.base.Preconditions;
 
 import com.github.steveash.jg2p.align.Alignment;
+import com.github.steveash.jg2p.syll.SyllCounter;
 
 import java.io.Serializable;
 import java.util.List;
@@ -39,16 +40,18 @@ public class AlignmentToTokenSequence extends Pipe implements Serializable {
 
   private final boolean updateTarget;
   private final boolean updateSyllable;
+  private final boolean updateSyllTokenCount;
 
   public AlignmentToTokenSequence(Alphabet dataDict, Alphabet targetDict) {
-    this(dataDict, targetDict, true, true);
+    this(dataDict, targetDict, true, true, false);
   }
 
   public AlignmentToTokenSequence(Alphabet dataDict, Alphabet targetDict,
-                                  boolean updateTarget, boolean updateSyllable) {
+                                  boolean updateTarget, boolean updateSyllable, boolean syllTokenCount) {
     super(dataDict, targetDict);
     this.updateTarget = updateTarget;
     this.updateSyllable = updateSyllable;
+    this.updateSyllTokenCount = syllTokenCount;
   }
 
   @Override
@@ -64,6 +67,7 @@ public class AlignmentToTokenSequence extends Pipe implements Serializable {
       inst.setTarget(makeTokenSeq(target));
     }
     if (updateSyllable) {
+      SyllCounter counter = new SyllCounter();
       List<String> sylls = source.getGraphoneSyllableGrams();
       if (sylls == null) {
         throw new IllegalArgumentException("no syllables present " + source);
@@ -72,7 +76,12 @@ public class AlignmentToTokenSequence extends Pipe implements Serializable {
       for (int i = 0; i < xTokens.size(); i++) {
         Token token = xTokens.get(i);
         String syll = sylls.get(i);
-        token.setFeatureValue("SYL_" + syll, 1.0);
+        counter.onNextGram(syll);
+        String syllFeat = syll;
+        if (updateSyllTokenCount) {
+          syllFeat += "_" + token.getText().toLowerCase() + "_" + counter.currentSyllable();
+        }
+        token.setFeatureValue("SYL_" + syllFeat, 1.0);
         token.setProperty(SYLL_GRAM, syll);
       }
     }

@@ -42,8 +42,8 @@ public class SyllCountingFeature extends Pipe {
     for (int i = 0; i < ts.size(); i++) {
       Token tok = ts.get(i);
       String s = sg.get(i);
-      tok.setFeatureValue("SYLLCNT_" + counter.currentSyllable(), 1.0);
       counter.onNextGram(s);
+      tok.setFeatureValue("SYLLCNT_" + counter.currentSyllable(), 1.0);
     }
     return inst;
   }

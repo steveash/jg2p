@@ -54,6 +54,7 @@ public class EndingVowelFeature extends Pipe {
       String tag = null;
       Token t = ts.get(i);
       String s = sg.get(i);
+      counter.onNextGram(s);
       int thisSyllIndex = counter.currentSyllable();
       String text = t.getText();
       Preconditions.checkState(text.length() == s.length(), "grams doesnt match syll grams");
@@ -74,7 +75,6 @@ public class EndingVowelFeature extends Pipe {
       if (tag != null) {
         t.setFeatureValue(tag, 1.0);
       }
-      counter.onNextGram(s);
     }
     return inst;
   }

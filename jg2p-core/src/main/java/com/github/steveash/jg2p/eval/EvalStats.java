@@ -39,6 +39,7 @@ import javax.annotation.Nullable;
 public class EvalStats {
 
   public static class EvalExample {
+
     final String inputWord;
     final String alignedPrediction;
     final String expectedPhones;
@@ -66,7 +67,7 @@ public class EvalStats {
   final AtomicLong top1PhoneEdits = new AtomicLong(0);
 
   final Multiset<String> counters = ConcurrentHashMultiset.create();
-  final LoadingCache<String,IrStats> irConfigSetup = CacheBuilder.newBuilder()
+  final LoadingCache<String, IrStats> irConfigSetup = CacheBuilder.newBuilder()
       .concurrencyLevel(32)
       .build(new CacheLoader<String, IrStats>() {
         @Override
@@ -96,6 +97,11 @@ public class EvalStats {
       }
       int edits = ListEditDistance.editDistance(good.getValue(), resultPhones.getValue(), minEdits);
       if (edits >= 0) {
+        if (edits <= 0) {
+          throw new IllegalArgumentException("Weird result: " + topResult + " result phones " +
+                                             resultPhones + " checking good " + good + " and " +
+                                             resultPhones.equals(good));
+        }
         Preconditions.checkArgument(edits != 0, "why wasnt this handled earlier?");
         if (edits < minEdits) {
           minEdits = edits;
@@ -112,13 +118,15 @@ public class EvalStats {
                                  rightPhones,
                                  minEdits,
                                  matchedRank
-                                 ));
+    ));
     return newTotal;
   }
 
   public double wordAccuracy() {
     long totalWords = this.words.get();
-    if (totalWords == 0) return 0;
+    if (totalWords == 0) {
+      return 0;
+    }
 
     return ((double) top1CorrectWords.get()) / totalWords;
   }
@@ -129,7 +137,9 @@ public class EvalStats {
 
   public double phoneErrorRate() {
     long totalPhones = this.phones.get();
-    if (totalPhones == 0) return 0;
+    if (totalPhones == 0) {
+      return 0;
+    }
 
     return ((double) top1PhoneEdits.get()) / totalPhones;
   }

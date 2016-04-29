@@ -26,7 +26,8 @@ import org.slf4j.LoggerFactory
  * Driver for the whole end-to-end training process
  * @author Steve Ash
  */
-def inputFile = "g014b2b.train.syll"
+//def inputFile = "g014b2b.train.syll"
+def inputFile = "cmu7b.train"
 //def inputFile = "cmudict.2kA.txt"
 //def inputFile = "g014b2b.test"
 def inputs = InputReader.makePSaurusReader().readFromClasspath(inputFile)
@@ -40,7 +41,7 @@ opts.useCityBlockPenalty = true
 opts.useWindowWalker = true
 opts.useSyllableTagger = true
 opts.maxPronouncerTrainingIterations = 400
-def inFile = "../resources/pipe_43sy_F11_4.dat"
+def inFile = "../resources/pipe_43sy_F11_5.dat"
 opts.initTrainingAlignerFromFile = inFile
 opts.initTestingAlignerFromFile = inFile
 opts.initCrfFromModelFile = inFile
@@ -55,7 +56,7 @@ opts.trainTrainingAligner = opts.trainTestingAligner = false
 //opts.useInputRerankExampleCsv = "../resources/pip_rre.csv"
 //opts.trainReranker = true
 //opts.writeOutputRerankExampleCsv = "../resources/rerank_inputs.csv"
-def outFile = "../resources/pipe_43sy_F11_5.dat"
+def outFile = "../resources/pipe_43sy_cmu7_F11_1.dat"
 
 def log = LoggerFactory.getLogger("psaurus")
 out = new GroovyLogger(log)

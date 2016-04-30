@@ -45,6 +45,8 @@ import java.util.List;
 
 import cc.mallet.types.Sequence;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 /**
  * This is a Word that knows its syllable boundaries; used for training the syllble tagger
  *
@@ -52,7 +54,9 @@ import cc.mallet.types.Sequence;
  */
 public class SWord extends Word {
 
-  private int[] bounds;
+  private int[] bounds; // size is # of syllables
+
+  private int[] stress; // size is # of phonemes
 
   /**
    * @param celexString this is the celex pipe delimited with hypthen syll markers format
@@ -74,6 +78,10 @@ public class SWord extends Word {
   }
 
   public SWord(String spaceSepWord, String spaceSepSyllStarts) {
+    this(spaceSepWord, spaceSepSyllStarts, null);
+  }
+
+  public SWord(String spaceSepWord, String spaceSepSyllStarts, String spaceSepSyllStress) {
     super(splitter.splitToList(spaceSepWord));
     List<Integer> bs = Lists.newArrayList();
     for (String val : splitter.split(spaceSepSyllStarts)) {
@@ -81,6 +89,18 @@ public class SWord extends Word {
     }
     Preconditions.checkArgument(bs.size() > 0, "must pass at least one syllable boundary");
     this.bounds = Ints.toArray(Ordering.natural().sortedCopy(bs));
+    if (isNotBlank(spaceSepSyllStress)) {
+      this.stress = new int[super.unigramCount()];
+      List<String> ss = splitter.splitToList(spaceSepSyllStress);
+      Preconditions.checkArgument(ss.size() == bs.size(), "syll count and stress must equal");
+      int syllIndex = 0;
+      for (int i = 0; i < unigramCount(); i++) {
+        if (i > 0 && syllIndex + 1 < bounds.length && i == bounds[syllIndex + 1]) {
+          syllIndex += 1;
+        }
+        stress[i] = Integer.parseInt(ss.get(syllIndex));
+      }
+    }
   }
 
   public static List<String> convertToPhones(String entry) {
@@ -101,6 +121,10 @@ public class SWord extends Word {
 
   public int[] getBounds() {
     return bounds;
+  }
+
+  public int getStressForPhoneme(int phoneIndex) {
+    return stress[phoneIndex];
   }
 
   public boolean isStartOfSyllable(int phoneIndex) {

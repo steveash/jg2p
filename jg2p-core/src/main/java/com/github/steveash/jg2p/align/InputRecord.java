@@ -24,6 +24,8 @@ import com.github.steveash.jg2p.Word;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.List;
+
 /**
  * One training exemplar for the aligner
  *
@@ -34,17 +36,17 @@ public class InputRecord extends Pair<Word, Word> {
   public final Word xWord;
   public final Word yWord;
   public final String memo;
+  public final List<Integer> stresses;
 
   public InputRecord(Word xWord, Word yWord) {
+    this(xWord, yWord, null);
+  }
+
+  public InputRecord(Word xWord, Word yWord, List<Integer> stresses) {
     this.xWord = xWord;
     this.yWord = yWord;
     this.memo = null;
-  }
-
-  public InputRecord(Word xWord, Word yWord, String memo) {
-    this.xWord = xWord;
-    this.yWord = yWord;
-    this.memo = memo;
+    this.stresses = stresses;
   }
 
   public Pair<Word, Word> xyWordPair() {
@@ -85,4 +87,13 @@ public class InputRecord extends Pair<Word, Word> {
       return 0;
     }
   };
+
+  @Override
+  public String toString() {
+    return "InputRecord{" +
+           "xWord=" + xWord +
+           ", yWord=" + yWord +
+           ", stresses=" + stresses +
+           '}';
+  }
 }

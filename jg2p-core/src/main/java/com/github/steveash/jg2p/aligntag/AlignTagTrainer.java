@@ -144,7 +144,7 @@ public class AlignTagTrainer {
         new NeighborShapeFeature(true, makeShapeNeighs()),
         new LeadingTrailingFeature(),
         new TokenSequenceToFeature(),                       // convert the strings in the text to features
-        new TokenSequence2FeatureVectorSequence(alpha, true, true),
+        new TokenSequence2FeatureVectorSequence(alpha, true, false),
         labelPipe
     ));
   }

@@ -71,7 +71,6 @@ public class PhoneSyllTagTrainer {
 
     log.info("Training test-time syll phone tagger on whole data...");
     TransducerTrainer trainer = trainOnce(pipe, examples);
-
     return new PhoneSyllTagModel((CRF) trainer.getTransducer());
   }
 
@@ -109,6 +108,8 @@ public class PhoneSyllTagTrainer {
     trainer.shutdown();
     watch.stop();
 
+    pipe.getAlphabet().stopGrowth();
+    pipe.getTargetAlphabet().stopGrowth();
     log.info("Align Tag CRF Training took " + watch.toString());
     return trainer;
   }
@@ -122,16 +123,29 @@ public class PhoneSyllTagTrainer {
         new SWordConverterPipe(),
         new StringListToTokenSequence(alpha, labelAlpha),   // convert to token sequence
         new TokenSequenceLowercase(),                       // make all lowercase
-        new NeighborTokenFeature(true, makeNeighbors()),         // grab neighboring graphemes
+        new PhoneNeighborPipe(true, makeNeighbors()),         // grab neighboring graphemes
+        new PhoneClassPipe(true, makeClassNeighbors()),
         new VowelNeighborPipe(),
 //          new SurroundingTokenFeature(false),
 //          new SurroundingTokenFeature(true),
 //          new NeighborShapeFeature(true, makeShapeNeighs()),
         new IsFirstPipe(),
+        new ThisPhoneClassPipe(),
         new TokenSequenceToFeature(),                       // convert the strings in the text to features
-        new TokenSequence2FeatureVectorSequence(alpha, true, true),
+        new TokenSequence2FeatureVectorSequence(alpha, true, false),
         labelPipe
     ));
+  }
+
+  private List<TokenWindow> makeClassNeighbors() {
+    return ImmutableList.of(
+        new TokenWindow(1, 1),
+        new TokenWindow(1, 2),
+        new TokenWindow(1, 3),
+        new TokenWindow(-3, 3),
+        new TokenWindow(-2, 2),
+        new TokenWindow(-1, 1)
+    );
   }
 
   private List<TokenWindow> makeNeighbors() {

@@ -54,7 +54,7 @@ public class NeighborTokenFeature extends Pipe {
   @Override
   public Instance pipe(Instance carrier) {
     TokenSequence ts = (TokenSequence) carrier.getData();
-    List<String> ss = Lists.transform(ts, tokenToString);
+    List<String> ss = xformInputSequence(ts);
     for (int i = 0; i < ts.size(); i++) {
       Token t = ts.get(i);
       for (int j = 0; j < windows.size(); j++) {
@@ -69,6 +69,10 @@ public class NeighborTokenFeature extends Pipe {
         }
       }
     return carrier;
+  }
+
+  protected List<String> xformInputSequence(TokenSequence ts) {
+    return Lists.transform(ts, tokenToString);
   }
 
   protected String prefix() {

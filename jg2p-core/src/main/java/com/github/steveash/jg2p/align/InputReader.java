@@ -25,8 +25,11 @@ import com.google.common.io.Files;
 import com.google.common.io.LineProcessor;
 import com.google.common.io.Resources;
 
+import com.github.steveash.jg2p.Grams;
 import com.github.steveash.jg2p.Word;
 import com.github.steveash.jg2p.syll.SWord;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +40,7 @@ import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static sun.management.snmp.jvminstr.JvmThreadInstanceEntryImpl.ThreadStateMap.Byte1.other;
 
 /**
  * @author Steve Ash
@@ -120,11 +124,7 @@ public class InputReader {
       Iterator<String> iter = tabSplit.split(line).iterator();
       Word x = Word.fromSpaceSeparated(iter.next());
       Word y = Word.fromSpaceSeparated(iter.next());
-      String other = null;
-      if (iter.hasNext()) {
-        other = iter.next();
-      }
-      return new InputRecord(x, y, other);
+      return new InputRecord(x, y);
     }
   };
 
@@ -164,14 +164,23 @@ public class InputReader {
       x = xGood.group(1);
 
       String y = line.substring(split + 2);
-      y = CharMatcher.DIGIT.removeFrom(y);
+      String phonesOnly = CharMatcher.DIGIT.removeFrom(y);
       if (x.charAt(x.length() - 1) == '\'') {
         x = x.substring(0, x.length() - 1);
       }
+      List<Integer> stresses = Lists.newArrayList();
+      for (String s : Grams.iterateSymbols(y)) {
+        String onlyDigits = CharMatcher.DIGIT.retainFrom(s);
+        if (StringUtils.isBlank(onlyDigits)) {
+          stresses.add(-1);
+        } else {
+          stresses.add(Integer.parseInt(onlyDigits));
+        }
+      }
 
       Word xx = Word.fromNormalString(x);
-      Word yy = Word.fromSpaceSeparated(y);
-      return new InputRecord(xx, yy);
+      Word yy = Word.fromSpaceSeparated(phonesOnly);
+      return new InputRecord(xx, yy, stresses);
     }
   };
 }

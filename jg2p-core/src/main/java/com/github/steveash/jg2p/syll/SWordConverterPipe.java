@@ -25,7 +25,7 @@ import cc.mallet.types.Instance;
  * @author Steve Ash
  */
 public class SWordConverterPipe extends Pipe {
-  private static final long serialVersionUID = -7913217312855658794L;
+  private static final long serialVersionUID = -2205334436343455510L;
 
   @Override
   public Instance pipe(Instance inst) {

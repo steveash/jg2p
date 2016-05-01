@@ -33,8 +33,18 @@ public class SyllCounter {
     return counter.currentSyllable() + 1; // 0 based index
   }
 
+  private final boolean splitNucleus;
   private int state = 0; // 0 = onset, 1 = nucleus, 2 = coda
   private int syllable = 0;
+
+  // by default to consecutive nucleus phonemes cause a syllable break
+  public SyllCounter() {
+    splitNucleus = true;
+  }
+
+  public SyllCounter(boolean splitNucleus) {
+    this.splitNucleus = splitNucleus;
+  }
 
   public int currentSyllable() {
     return syllable;
@@ -58,8 +68,13 @@ public class SyllCounter {
         state = 0;
       }
     } else if (c == SyllTagTrainer.NucleusChar) {
-      if (state == 0 || state == 1) {
+      if (state == 0) {
         state = 1;
+      } else if (state == 1) {
+        // if we're splitting nucleuses then increment syllable
+        if (splitNucleus) {
+          syllable += 1;
+        }
       } else {
         syllable += 1;
         state = 1;

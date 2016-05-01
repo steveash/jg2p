@@ -16,15 +16,9 @@
 
 package com.github.steveash.jg2p.syll;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import com.github.steveash.jg2p.Word;
-import com.github.steveash.jg2p.align.Alignment;
-import com.github.steveash.jg2p.aligntag.AlignTagModel;
-import com.github.steveash.jg2p.seq.LeadingTrailingFeature;
-import com.github.steveash.jg2p.seq.NeighborTokenFeature;
 import com.github.steveash.jg2p.seq.StringListToTokenSequence;
 import com.github.steveash.jg2p.seq.TokenSequenceToFeature;
 import com.github.steveash.jg2p.seq.TokenWindow;
@@ -34,8 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 import cc.mallet.fst.CRF;
 import cc.mallet.fst.CRFTrainerByThreadedLabelLikelihood;
@@ -91,18 +83,23 @@ public class PhoneSyllTagTrainer {
     Stopwatch watch = Stopwatch.createStarted();
 
     CRF crf = new CRF(pipe, null);
-//    if (pullFrom != null) {
-//      crf.initializeApplicableParametersFrom(pullFrom);
-//    }
+
+    // O,O    O,N   -O,C-
+    // N,O    N,N   N,C
+    // C,O    ?C,N?   C,C
+//    Pattern forbidden = Pattern.compile("(O,C|<START>,C|O,<END>)", Pattern.CASE_INSENSITIVE);
     crf.addOrderNStates(trainData, new int[]{1}, null, null, null, null, false);
     crf.addStartState();
+    crf.setWeightsDimensionAsIn(trainData);
 
-//    crf.addFullyConnectedStatesForTriLabels();
+    if (this.pullFrom != null) {
+      crf.initializeApplicableParametersFrom(pullFrom);
+    }
 
     log.info("Starting syll phone training...");
     CRFTrainerByThreadedLabelLikelihood trainer = new CRFTrainerByThreadedLabelLikelihood(crf, 8);
     trainer.setGaussianPriorVariance(2);
-//    trainer.setAddNoFactors(true);
+    trainer.setAddNoFactors(true);
     trainer.setUseSomeUnsupportedTrick(false);
     trainer.train(trainData);
     trainer.shutdown();
@@ -131,6 +128,7 @@ public class PhoneSyllTagTrainer {
 //          new NeighborShapeFeature(true, makeShapeNeighs()),
         new IsFirstPipe(),
         new ThisPhoneClassPipe(),
+//        new AppendEndPipe(), // right before TS2F to get text set, last not to mess w neighbors
         new TokenSequenceToFeature(),                       // convert the strings in the text to features
         new TokenSequence2FeatureVectorSequence(alpha, true, false),
         labelPipe

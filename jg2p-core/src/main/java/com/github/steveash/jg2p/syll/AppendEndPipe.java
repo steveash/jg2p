@@ -16,25 +16,30 @@
 
 package com.github.steveash.jg2p.syll;
 
+import com.google.common.base.Preconditions;
+
 import com.github.steveash.jg2p.Word;
+
+import java.util.List;
 
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Instance;
+import cc.mallet.types.TokenSequence;
 
 /**
  * @author Steve Ash
  */
-public class SWordConverterPipe extends Pipe {
+public class AppendEndPipe extends Pipe {
   private static final long serialVersionUID = -2205334436343455510L;
 
   @Override
   public Instance pipe(Instance inst) {
-    Word data = (Word) inst.getData();
-    inst.setData(data.getValue());
-    if (data instanceof SWord) {
-      SWord sdata = (SWord) data;
-      inst.setTarget(sdata.getEndMarkers());
-//      inst.setTarget(sdata.getOncCodingForPhones());
+    TokenSequence seq = (TokenSequence) inst.getData();
+    seq.add("<END>");
+    TokenSequence maybe = (TokenSequence) inst.getTarget();
+    if (maybe != null) {
+      maybe.add("<END>");
+      Preconditions.checkState(maybe.size() == seq.size());
     }
     return inst;
   }

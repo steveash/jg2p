@@ -27,4 +27,9 @@ class SWordTest extends GroovyTestCase {
       println sw.gramAt(i) + " syllable? " + sw.isStartOfSyllable(i) + " stress? " + sw.getStressForPhoneme(i)
     }
   }
+
+  void testPhoneCoding() {
+    def sw = new SWord("S AY K AH L IH S T", "0 2 4")
+    println "Coding = " + sw.oncCodingForPhones
+  }
 }

@@ -34,6 +34,8 @@ def joiner = Joiner.on(" ")
 int toTrain = (int) ((entries.size() as double) * 0.90)
 int count = 0
 int multistress = 0
+int nostresses = 0
+int endedNoStress = 0
 new File("../resources/cmu7b.train").withPrintWriter { pw1 ->
   new File("../resources/cmu7b.test").withPrintWriter { pw2 ->
     entries.each { entry ->
@@ -45,9 +47,14 @@ new File("../resources/cmu7b.train").withPrintWriter { pw1 ->
         def outStress = []
         for (int i = 0; i < record.yWord.unigramCount(); i++) {
           if (i > 0 && ((syllIndex + 1) < starts.size()) && (starts.get(syllIndex + 1) == i)) {
-            assert thisStress >= 0 : record.toString() + " no stress for i = " + i + " starts " + starts
-            outStress << thisStress
-            thisStress = -1
+            if (thisStress < 0) {
+              println record.toString() + " no stress for i = " + i + " starts " + starts
+              outStress << 0
+              nostresses += 1
+            } else {
+              outStress << thisStress
+              thisStress = -1
+            }
             syllIndex += 1
           }
           if (record.stresses[i] >= 0) {
@@ -58,8 +65,14 @@ new File("../resources/cmu7b.train").withPrintWriter { pw1 ->
             thisStress = Math.max(thisStress, record.stresses[i])
           }
         }
-        assert thisStress >= 0 : "ended without a stress for " + record + " starts " + starts
-        outStress << thisStress
+
+        if (thisStress < 0) {
+          outStress << 0
+          println "ended without a stress for " + record + " starts " + starts
+          endedNoStress += 1
+        } else {
+          outStress << thisStress
+        }
         assert outStress.size() == starts.size()
         pw.println(record.xWord.asNoSpaceString + "\t" + record.yWord.asSpaceString + "\t" +
                    joiner.join(starts) + "\t" + joiner.join(outStress))
@@ -73,3 +86,5 @@ new File("../resources/cmu7b.train").withPrintWriter { pw1 ->
 }
 println "done $toTrain in training and ${entries.size() - toTrain} in test"
 println "got $multistress multiple stress entries"
+println "got $nostresses no stress entries"
+println "got $endedNoStress ended without stress set"

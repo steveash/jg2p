@@ -36,6 +36,7 @@ import com.google.common.collect.Ordering;
 import com.google.common.primitives.Ints;
 
 import com.github.steveash.jg2p.Word;
+import com.github.steveash.jg2p.phoseq.Phonemes;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -134,6 +135,33 @@ public class SWord extends Word {
     return Arrays.binarySearch(bounds, phoneIndex) >= 0;
   }
 
+  public List<String> getOncCodingForPhones() {
+    ArrayList<String> marks = Lists.newArrayListWithCapacity(this.unigramCount());
+    int state = 0;
+    int syll = 0;
+    for (int i = 0; i < this.unigramCount(); i++) {
+      if (i > 0 && (syll + 1) < bounds.length && bounds[syll + 1] == i) {
+        syll += 1;
+        state = 0;
+      }
+      if (state == 0 && Phonemes.isVowel(gramAt(i))) {
+        state = 1;
+      } else if (state == 1 && Phonemes.isConsonant(gramAt(i))) {
+        state = 2;
+      }
+      if (state == 0) {
+        marks.add(SyllTagTrainer.Onset);
+      }
+      if (state == 1) {
+        marks.add(SyllTagTrainer.Nucleus);
+      }
+      if (state == 2) {
+        marks.add(SyllTagTrainer.Coda);
+      }
+    }
+    return marks;
+  }
+
   public List<String> getStartMarkers() {
     ArrayList<String> marks = Lists.newArrayListWithCapacity(this.unigramCount());
     int nextMark = 0;
@@ -185,5 +213,25 @@ public class SWord extends Word {
       }
     }
     return bounds;
+  }
+
+  public static List<Integer> convertOncToBoundaries(Sequence<?> marks) {
+    ArrayList<Integer> result = Lists.newArrayList();
+    if (marks.size() == 0) return result;
+    int size = marks.size();
+    if (marks.get(marks.size() - 1).equals("<END>")) {
+      size -= 1;
+    }
+    result.add(0);
+    int current = 0;
+    SyllCounter counter = new SyllCounter(true);
+    for (int i = 0; i < size; i++) {
+      counter.onNextGram((String) marks.get(i));
+      if (counter.currentSyllable() != current) {
+        result.add(i);
+        current = counter.currentSyllable();
+      }
+    }
+    return result;
   }
 }

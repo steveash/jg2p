@@ -50,8 +50,8 @@ def old = ReadWrite.readFromFile(PhoneSyllTagModel, new File("../resources/syllp
 def trainer = new PhoneSyllTagTrainer()
 trainer.setPullFrom(old.getCrf())
 def model = trainer.train(trainRecs)
+//def model = old
 ReadWrite.writeTo(model, new File("../resources/syllphonetag.dat"))
-//def model = ReadWrite.readFromFile(AlignModel, new File("../resources/syllalignmodel.dat"))
 
 println "On training recs..."
 int good = 0, goodCount = 0, total = 0, printed = 0

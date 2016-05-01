@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory
 //def testFile = "cmudict.2kA.txt"
 //def testFile = "g014b2b.test"
 def testFile = "cmu7b.test"
-def modelFile = "../resources/pipe_43sy_cmu7_F11_1.dat"
+def modelFile = "../resources/pipe_43sy_cmu7_F11_5.dat"
 
 //def test = InputReader.makeDefaultFormatReader().readFromClasspath(testFile)
 def test = InputReader.makePSaurusReader().readFromClasspath(testFile)

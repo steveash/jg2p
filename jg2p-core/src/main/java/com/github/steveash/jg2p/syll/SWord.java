@@ -55,9 +55,9 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
  */
 public class SWord extends Word {
 
-  private int[] bounds; // size is # of syllables
-
-  private int[] stress; // size is # of phonemes
+  private int[] bounds;         // size is # of syllables
+  private int[] syllableStress; // size is # of syllables
+  private int[] phoneStress;    // size is # of phonemes
 
   /**
    * @param celexString this is the celex pipe delimited with hypthen syll markers format
@@ -91,15 +91,19 @@ public class SWord extends Word {
     Preconditions.checkArgument(bs.size() > 0, "must pass at least one syllable boundary");
     this.bounds = Ints.toArray(Ordering.natural().sortedCopy(bs));
     if (isNotBlank(spaceSepSyllStress)) {
-      this.stress = new int[super.unigramCount()];
+      this.phoneStress = new int[super.unigramCount()];
       List<String> ss = splitter.splitToList(spaceSepSyllStress);
+      this.syllableStress = new int[ss.size()];
       Preconditions.checkArgument(ss.size() == bs.size(), "syll count and stress must equal");
       int syllIndex = 0;
       for (int i = 0; i < unigramCount(); i++) {
         if (i > 0 && syllIndex + 1 < bounds.length && i == bounds[syllIndex + 1]) {
           syllIndex += 1;
         }
-        stress[i] = Integer.parseInt(ss.get(syllIndex));
+        phoneStress[i] = Integer.parseInt(ss.get(syllIndex));
+      }
+      for (int i = 0; i < ss.size(); i++) {
+        syllableStress[i] = Integer.parseInt(ss.get(i));
       }
     }
   }
@@ -125,7 +129,15 @@ public class SWord extends Word {
   }
 
   public int getStressForPhoneme(int phoneIndex) {
-    return stress[phoneIndex];
+    return phoneStress[phoneIndex];
+  }
+
+  public int getStressForSyllable(int syllIndex) {
+    return syllableStress[syllIndex];
+  }
+
+  public int syllCount() {
+    return bounds.length;
   }
 
   public boolean isStartOfSyllable(int phoneIndex) {

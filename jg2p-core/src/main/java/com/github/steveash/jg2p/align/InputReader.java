@@ -137,7 +137,12 @@ public class InputReader {
       Word y;
       if (iter.hasNext()) {
         String sylls = iter.next();
-        y = new SWord(phones, sylls);
+        if (iter.hasNext()) {
+          String stress = iter.next();
+          y = new SWord(phones, sylls, stress);
+        } else {
+          y = new SWord(phones, sylls);
+        }
       } else {
         y = Word.fromSpaceSeparated(phones);
       }

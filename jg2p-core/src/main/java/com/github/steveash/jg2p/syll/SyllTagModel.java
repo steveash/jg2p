@@ -22,7 +22,6 @@ import com.google.common.collect.Lists;
 import com.github.steveash.jg2p.Word;
 import com.github.steveash.jg2p.align.Aligner;
 import com.github.steveash.jg2p.align.Alignment;
-import com.github.steveash.jg2p.phoseq.Graphemes;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -46,11 +45,9 @@ public class SyllTagModel implements Aligner, Serializable {
   private static final long serialVersionUID = 2315790267922134027L;
 
   private final CRF crf;
-  private final boolean useV2Scheme;
 
-  public SyllTagModel(CRF crf, boolean useV2Scheme) {
+  public SyllTagModel(CRF crf) {
     this.crf = crf;
-    this.useV2Scheme = useV2Scheme;
   }
 
   public CRF getCrf() {
@@ -69,7 +66,7 @@ public class SyllTagModel implements Aligner, Serializable {
     double z = crf.getSumLatticeFactory().newSumLattice(crf, inSeq).getTotalWeight();
     for (Sequence<Object> outSeq : outSeqs) {
       double score = crf.getSumLatticeFactory().newSumLattice(crf, inSeq, outSeq).getTotalWeight();
-      Alignment align = (useV2Scheme ? makeAlignment2(x, outSeq, score - z) : makeAlignment(x, outSeq, score - z));
+      Alignment align = makeAlignment(x, outSeq, score - z);
       if (!resultsContain(align.getGraphones(), results)) {
         results.add(align);
       }
@@ -89,7 +86,7 @@ public class SyllTagModel implements Aligner, Serializable {
   private Alignment makeAlignment(Word x, Sequence<Object> outSeq, double normalScore) {
     List<String> letters = x.getValue();
     Preconditions.checkArgument(outSeq.size() == letters.size());
-    ArrayList<Pair<String, String>> result = Lists.newArrayListWithCapacity(letters.size());
+    ArrayList<Pair<String,String>> result = Lists.newArrayListWithCapacity(letters.size());
     List<String> syllGrams = Lists.newArrayListWithCapacity(letters.size());
 
     StringBuilder sb = new StringBuilder();
@@ -102,49 +99,6 @@ public class SyllTagModel implements Aligner, Serializable {
       sb.append(letters.get(i));
       sg.append(onlySyllStructreFromTag((String) outSeq.get(i)));
       if ((i + 1) < outSeq.size() && SyllTagTrainer.isAlignBegin((String) outSeq.get(i + 1))) {
-        result.add(Pair.of(sb.toString(), ""));
-        syllGrams.add(sg.toString());
-        sb.delete(0, sb.length());
-        sg.delete(0, sg.length());
-      }
-    }
-    if (sb.length() > 0) {
-      result.add(Pair.of(sb.toString(), ""));
-      syllGrams.add(sg.toString());
-    }
-    return new Alignment(x, result, normalScore, syllGrams, null);
-  }
-
-  // this assumes alignment where we have a scheme like:
-  // E, E, F for alignment (where we mark the end)
-  // S, S, T for end of syllable (where we mark the end)
-  // so labels will be like ES, FS, FT, ...
-  public static Alignment makeAlignment2(Word x, Sequence<Object> outSeq, double normalScore) {
-    List<String> letters = x.getValue();
-    Preconditions.checkArgument(outSeq.size() == letters.size());
-    ArrayList<Pair<String, String>> result = Lists.newArrayListWithCapacity(letters.size());
-    List<String> syllGrams = Lists.newArrayListWithCapacity(letters.size());
-
-    StringBuilder sb = new StringBuilder();
-    StringBuilder sg = new StringBuilder();
-    int state = 0; // syllable state
-    for (int i = 0; i < letters.size(); i++) {
-      String cc = (String) outSeq.get(i);
-      Preconditions.checkState(cc.length() == 2);
-      if (sb.length() > 0) {
-        sb.append(' ');
-        sg.append(' ');
-      }
-      String thisChar = letters.get(i);
-      sb.append(thisChar);
-      if (Graphemes.isVowel(thisChar)) {
-        if (state == 0) state = 1;
-      }
-      sg.append(SyllTagTrainer.syllCodeFromState(state));
-      if (cc.charAt(1) == SyllTagTrainer.V2SyllEnd) {
-        state = 0;
-      }
-      if (cc.charAt(0) == SyllTagTrainer.V2AlignEnd) {
         result.add(Pair.of(sb.toString(), ""));
         syllGrams.add(sg.toString());
         sb.delete(0, sb.length());

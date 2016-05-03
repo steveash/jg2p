@@ -20,7 +20,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.PeekingIterator;
 
 import com.github.steveash.jg2p.Grams;
 import com.github.steveash.jg2p.Word;
@@ -55,8 +54,6 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
 
-import static com.google.common.collect.Iterators.peekingIterator;
-
 /**
  * Trains a CRF to predict synonym structure from aligned.  We have two kinds of structure we are modelling here -- the
  * sonority of the syllable as S = {Onset, Nucleus, Coda} and the boundaries for where graphemes should be split to map
@@ -71,14 +68,6 @@ import static com.google.common.collect.Iterators.peekingIterator;
 public class SyllTagTrainer {
 
   private static final Logger log = LoggerFactory.getLogger(SyllTagTrainer.class);
-
-  public static final boolean useV2Scheme = false;
-
-  // align x syll ver 2
-  public static final char V2Align = 'E';
-  public static final char V2AlignEnd = 'F';
-  public static final char V2Syll = 'S';
-  public static final char V2SyllEnd = 'T';
 
   // syllable only roles
   public static final String Onset = "O";
@@ -103,13 +92,6 @@ public class SyllTagTrainer {
   public static final String OnsetCont = Onset + AlignCont;
   public static final String NucleusCont = Nucleus + AlignCont;
   public static final String CodaCont = Coda + AlignCont;
-
-  public static String syllCodeFromState(int state) {
-    if (state == 0) return Onset;
-    if (state == 1) return Nucleus;
-    if (state == 2) return Coda;
-    throw new IllegalArgumentException("Invalid state " + state);
-  }
 
   public static String onlySyllStructreFromTag(String tag) {
     Preconditions.checkArgument(tag.length() == 2, "didn't pass a tag", tag);
@@ -206,45 +188,6 @@ public class SyllTagTrainer {
     return sylls;
   }
 
-  // this is used for training to create the expected labels for V2 syll marks
-  public static List<String> makeSyllMarks2For(Alignment align) {
-    Preconditions.checkArgument(align.getSyllWord() != null, "must pass alignment with syll word");
-    SWord phoneSyll = align.getSyllWord();
-//    List<Boolean> endAligns = align.getXBoundaryMarks();
-    List<String> outCodes = Lists.newArrayListWithCapacity(align.getInputWord().unigramCount());
-
-    int size = align.getInputWord().unigramCount();
-    int yIndex = 0;
-
-    PeekingIterator<Pair<List<String>, List<String>>> iter = peekingIterator(align.getGraphonesSplit().iterator());
-    while (iter.hasNext()) {
-      boolean nextStartsSyll = false;
-      Pair<List<String>, List<String>> graphone = iter.next();
-      yIndex += graphone.getRight().size();
-      if (iter.hasNext()) {
-        Pair<List<String>, List<String>> nextGraphone = iter.peek();
-        for (int i = 0; i < nextGraphone.getRight().size(); i++) {
-          if (phoneSyll.isStartOfSyllable(yIndex + i)) {
-            nextStartsSyll = true;
-          }
-        }
-      } else {
-        nextStartsSyll = true;
-      }
-      String syllCode = String.valueOf(nextStartsSyll ? V2SyllEnd : V2Syll);
-      for (int i = 0; i < graphone.getLeft().size(); i++) {
-        if (i == graphone.getLeft().size() - 1) {
-          outCodes.add(V2AlignEnd + syllCode);
-        } else {
-          outCodes.add(V2Align + syllCode);
-        }
-      }
-    }
-    Preconditions.checkState(outCodes.size() == size);
-    return outCodes;
-  }
-
-  // given an alignment gets the syll grams whihc are just the ONC codes
   public static List<String> makeSyllGramsFromMarks(Alignment align) {
     return makeSyllGramsFromMarks(makeSyllMarksFor(align));
   }
@@ -324,7 +267,7 @@ public class SyllTagTrainer {
       log.info("Train data accuracy = " + trainAcc + ", test data accuracy = " + testAcc);
     }
 
-    return new SyllTagModel((CRF) trainer.getTransducer(), useV2Scheme);
+    return new SyllTagModel((CRF) trainer.getTransducer());
   }
 
   private TransducerTrainer trainOnce(Pipe pipe, InstanceList trainData) {
@@ -364,7 +307,7 @@ public class SyllTagTrainer {
     for (Alignment align : alignsToTrain) {
 
       Word orig = align.getInputWord();
-      Word marks = Word.fromGrams(useV2Scheme ? makeSyllMarks2For(align) : makeSyllMarksFor(align));
+      Word marks = Word.fromGrams(makeSyllMarksFor(align));
       Preconditions.checkState(orig.unigramCount() == marks.unigramCount());
 
       Instance ii = new Instance(orig.getValue(), marks.getValue(), align.getInputWord().getAsNoSpaceString(), null);

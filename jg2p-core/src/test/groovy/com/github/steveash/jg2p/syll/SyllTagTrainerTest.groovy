@@ -16,6 +16,7 @@
 
 package com.github.steveash.jg2p.syll
 
+import cc.mallet.types.Sequence
 import com.github.steveash.jg2p.Word
 import com.github.steveash.jg2p.align.Alignment
 import org.apache.commons.lang3.tuple.Pair
@@ -36,5 +37,34 @@ class SyllTagTrainerTest extends GroovyTestCase {
     println marks
     println grams
     assert alg.graphones.size() == grams.size()
+  }
+
+  void testMarks2ToGrams() {
+    def photog = Word.fromNormalString("photography")
+    def alg = new Alignment(photog, [
+        Pair.of("p h", "F"), Pair.of("o", "OH"), Pair.of("t", "T"), Pair.of("o", "AH"), Pair.of("g r", "G R"),
+        Pair.of("a", "AE"), Pair.of("p h", "F"), Pair.of("y", "EE EE")
+    ], 1.0, null, new SWord("F OH T AH G R AE F EE EE", "0 2 4 7"))
+    def marks = SyllTagTrainer.makeSyllMarks2For(alg)
+    def grams = SyllTagModel.makeAlignment2(photog, adapt(marks), 1.0)
+    println alg
+    println marks
+    println grams
+    assert alg.graphones.size() == grams.size()
+  }
+
+  Sequence<Object> adapt(List<String> strings) {
+    return new Sequence<Object>() {
+
+      @Override
+      int size() {
+        strings.size();
+      }
+
+      @Override
+      Object get(int index) {
+        return strings.get(index)
+      }
+    }
   }
 }

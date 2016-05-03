@@ -72,7 +72,7 @@ public class SyllTagTrainer {
 
   private static final Logger log = LoggerFactory.getLogger(SyllTagTrainer.class);
 
-  public static final boolean useV2Scheme = true;
+  public static final boolean useV2Scheme = false;
 
   // align x syll ver 2
   public static final char V2Align = 'E';

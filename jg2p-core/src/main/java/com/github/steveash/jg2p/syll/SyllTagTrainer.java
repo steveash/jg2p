@@ -210,6 +210,44 @@ public class SyllTagTrainer {
     return outGrams;
   }
 
+  public static List<String> makeSyllablesFor(Alignment align) {
+    StringBuilder sb = new StringBuilder();
+    List<String> outs = Lists.newArrayList();
+    SyllCounter counter = new SyllCounter();
+    List<Pair<String, String>> graphones = align.getGraphones();
+    List<String> syllGrams = align.getGraphoneSyllableGrams();
+    Preconditions.checkNotNull(syllGrams);
+    Preconditions.checkState(syllGrams.size() == graphones.size());
+    int syllIndex = 0;
+    for (int i = 0; i < graphones.size(); i++) {
+      counter.onNextGram(syllGrams.get(i));
+      if (syllIndex != counter.currentSyllable()) {
+        // we just crossed a syllable boundary
+        if (sb.length() == 0) {
+          throw new IllegalStateException("Not sure what happened with this " + align + " at " + i +
+                                          " the counter says " + counter.currentSyllable() + " i have " + syllIndex +
+          " after feeding " + syllGrams.get(i));
+        }
+        outs.add(sb.toString());
+        syllIndex = counter.currentSyllable();
+        sb.delete(0, sb.length());
+      }
+      String gram = graphones.get(i).getLeft();
+      appendGramNoSpaces(sb, gram);
+    }
+    if (sb.length() > 0) {
+      outs.add(sb.toString());
+    }
+    return outs;
+  }
+
+  private static StringBuilder appendGramNoSpaces(StringBuilder sb, String gram) {
+    for (String letter : Grams.iterateSymbols(gram)) {
+      sb.append(letter);
+    }
+    return sb;
+  }
+
   private static String getCodeFor(int state, boolean isStart) {
     if (state == 0) {
       if (isStart) {

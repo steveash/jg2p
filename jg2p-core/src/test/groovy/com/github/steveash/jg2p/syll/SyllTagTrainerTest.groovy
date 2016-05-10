@@ -25,6 +25,26 @@ import org.apache.commons.lang3.tuple.Pair
  */
 class SyllTagTrainerTest extends GroovyTestCase {
 
+  void testSyllables() {
+    def alg = new Alignment(Word.fromNormalString("photography"), [
+        Pair.of("p h", "F"), Pair.of("o", "OH"), Pair.of("t", "T"), Pair.of("o", "AH"), Pair.of("g r", "G R"),
+        Pair.of("a", "AE"), Pair.of("p h", "F"), Pair.of("y", "EE EE")
+    ], 1.0, null, new SWord("F OH T AH G R AE F EE EE", "0 2 4 7"))
+
+    def sylls = SyllTagTrainer.makeSyllablesFor(alg)
+    sylls.each {println it}
+    assert sylls.size() == 4
+  }
+
+  void testSyllables2() {
+    def alg = new Alignment(Word.fromNormalString("ah"), [Pair.of("a h", "AH")], 1.0, null,
+                            new SWord("AH", "0"))
+
+    def sylls = SyllTagTrainer.makeSyllablesFor(alg)
+    sylls.each {println it}
+    assert sylls.size() == 1
+  }
+
   void testMarksToGrams() {
     def alg = new Alignment(Word.fromNormalString("photography"), [
         Pair.of("p h", "F"), Pair.of("o", "OH"), Pair.of("t", "T"), Pair.of("o", "AH"), Pair.of("g r", "G R"),

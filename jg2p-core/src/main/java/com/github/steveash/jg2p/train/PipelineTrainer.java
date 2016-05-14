@@ -42,8 +42,9 @@ import com.github.steveash.jg2p.rerank.RerankExampleCsvReader;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 import com.github.steveash.jg2p.seq.PhonemeCrfTrainer;
 import com.github.steveash.jg2p.syll.PhoneSyllTagModel;
-import com.github.steveash.jg2p.syll.SyllTagModel;
-import com.github.steveash.jg2p.syll.SyllTagTrainer;
+import com.github.steveash.jg2p.syllchain.SyllChainModel;
+import com.github.steveash.jg2p.syllchain.SyllChainTrainer;
+import com.github.steveash.jg2p.syllchain.SyllTagAlignerAdapter;
 import com.github.steveash.jg2p.util.ModelReadWrite;
 import com.github.steveash.jg2p.util.ReadWrite;
 
@@ -55,6 +56,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
@@ -74,6 +76,7 @@ public class PipelineTrainer {
   // if we load any then they show up here
   private AlignModel loadedTrainingAligner;
   private Aligner loadedTestAligner;
+  private SyllChainModel loadedSyllTag;
   private PhonemeCrfModel loadedPronouncer;
   private LangModel loadedGraphone;
   private List<List<RerankExample>> loadedRerankerCsv;
@@ -129,9 +132,13 @@ public class PipelineTrainer {
     model.setRerankerModel(makeRerankerModel(model));
   }
 
+
   private void validateInputs() {
     log.info("Validating that all inputs are good before starting...");
     try {
+      if (opts.trainSyllTag) checkState(opts.useSyllableTagger, "cant train syll tag without using syll tagger");
+      if (opts.useSyllableTagger) checkState(isNotBlank(opts.initSyllTagFromFile) || opts.trainSyllTag,
+                                             "if using syll tagger, must have a syll tag model or train one");
       if (!opts.trainTrainingAligner) {
         loadedTrainingAligner = ModelReadWrite.readTrainAlignerFrom(opts.initTrainingAlignerFromFile);
       }
@@ -140,6 +147,9 @@ public class PipelineTrainer {
       }
       if (!opts.trainPronouncer || isNotBlank(opts.initCrfFromModelFile)) {
         loadedPronouncer = ModelReadWrite.readPronouncerFrom(opts.initCrfFromModelFile);
+      }
+      if (!opts.trainSyllTag || isNotBlank(opts.initSyllTagFromFile)) {
+        loadedSyllTag = ModelReadWrite.readSyllTagFrom(opts.initSyllTagFromFile);
       }
       if (!opts.trainGraphoneModel) {
         loadedGraphone = ModelReadWrite.readGraphoneFrom(opts.initGraphoneModelFromFile);
@@ -219,19 +229,13 @@ public class PipelineTrainer {
 
   private Aligner makeTestAligner() {
     if (opts.trainTestingAligner) {
-      if (!opts.useSyllableTagger) {
-        AlignTagTrainer alignTagTrainer = new AlignTagTrainer();
-        return alignTagTrainer.train(this.alignedInputs);
+      AlignTagTrainer alignTagTrainer = new AlignTagTrainer();
+      Aligner aligner = alignTagTrainer.train(this.alignedInputs);
+      if (opts.useSyllableTagger) {
+        SyllChainModel syllTagModel = makeSyllTag();
+        aligner = new SyllTagAlignerAdapter(aligner, syllTagModel);
       }
-      SyllTagTrainer syllTagTrainer = new SyllTagTrainer();
-      if (loadedTestAligner != null) {
-        if (loadedTestAligner instanceof SyllTagModel) {
-          syllTagTrainer.setInitFrom((SyllTagModel) loadedTestAligner);
-        } else {
-          log.warn("Cant init the syll tag from a model that isn't a syll mode, training from scratch");
-        }
-      }
-      return syllTagTrainer.train(this.alignedInputs, null, true);
+      return aligner;
     }
     return checkNotNull(loadedTestAligner, "shouldve already been loaded in init()");
   }
@@ -242,6 +246,17 @@ public class PipelineTrainer {
       return alignTrainer.train(inputs);
     }
     return checkNotNull(loadedTrainingAligner, "shouldve already been loaded in init()");
+  }
+
+  private SyllChainModel makeSyllTag() {
+    if (!opts.useSyllableTagger) {
+      return null;
+    }
+    if (opts.trainSyllTag) {
+      SyllChainTrainer trainer = new SyllChainTrainer();
+      return trainer.train(this.alignedInputs);
+    }
+    return checkNotNull(loadedSyllTag, "shoulve already loaded syll tag model");
   }
 
 }

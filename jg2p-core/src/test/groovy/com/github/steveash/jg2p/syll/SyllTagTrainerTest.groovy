@@ -57,4 +57,15 @@ class SyllTagTrainerTest extends GroovyTestCase {
     println grams
     assert alg.graphones.size() == grams.size()
   }
+
+  void testSyllMarks() {
+    def alg = new Alignment(Word.fromNormalString("photography"), [
+        Pair.of("p h", "F"), Pair.of("o", "OH"), Pair.of("t", "T"), Pair.of("o", "AH"), Pair.of("g r", "G R"),
+        Pair.of("a", "AE"), Pair.of("p h", "F"), Pair.of("y", "EE EE")
+    ], 1.0, null, new SWord("F OH T AH G R AE F EE EE", "0 2 4 7"))
+    def marks = SyllTagTrainer.makeSyllableGraphEndMarksFor(alg)
+    println alg
+    println marks
+    assert marks.count {it == "Z"} == 4
+  }
 }

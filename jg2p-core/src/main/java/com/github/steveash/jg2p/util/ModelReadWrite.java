@@ -27,6 +27,8 @@ import com.github.steveash.jg2p.lm.LangModel;
 import com.github.steveash.jg2p.rerank.Rerank3Model;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 import com.github.steveash.jg2p.syll.SyllTagModel;
+import com.github.steveash.jg2p.syllchain.SyllChainModel;
+import com.github.steveash.jg2p.syllchain.SyllTagAlignerAdapter;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,6 +62,9 @@ public class ModelReadWrite {
       return (AlignTagModel) model;
     }
     if (model instanceof SyllTagModel) {
+      return (Aligner) model;
+    }
+    if (model instanceof SyllTagAlignerAdapter) {
       return (Aligner) model;
     }
     if (model instanceof PhoneticEncoder) {
@@ -125,5 +130,21 @@ public class ModelReadWrite {
 
   protected static IllegalArgumentException badModel(String file, Object model) {
     return new IllegalArgumentException("Dont know how to get the right model out of " + file + " from type " + model);
+  }
+
+  public static SyllChainModel readSyllTagFrom(String file) {
+    Object model = read(file);
+    if (model instanceof SyllChainModel) {
+      return (SyllChainModel) model;
+    }
+    if (model instanceof PipelineModel) {
+      Aligner testingAligner = ((PipelineModel) model).getTestingAlignerModel();
+      if (testingAligner instanceof SyllTagAlignerAdapter) {
+        return ((SyllTagAlignerAdapter) testingAligner).getSyllTagger();
+      }
+      throw new IllegalArgumentException("The model from " + file + " is a pipeline model that wasn't "
+                                         + "trained for syll tagging so theres nothing to load");
+    }
+    throw badModel(file, model);
   }
 }

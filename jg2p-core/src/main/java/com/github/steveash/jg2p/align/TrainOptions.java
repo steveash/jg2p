@@ -122,22 +122,22 @@ public class TrainOptions implements Cloneable {
    * where to get the serialized model files to use or at least start from
    **/
 
-  @Option(name = "--initCrfFromModel")
+  @Option(name = "--initCrfFrom")
   public String initCrfFromModelFile = null;
 
-  @Option(name = "--initSeqVowFromModel")
-  public String initSeqVowFromFile = null;
+  @Option(name = "--initSyllTagFrom")
+  public String initSyllTagFromFile = null;
 
-  @Option(name = "--initTrainingAlignerFromModel")
+  @Option(name = "--initTrainingAlignerFrom")
   public String initTrainingAlignerFromFile = null;
 
-  @Option(name = "--initTestingAlignerFromModel")
+  @Option(name = "--initTestingAlignerFrom")
   public String initTestingAlignerFromFile = null;
 
-  @Option(name = "--initRerankerFromModel")
+  @Option(name = "--initRerankerFrom")
   public String initRerankerFromFile = null;
 
-  @Option(name = "--initGraphoneFromModel")
+  @Option(name = "--initGraphoneFrom")
   public String initGraphoneModelFromFile = null;
 
   // if you want to load up the phone syllable tagger to use in the reranking model then
@@ -152,6 +152,8 @@ public class TrainOptions implements Cloneable {
   public boolean trainTrainingAligner = true;
   @Option(name = "--trainTestingAligner")
   public boolean trainTestingAligner = true;
+  @Option(name = "--trainSyllTag")
+  public boolean trainSyllTag = true;
   @Option(name = "--trainPronouncer")
   public boolean trainPronouncer = true;
   @Option(name = "--trainGraphone")

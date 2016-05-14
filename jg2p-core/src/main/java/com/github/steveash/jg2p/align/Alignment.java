@@ -248,6 +248,10 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
     return new Alignment(this.input, this.graphones, this.score, this.graphoneSyllableGrams, sword);
   }
 
+  public Alignment withGraphoneSyllGrams(List<String> graphoneSyllGrams) {
+    return new Alignment(this.input, this.graphones, this.score, graphoneSyllGrams, this.syllWord);
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {

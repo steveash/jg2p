@@ -1,5 +1,6 @@
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.syll.SWord
+import com.github.steveash.jg2p.syll.SyllTagTrainer
 import com.github.steveash.jg2p.syllchain.SyllChainTrainer
 import com.github.steveash.jg2p.util.ModelReadWrite
 import com.google.common.collect.Sets
@@ -29,25 +30,32 @@ def inputFile = "cmu7b.train"
 def inputs = InputReader.makePSaurusReader().readFromClasspath(inputFile)
 println "reading model..."
 def aligner = ModelReadWrite.readTrainAlignerFrom("../resources/pipe_43sy_F11_5.dat")
-def trainer = new SyllChainTrainer(aligner)
+def aligns = inputs.collectMany { rec ->
+  def res = aligner.align(rec.xWord, rec.yWord, 1)
+  if (!res.isEmpty()) {
+    return [res.first().withSyllWord((SWord) rec.yWord)]
+  }
+  return []
+}
+def trainer = new SyllChainTrainer()
 
 println "Training..."
-def model = trainer.train(inputs)
+def model = trainer.train(aligns)
 println "done training, checking..."
 
 int countWords = 0;
 int correctWords = 0;
 int countSylls = 0;
 int correctSylls = 0;
-inputs.each { rec ->
-  def predict = model.syllBreaksForGrams(rec.left)
-  def expected = Ints.asList((rec.right as SWord).getBounds())
+aligns.each { rec ->
+  def predict = model.sylls(rec)
+  def expected = SyllTagTrainer.makeSyllMarksFor(rec)
   countWords += 1
-  if (predict.equals(expected)) {
+  if (predict.graphoneSyllableGrams.equals(expected)) {
     correctWords += 1
   }
-  countSylls += expected.size()
-  correctSylls += Sets.intersection(predict.toSet(), expected.toSet()).size()
+//  countSylls += expected.size()
+//  correctSylls += Sets.intersection(predict.toSet(), expected.toSet()).size()
 }
 println "Checked $countWords and got $correctWords completely right"
-println "Checked $countSylls sylls and got $correctSylls right"
+//println "Checked $countSylls sylls and got $correctSylls right"

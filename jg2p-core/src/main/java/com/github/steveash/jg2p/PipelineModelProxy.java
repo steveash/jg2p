@@ -16,12 +16,13 @@
 
 package com.github.steveash.jg2p;
 
+import com.google.common.base.Preconditions;
+
 import com.github.steveash.jg2p.align.AlignModel;
 import com.github.steveash.jg2p.align.Aligner;
 import com.github.steveash.jg2p.lm.LangModel;
 import com.github.steveash.jg2p.rerank.Rerank3Model;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
-import com.sun.nio.sctp.InvalidStreamException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,7 @@ public class PipelineModelProxy implements Externalizable {
   private static final Logger log = LoggerFactory.getLogger(PipelineModelProxy.class);
 
   private static final long serialVersionUID = 5722034722126958295L;
+  // first version of proxy was 42
   private static final int VERSION = 42;
 
   private PipelineModel model;
@@ -74,15 +76,16 @@ public class PipelineModelProxy implements Externalizable {
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
     log.info("Reading the proxy in....");
     int version = in.readInt();
-    if (version != 42) {
-      throw new InvalidStreamException("Dont know how to decode version " + version);
-    }
+    Preconditions.checkState(version >= 42 && version <= 42);
     this.model = new PipelineModel();
     this.model.setTrainingAlignerModel((AlignModel) in.readObject());
     this.model.setTestingAlignerModel((Aligner) in.readObject());
     this.model.setPronouncerModel((PhonemeCrfModel) in.readObject());
     this.model.setGraphoneModel((LangModel) in.readObject());
     this.model.setRerankerModel((Rerank3Model) in.readObject());
+//    if (version >= 43) {
+//      this.model.setSyllChainModel((SyllChainModel) in.readObject());
+//    }
   }
 
   private Object readResolve() throws ObjectStreamException {

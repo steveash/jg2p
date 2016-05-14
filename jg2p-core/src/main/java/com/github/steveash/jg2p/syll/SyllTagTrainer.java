@@ -19,7 +19,10 @@ package com.github.steveash.jg2p.syll;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.collect.PeekingIterator;
+import com.google.common.collect.Sets;
 
 import com.github.steveash.jg2p.Grams;
 import com.github.steveash.jg2p.Word;
@@ -39,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import cc.mallet.fst.CRF;
 import cc.mallet.fst.CRFTrainerByThreadedLabelLikelihood;
@@ -53,6 +57,7 @@ import cc.mallet.types.Alphabet;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
+import cc.mallet.types.Sequence;
 
 /**
  * Trains a CRF to predict synonym structure from aligned.  We have two kinds of structure we are modelling here -- the
@@ -83,6 +88,12 @@ public class SyllTagTrainer {
   private static final char AlignBeginChar = AlignBegin.charAt(0);
   private static final char AlignContChar = AlignCont.charAt(0);
 
+  // syll chain structure
+  public static final String SyllCont = "Y";
+  public static final String SyllEnd = "Z";
+  public static final char SyllContChar = SyllCont.charAt(0);
+  public static final char SyllEndChar = SyllEnd.charAt(0);
+
   // these mark the _start_ of a phoneme alignemnt
   public static final String OnsetStart = Onset + AlignBegin;
   public static final String NucleusStart = Nucleus + AlignBegin;
@@ -96,25 +107,39 @@ public class SyllTagTrainer {
   public static String onlySyllStructreFromTag(String tag) {
     Preconditions.checkArgument(tag.length() == 2, "didn't pass a tag", tag);
     char c = tag.charAt(0);
-    if (c == OnsetChar) return Onset;
-    if (c == NucleusChar) return Nucleus;
-    if (c == CodaChar) return Coda;
+    if (c == OnsetChar) {
+      return Onset;
+    }
+    if (c == NucleusChar) {
+      return Nucleus;
+    }
+    if (c == CodaChar) {
+      return Coda;
+    }
     throw new IllegalStateException("unknown code symbol " + tag);
   }
 
   public static String onlyAlignStructureFromTag(String tag) {
     Preconditions.checkArgument(tag.length() == 2, "didn't pass a tag", tag);
-        char c = tag.charAt(1);
-        if (c == AlignBeginChar) return AlignBegin;
-        if (c == AlignContChar) return AlignCont;
-        throw new IllegalStateException("unknown code symbol " + tag);
+    char c = tag.charAt(1);
+    if (c == AlignBeginChar) {
+      return AlignBegin;
+    }
+    if (c == AlignContChar) {
+      return AlignCont;
+    }
+    throw new IllegalStateException("unknown code symbol " + tag);
   }
 
   public static boolean isAlignBegin(String tag) {
     if (tag.length() == 2) {
       char c = tag.charAt(1);
-      if (c == AlignBeginChar) return true;
-      if (c == AlignContChar) return false;
+      if (c == AlignBeginChar) {
+        return true;
+      }
+      if (c == AlignContChar) {
+        return false;
+      }
     }
     throw new IllegalStateException("unknown code symbol " + tag);
   }
@@ -226,7 +251,7 @@ public class SyllTagTrainer {
         if (sb.length() == 0) {
           throw new IllegalStateException("Not sure what happened with this " + align + " at " + i +
                                           " the counter says " + counter.currentSyllable() + " i have " + syllIndex +
-          " after feeding " + syllGrams.get(i));
+                                          " after feeding " + syllGrams.get(i));
         }
         outs.add(sb.toString());
         syllIndex = counter.currentSyllable();
@@ -239,6 +264,93 @@ public class SyllTagTrainer {
       outs.add(sb.toString());
     }
     return outs;
+  }
+
+  public static List<String> makeSyllableGraphEndMarksFor(Alignment align) {
+    List<String> endings = Lists.newArrayList();
+    SyllCounter counter = new SyllCounter();
+    List<String> syllGrams = align.getGraphoneSyllableGrams();
+    List<String> codes = Grams.flattenGrams(syllGrams);
+    PeekingIterator<String> iter = Iterators.peekingIterator(codes.iterator());
+    Preconditions.checkState(codes.size() == align.getWordUnigrams().size());
+    int syllIndex = 0;
+    if (!iter.hasNext()) {
+      return ImmutableList.of(); // empty
+    }
+    counter.onNextGram(iter.next());
+    while (iter.hasNext()) {
+      counter.onNextGram(iter.next());
+      endings.add(syllIndex == counter.currentSyllable() ? SyllCont : SyllEnd);
+      syllIndex = counter.currentSyllable();
+    }
+    endings.add(SyllEnd); // last one is always a boundary
+    Preconditions.checkState(codes.size() == endings.size());
+    return endings;
+  }
+
+  public static Set<Integer> startsFromSyllGraphMarks(Sequence<?> outSeq) {
+    Set<Integer> starts = Sets.newHashSet();
+    starts.add(0);
+    for (int i = 1; i < outSeq.size(); i++) {
+      if (outSeq.get(i - 1).toString().equalsIgnoreCase(SyllEnd)) {
+        starts.add(i);
+      }
+    }
+    return starts;
+  }
+
+  public static List<String> makeSyllMarksFor(Alignment align, Set<Integer> graphSyllStarts) {
+    List<Boolean> starts = align.getXStartMarks();
+    List<String> sylls = Lists.newArrayListWithCapacity(align.getWordUnigrams().size());
+    int syllState = 0; // 0 onset, 1 nucleus, 2 coda
+    int x = 0;
+
+    for (Pair<List<String>, List<String>> graphone : align.getGraphonesSplit()) {
+      // deal with phonemes, if leading is syllable boundary then great, also assert no breaks
+
+      StringBuilder sb = new StringBuilder();
+      // we've updated our syll state so just emit symbols now
+      for (int i = 0; i < graphone.getLeft().size(); i++) {
+        String graph = graphone.getLeft().get(i);
+        // skip epsilons
+        if (graph.equals(Grams.EPSILON)) {
+          continue;
+        }
+
+        if (graphSyllStarts.contains(x)) {
+          // reset the syll state to onset
+          syllState = 0;
+        }
+
+        boolean isVowel = Graphemes.isVowel(graph);
+        if (syllState == 0) {
+          if (isVowel) {
+            syllState = 1; // this is the nucleus
+          }
+        } else if (syllState == 1) {
+          if (!isVowel) {
+            syllState = 2; // this is the coda
+          }
+        } else {
+          Preconditions.checkState(syllState == 2, "should always be coda");
+          //          if (isVowel && !knownIssue(graph, align.getWordUnigrams(), x)) {
+          //            if (log.isDebugEnabled()) {
+          //              log.debug("Malformed syllable, vowels in coda " + phoneSyll +
+          //                        " with graphones " + align.toString() + " x = " + x + ", y = " + y);
+          //            }
+          //          }
+        }
+        String coded = getSyllCodeFor(syllState);
+        sb.append(coded).append(" ");
+        x += 1;
+      }
+      sylls.add(sb.toString().trim());
+      sb.delete(0, sb.length());
+    }
+    Preconditions
+        .checkState(x == align.getWordUnigrams().size(), "ended up with diff graphone graph count ", align);
+    Preconditions.checkState(sylls.size() == align.getGraphones().size());
+    return sylls;
   }
 
   private static StringBuilder appendGramNoSpaces(StringBuilder sb, String gram) {
@@ -268,6 +380,17 @@ public class SyllTagTrainer {
       } else {
         return CodaCont;
       }
+    }
+  }
+
+  private static String getSyllCodeFor(int state) {
+    if (state == 0) {
+      return Onset;
+    } else if (state == 1) {
+      return Nucleus;
+    } else {
+      Preconditions.checkState(state == 2, "invalid state");
+      return Coda;
     }
   }
 

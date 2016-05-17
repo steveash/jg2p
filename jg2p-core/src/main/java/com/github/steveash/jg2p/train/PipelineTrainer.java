@@ -42,10 +42,9 @@ import com.github.steveash.jg2p.rerank.RerankExampleCsvReader;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 import com.github.steveash.jg2p.seq.PhonemeCrfTrainer;
 import com.github.steveash.jg2p.syll.PhoneSyllTagModel;
-import com.github.steveash.jg2p.syll.SyllTagModel;
-import com.github.steveash.jg2p.syll.SyllTagTrainer;
 import com.github.steveash.jg2p.syllchain.SyllChainModel;
 import com.github.steveash.jg2p.syllchain.SyllChainTrainer;
+import com.github.steveash.jg2p.syllchain.SyllTagAlignerAdapter;
 import com.github.steveash.jg2p.util.ModelReadWrite;
 import com.github.steveash.jg2p.util.ReadWrite;
 
@@ -229,38 +228,38 @@ public class PipelineTrainer {
   }
 
   // this is the aligner -> syll split into two separate models
-//  private Aligner makeTestAligner() {
-//    if (opts.trainTestingAligner) {
-//      AlignTagTrainer alignTagTrainer = new AlignTagTrainer();
-//      Aligner aligner = alignTagTrainer.train(this.alignedInputs);
-//      if (opts.useSyllableTagger) {
-//        SyllChainModel syllTagModel = makeSyllTag();
-//        aligner = new SyllTagAlignerAdapter(aligner, syllTagModel);
-//      }
-//      return aligner;
-//    }
-//    return checkNotNull(loadedTestAligner, "shouldve already been loaded in init()");
-//  }
-
-  // this is the aligner + syll marker in the same model
   private Aligner makeTestAligner() {
     if (opts.trainTestingAligner) {
-      if (!opts.useSyllableTagger) {
-        AlignTagTrainer alignTagTrainer = new AlignTagTrainer();
-        return alignTagTrainer.train(this.alignedInputs);
+      AlignTagTrainer alignTagTrainer = new AlignTagTrainer();
+      Aligner aligner = alignTagTrainer.train(this.alignedInputs);
+      if (opts.useSyllableTagger) {
+        SyllChainModel syllTagModel = makeSyllTag();
+        aligner = new SyllTagAlignerAdapter(aligner, syllTagModel);
       }
-      SyllTagTrainer syllTagTrainer = new SyllTagTrainer();
-      if (loadedTestAligner != null) {
-        if (loadedTestAligner instanceof SyllTagModel) {
-          syllTagTrainer.setInitFrom((SyllTagModel) loadedTestAligner);
-        } else {
-          log.warn("Cant init the syll tag from a model that isn't a syll mode, training from scratch");
-        }
-      }
-      return syllTagTrainer.train(this.alignedInputs, null, true);
+      return aligner;
     }
     return checkNotNull(loadedTestAligner, "shouldve already been loaded in init()");
   }
+
+  // this is the aligner + syll marker in the same model
+//  private Aligner makeTestAligner() {
+//    if (opts.trainTestingAligner) {
+//      if (!opts.useSyllableTagger) {
+//        AlignTagTrainer alignTagTrainer = new AlignTagTrainer();
+//        return alignTagTrainer.train(this.alignedInputs);
+//      }
+//      SyllTagTrainer syllTagTrainer = new SyllTagTrainer();
+//      if (loadedTestAligner != null) {
+//        if (loadedTestAligner instanceof SyllTagModel) {
+//          syllTagTrainer.setInitFrom((SyllTagModel) loadedTestAligner);
+//        } else {
+//          log.warn("Cant init the syll tag from a model that isn't a syll mode, training from scratch");
+//        }
+//      }
+//      return syllTagTrainer.train(this.alignedInputs, null, true);
+//    }
+//    return checkNotNull(loadedTestAligner, "shouldve already been loaded in init()");
+//  }
 
   private AlignModel makeTrainingAligner() {
     if (opts.trainTrainingAligner) {

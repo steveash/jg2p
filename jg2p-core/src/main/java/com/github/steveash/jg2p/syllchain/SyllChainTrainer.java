@@ -73,13 +73,13 @@ public class SyllChainTrainer {
     CRF crf = new CRF(pipe, null);
     crf.addOrderNStates(examples, new int[]{1}, null, null, null, null, false);
     crf.addStartState();
-    crf.setWeightsDimensionAsIn(examples, false);
+//    crf.setWeightsDimensionAsIn(examples, false);
 
     log.info("Starting syllchain training...");
     CRFTrainerByThreadedLabelLikelihood trainer = new CRFTrainerByThreadedLabelLikelihood(crf, 8);
     trainer.setGaussianPriorVariance(2);
-    trainer.setUseSomeUnsupportedTrick(false);
-    trainer.setAddNoFactors(true);
+//    trainer.setUseSomeUnsupportedTrick(false);
+//    trainer.setAddNoFactors(true);
     trainer.train(examples);
     trainer.shutdown();
     watch.stop();

@@ -101,7 +101,7 @@ public class AlignTagTrainer {
     log.info("Starting alignTag training...");
     CRFTrainerByThreadedLabelLikelihood trainer = new CRFTrainerByThreadedLabelLikelihood(crf, 8);
     trainer.setGaussianPriorVariance(2);
-    trainer.setUseSomeUnsupportedTrick(false);
+//    trainer.setUseSomeUnsupportedTrick(false);
     trainer.train(trainData);
     trainer.shutdown();
     watch.stop();

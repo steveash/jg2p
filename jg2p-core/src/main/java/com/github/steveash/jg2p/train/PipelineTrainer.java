@@ -148,7 +148,7 @@ public class PipelineTrainer {
       if (!opts.trainPronouncer || isNotBlank(opts.initCrfFromModelFile)) {
         loadedPronouncer = ModelReadWrite.readPronouncerFrom(opts.initCrfFromModelFile);
       }
-      if (!opts.trainSyllTag || isNotBlank(opts.initSyllTagFromFile)) {
+      if ((opts.useSyllableTagger && !opts.trainSyllTag) || (opts.useSyllableTagger && isNotBlank(opts.initSyllTagFromFile))) {
         loadedSyllTag = ModelReadWrite.readSyllTagFrom(opts.initSyllTagFromFile);
       }
       if (!opts.trainGraphoneModel) {

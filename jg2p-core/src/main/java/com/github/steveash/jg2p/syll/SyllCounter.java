@@ -39,7 +39,7 @@ public class SyllCounter {
 
   // by default to consecutive nucleus phonemes cause a syllable break
   public SyllCounter() {
-    splitNucleus = false;
+    splitNucleus = true;
   }
 
   public SyllCounter(boolean splitNucleus) {

@@ -41,22 +41,22 @@ def inputs = InputReader.makePSaurusReader().readFromClasspath(inputFile)
 
 def testImmediately = true
 def opts = new TrainOptions()
-opts.maxXGram = 2
-opts.maxYGram = 2
-opts.onlyOneGrams = true
-opts.useCityBlockPenalty = false
+opts.maxXGram = 4
+opts.maxYGram = 3
+opts.onlyOneGrams = false
+opts.useCityBlockPenalty = true
 opts.useWindowWalker = true
-opts.useSyllableTagger = false
+opts.useSyllableTagger = true
 opts.maxPronouncerTrainingIterations = 400
-def inFile = "../resources/pipe_22sy_nocityblk_cmu7_F11_1.dat"
+def inFile = "../resources/pipe_43sy_cmu7_F11_5.dat"
 opts.initTrainingAlignerFromFile = inFile
 opts.initTestingAlignerFromFile = inFile
 opts.initCrfFromModelFile = inFile
-//opts.initPhoneSyllModelFromFile = "../resources/syllphonetag.dat"
+opts.initPhoneSyllModelFromFile = "../resources/syllphonetag.dat"
 //opts.initRerankerFromFile = "../resources/pip_rr.dat"
 opts.graphoneLanguageModelOrder = 8
 opts.graphoneLanguageModelOrderForTraining = 8
-//opts.trainTrainingAligner = false
+opts.trainTrainingAligner = false
 //opts.trainTestingAligner = false
 //opts.trimFeaturesByGradientGain = 2.1
 
@@ -64,7 +64,7 @@ opts.trainAll();
 //opts.useInputRerankExampleCsv = "../resources/pip_rre.csv"
 //opts.trainReranker = true
 //opts.writeOutputRerankExampleCsv = "../resources/rerank_inputs.csv"
-def outFile = "../resources/pipe_22_nocityblk_cmu7_F11_1.dat"
+def outFile = "../resources/pipe_43sy_cmu7_F11_6.dat"
 
 
 def log = LoggerFactory.getLogger("psaurus")

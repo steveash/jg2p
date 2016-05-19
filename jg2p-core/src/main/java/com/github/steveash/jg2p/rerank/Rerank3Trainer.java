@@ -59,7 +59,7 @@ public class Rerank3Trainer {
   public Rerank3Model trainFor(Collection<List<RerankExample>> trainingData) {
     pipe = makePipe();
     InstanceList instances = convert(trainingData);
-    RankMaxEntTrainer trainer = new RankMaxEntTrainer(2.0);
+    RankMaxEntTrainer trainer = new RankMaxEntTrainer(10.0);
 //    AdaBoostTrainer trainer = new AdaBoostTrainer(new MaxEntL1Trainer(), 10);
     RankMaxEnt model = (RankMaxEnt) trainer.train(instances);
 //    Trial trial = new Trial(model, instances);

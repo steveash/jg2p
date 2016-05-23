@@ -1,5 +1,6 @@
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.InputRecord
+import com.github.steveash.jg2p.syll.SWord
 
 /*
  * Copyright 2015 Steve Ash
@@ -21,17 +22,17 @@ import com.github.steveash.jg2p.align.InputRecord
  * @author Steve Ash
  */
 List<InputRecord> recs = []
-recs.addAll(InputReader.makePSaurusReader().readFromClasspath("g014b2b.test"))
-recs.addAll(InputReader.makePSaurusReader().readFromClasspath("g014b2b.train"))
+recs.addAll(InputReader.makePSaurusReader().readFromClasspath("cmu7b.test"))
+recs.addAll(InputReader.makePSaurusReader().readFromClasspath("cmu7b.train"))
 println "Original lines " + recs.size()
 List<Map.Entry<String, List<InputRecord>>> grouped = recs.groupBy { it.left.asSpaceString }.entrySet().toList()
 
 int cut = (grouped.size() as double) * 0.90;
 println "cutting at $cut"
-for (int i = 0; i < 10; i++) {
+for (int i = 0; i < 4; i++) {
   Collections.shuffle(grouped)
-  new File("../resources/g014b2b_" + i + ".train").withPrintWriter { tr ->
-    new File("../resources/g014b2b_" + i + ".test").withPrintWriter { ts ->
+  new File("../resources/cmu_" + i + ".train").withPrintWriter { tr ->
+    new File("../resources/cmu_" + i + ".test").withPrintWriter { ts ->
       for (int j = 0; j < grouped.size(); j++) {
         def entry = grouped.get(j).value
         if (j < cut) {
@@ -45,7 +46,16 @@ for (int i = 0; i < 10; i++) {
 }
 
 def writeTo(PrintWriter pw, List<InputRecord> recs) {
-recs.each { rec ->
-pw.println(rec.left.value.join("") + "\t" + rec.right.asSpaceString)
-}
+  recs.each { rec ->
+    def right = rec.right
+    String line = rec.left.asNoSpaceString + "\t" + rec.right.asSpaceString
+    if (right instanceof SWord) {
+      def sright = right as SWord
+      line += "\t" + sright.bounds.join(" ")
+      if (sright.syllableStress != null) {
+        line += "\t" + sright.syllableStress.join(" ")
+      }
+    }
+    pw.println(line)
+  }
 }

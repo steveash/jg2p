@@ -1,7 +1,10 @@
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.syll.PhoneSyllTagModel
+import com.github.steveash.jg2p.syll.SWord
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Joiner
+import com.google.common.collect.HashMultimap
+import com.google.common.collect.HashMultiset
 
 /*
  * Copyright 2016 Steve Ash
@@ -25,66 +28,25 @@ import com.google.common.base.Joiner
  * @author Steve Ash
  */
 
-def model = ReadWrite.readFromFile(PhoneSyllTagModel, new File("../resources/syllphonetag.dat"))
-def test = InputReader.makeCmuReader().readFromClasspath("cmudict-0.7b")
-def grouped = test.groupBy { it.left }
-def entries = grouped.entrySet().toList()
-Collections.shuffle(entries)
-def joiner = Joiner.on(" ")
-int toTrain = (int) ((entries.size() as double) * 0.90)
-int count = 0
-int multistress = 0
-int nostresses = 0
-int endedNoStress = 0
-new File("../resources/cmu7b.train").withPrintWriter { pw1 ->
-  new File("../resources/cmu7b.test").withPrintWriter { pw2 ->
-    entries.each { entry ->
-      def pw = (count < toTrain ? pw1 : pw2)
-      entry.value.each { record ->
-        def starts = model.syllStarts(record.yWord)
-        int syllIndex = 0
-        int thisStress = -1;
-        def outStress = []
-        for (int i = 0; i < record.yWord.unigramCount(); i++) {
-          if (i > 0 && ((syllIndex + 1) < starts.size()) && (starts.get(syllIndex + 1) == i)) {
-            if (thisStress < 0) {
-              println record.toString() + " no stress for i = " + i + " starts " + starts
-              outStress << 0
-              nostresses += 1
-            } else {
-              outStress << thisStress
-              thisStress = -1
-            }
-            syllIndex += 1
-          }
-          if (record.stresses[i] >= 0) {
-            if (thisStress >= 0) {
-              multistress += 1
-              println "$i got multiple stresses for " + record + " and starts " + starts
-            }
-            thisStress = Math.max(thisStress, record.stresses[i])
-          }
-        }
-
-        if (thisStress < 0) {
-          outStress << 0
-          println "ended without a stress for " + record + " starts " + starts
-          endedNoStress += 1
-        } else {
-          outStress << thisStress
-        }
-        assert outStress.size() == starts.size()
-        pw.println(record.xWord.asNoSpaceString + "\t" + record.yWord.asSpaceString + "\t" +
-                   joiner.join(starts) + "\t" + joiner.join(outStress))
-      }
-      count += 1
-      if (count % 5000 == 0) {
-        println "did $count"
-      }
-    }
+//def model = ReadWrite.readFromFile(PhoneSyllTagModel, new File("../resources/syllphonetag.dat"))
+def test = InputReader.makePSaurusReader().readFromClasspath("cmu7b.train")
+def sylls = HashMultiset.create()
+int zero = 0;
+int many = 0;
+test.each { rec ->
+  def sword = rec.yWord as SWord
+  int thisFirst = sword.syllableStress.count { it == 1 }
+  int firstIndex = sword.syllableStress.findIndexOf {it == 1}
+  sylls.add(firstIndex)
+  if (thisFirst == 0) {
+    zero+= 1;
+  }
+  if (thisFirst > 1) {
+    many += 1
   }
 }
-println "done $toTrain in training and ${entries.size() - toTrain} in test"
-println "got $multistress multiple stress entries"
-println "got $nostresses no stress entries"
-println "got $endedNoStress ended without stress set"
+println "zero stressses $zero"
+println "many stresses $many"
+sylls.entrySet().each {
+  println "$it"
+}

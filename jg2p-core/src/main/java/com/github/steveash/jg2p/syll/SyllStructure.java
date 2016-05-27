@@ -21,6 +21,7 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
+import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.phoseq.Graphemes;
 
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +44,10 @@ public class SyllStructure {
   private final List<Integer> graphoneIndexToSyllableIndex;
   private final List<Boolean> graphoneIndexContainsVowel;
   private final int syllCount;
+
+  public SyllStructure(Alignment align) {
+    this(align.getAllXTokensAsList(), align.getGraphoneSyllableGrams());
+  }
 
   public SyllStructure(List<String> textGraphones, List<String> syllGraphones) {
     Preconditions.checkArgument(textGraphones.size() == syllGraphones.size(), "mismatched arg lists");

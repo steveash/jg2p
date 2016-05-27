@@ -58,6 +58,7 @@ public class SWord extends Word {
   private int[] bounds;         // size is # of syllables
   private int[] syllableStress; // size is # of syllables
   private int[] phoneStress;    // size is # of phonemes
+  private int firstSyllWithStress; // index of syll with the primary stress
 
   /**
    * @param celexString this is the celex pipe delimited with hypthen syll markers format
@@ -88,6 +89,7 @@ public class SWord extends Word {
     for (String val : splitter.split(spaceSepSyllStarts)) {
       bs.add(Integer.parseInt(val));
     }
+    firstSyllWithStress = -1;
     Preconditions.checkArgument(bs.size() > 0, "must pass at least one syllable boundary");
     this.bounds = Ints.toArray(Ordering.natural().sortedCopy(bs));
     if (isNotBlank(spaceSepSyllStress)) {
@@ -102,8 +104,13 @@ public class SWord extends Word {
         }
         phoneStress[i] = Integer.parseInt(ss.get(syllIndex));
       }
+
       for (int i = 0; i < ss.size(); i++) {
-        syllableStress[i] = Integer.parseInt(ss.get(i));
+        int stress = Integer.parseInt(ss.get(i));
+        syllableStress[i] = stress;
+        if (firstSyllWithStress < 0 && stress == 1) {
+          firstSyllWithStress = i;
+        }
       }
     }
   }
@@ -140,11 +147,19 @@ public class SWord extends Word {
     return bounds.length;
   }
 
+  public int firstSyllableWithStress() {
+    return firstSyllWithStress;
+  }
+
   public boolean isStartOfSyllable(int phoneIndex) {
     if (phoneIndex == 0) {
       return true;
     }
     return Arrays.binarySearch(bounds, phoneIndex) >= 0;
+  }
+
+  public int[] getSyllableStress() {
+    return syllableStress;
   }
 
   public List<String> getOncCodingForPhones() {

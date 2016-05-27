@@ -33,8 +33,8 @@ public class SWordConverterPipe extends Pipe {
     inst.setData(data.getValue());
     if (data instanceof SWord) {
       SWord sdata = (SWord) data;
-      inst.setTarget(sdata.getEndMarkers());
-//      inst.setTarget(sdata.getOncCodingForPhones());
+//      inst.setTarget(sdata.getEndMarkers());
+      inst.setTarget(sdata.getOncCodingForPhones());
     }
     return inst;
   }

@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import cc.mallet.fst.CRF;
 import cc.mallet.fst.CRFTrainerByThreadedLabelLikelihood;
@@ -87,8 +88,8 @@ public class PhoneSyllTagTrainer {
     // O,O    O,N   -O,C-
     // N,O    N,N   N,C
     // C,O    ?C,N?   C,C
-//    Pattern forbidden = Pattern.compile("(O,C|<START>,C|O,<END>)", Pattern.CASE_INSENSITIVE);
-    crf.addOrderNStates(trainData, new int[]{1}, null, null, null, null, false);
+    Pattern forbidden = Pattern.compile("(O,C|<START>,C|O,<END>)", Pattern.CASE_INSENSITIVE);
+    crf.addOrderNStates(trainData, new int[]{1}, null, null, forbidden, null, false);
     crf.addStartState();
     crf.setWeightsDimensionAsIn(trainData);
 
@@ -99,8 +100,8 @@ public class PhoneSyllTagTrainer {
     log.info("Starting syll phone training...");
     CRFTrainerByThreadedLabelLikelihood trainer = new CRFTrainerByThreadedLabelLikelihood(crf, 8);
     trainer.setGaussianPriorVariance(2);
-    trainer.setAddNoFactors(true);
-    trainer.setUseSomeUnsupportedTrick(false);
+    trainer.setAddNoFactors(false);
+    trainer.setUseSomeUnsupportedTrick(true);
     trainer.train(trainData);
     trainer.shutdown();
     watch.stop();

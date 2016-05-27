@@ -49,12 +49,12 @@ public class PhoneSyllTagModel implements Serializable {
 
   public List<Integer> syllStarts(Word word) {
     Sequence<String> seq = getCoding(word);
-    return SWord.convertEndMarkersToBoundaries(seq);
-//    List<Integer> starts = SWord.convertOncToBoundaries(seq);
-//    return starts;
+//    return SWord.convertEndMarkersToBoundaries(seq);
+    List<Integer> starts = SWord.convertOncToBoundaries(seq);
+    return starts;
   }
 
-  public Sequence<String> getCoding(Word word) {
+  private Sequence<String> getCoding(Word word) {
     Instance instance = new Instance(word, null, null, null);
     instance = crf.getInputPipe().instanceFrom(instance);
     Sequence inSeq = (Sequence) instance.getData();
@@ -70,19 +70,21 @@ public class PhoneSyllTagModel implements Serializable {
   }
 
   private boolean isLegal(List<String> phones, Sequence marks) {
-    boolean sawVowel = false;
-    Preconditions.checkState(phones.size() == marks.size());
-    for (int i = 0; i < marks.size(); i++) {
-      if (Phonemes.isVowel(phones.get(i))) {
-        sawVowel = true;
-      }
-      if (marks.get(i).equals("1")) {
-        if (!sawVowel) {
-          return false; // have to have a vowel
-        }
-        sawVowel = false;
-      }
-    }
-    return true;
+    return true; // with onc we dont have anything to check
+    // trying to exclude illegal boundaries instead of just coding the onc...
+//    boolean sawVowel = false;
+//    Preconditions.checkState(phones.size() == marks.size());
+//    for (int i = 0; i < marks.size(); i++) {
+//      if (Phonemes.isVowel(phones.get(i))) {
+//        sawVowel = true;
+//      }
+//      if (marks.get(i).equals("1")) {
+//        if (!sawVowel) {
+//          return false; // have to have a vowel
+//        }
+//        sawVowel = false;
+//      }
+//    }
+//    return true;
   }
 }

@@ -46,9 +46,9 @@ public loadFile(String filePath) {
 
 //recs.take(10).each {println it}
 
-//def old = ReadWrite.readFromFile(PhoneSyllTagModel, new File("../resources/syllphonetag.dat"))
+def old = ReadWrite.readFromFile(PhoneSyllTagModel, new File("../resources/syllphonetag.dat"))
 def trainer = new PhoneSyllTagTrainer()
-//trainer.setPullFrom(old.getCrf())
+trainer.setPullFrom(old.getCrf())
 def model = trainer.train(trainRecs)
 //def model = old
 ReadWrite.writeTo(model, new File("../resources/syllphonetag.dat"))

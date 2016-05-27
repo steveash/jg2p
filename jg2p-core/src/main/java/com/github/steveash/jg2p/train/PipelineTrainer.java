@@ -147,6 +147,7 @@ public class PipelineTrainer {
       }
       if (!opts.trainPronouncer || isNotBlank(opts.initCrfFromModelFile)) {
         loadedPronouncer = ModelReadWrite.readPronouncerFrom(opts.initCrfFromModelFile);
+        loadedPronouncer.getCrf().makeParametersHashSparse();
       }
       if ((opts.useSyllableTagger && !opts.trainSyllTag) || (opts.useSyllableTagger && isNotBlank(opts.initSyllTagFromFile))) {
         loadedSyllTag = ModelReadWrite.readSyllTagFrom(opts.initSyllTagFromFile);
@@ -218,7 +219,9 @@ public class PipelineTrainer {
     if (opts.trainPronouncer) {
       PhonemeCrfTrainer crfTrainer = PhonemeCrfTrainer.open(opts);
       crfTrainer.trainFor(this.alignedInputs);
-      return crfTrainer.buildModel();
+      PhonemeCrfModel phonemeCrfModel = crfTrainer.buildModel();
+      phonemeCrfModel.getCrf().makeParametersHashSparse();
+      return phonemeCrfModel;
     }
     return checkNotNull(loadedPronouncer, "shouldve already been loaded in init()");
   }

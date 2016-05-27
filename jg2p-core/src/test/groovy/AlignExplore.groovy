@@ -16,8 +16,13 @@
 
 import com.github.steveash.jg2p.Word
 import com.github.steveash.jg2p.align.AlignModel
+import com.github.steveash.jg2p.syll.SWord
+import com.github.steveash.jg2p.syll.SyllCounter
+import com.github.steveash.jg2p.syll.SyllStructure
+import com.github.steveash.jg2p.syll.SyllTagTrainer
 import com.github.steveash.jg2p.util.Histogram
 import com.github.steveash.jg2p.util.JenksBreaks
+import com.github.steveash.jg2p.util.ModelReadWrite
 import com.github.steveash.jg2p.util.Percent
 import com.github.steveash.jg2p.util.ReadWrite
 import org.apache.commons.lang3.ArrayUtils
@@ -26,14 +31,20 @@ import org.apache.commons.math3.stat.descriptive.rank.Percentile
 /**
  * @author Steve Ash
  */
-AlignModel mOld = ReadWrite.readFromFile(AlignModel.class, new File("../resources/am_cmudict_22_xeps_ww_A.dat"))
-AlignModel mNew = ReadWrite.readFromFile(AlignModel.class, new File("../resources/am_cmudict_22_xeps_ww_aa_A.dat"))
+def model = ModelReadWrite.readTrainAlignerFrom("../resources/pipe_43sy_F11_5.dat")
+def model2 = ModelReadWrite.readTestAlignerFrom("../resources/pipe_43sy_F11_5.dat")
 
-def graphs = Word.fromNormalString("ABOARD")
-def phones = Word.fromSpaceSeparated("AH B AO R D")
-def rOld = mOld.align(graphs, phones, 5)
-def rNew = mNew.align(graphs, phones, 5)
+def graphs = Word.fromNormalString("CASUALLY")
+def phones = new SWord("K AE ZH AH W AH L IY", "0 2 4 6")
+def result = model.align(graphs, phones, 1)
+def first = result.first()
+def sylls = SyllTagTrainer.makeSyllMarksFor(first)
+def testFirst = model2.inferAlignments(graphs, 1).first()
 
-rOld.take(1).each {println "OLD " + it.XAsPipeString + " (" + it.score +")"}
-rNew.take(1).each {println "NEW " + it.XAsPipeString + " (" + it.score +")"}
+println "train aligner = $first"
+println "syll marks from train aligner = $sylls"
+println "test aligner = $testFirst"
+println "syll marks from test aligner = ${testFirst.graphoneSyllableGrams}"
+def ss = new SyllCounter()
+println "test gets $ss."
 println "Done"

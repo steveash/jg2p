@@ -144,6 +144,7 @@ public class SyllTagTrainer {
     throw new IllegalStateException("unknown code symbol " + tag);
   }
 
+  // takes a training time alignment and produces the joint (S x T) labels; cardinality will be |X|
   public static List<String> makeSyllMarksFor(Alignment align) {
     Preconditions.checkArgument(align.getSyllWord() != null, "must pass alignment with syll word");
     SWord phoneSyll = align.getSyllWord();
@@ -213,10 +214,22 @@ public class SyllTagTrainer {
     return sylls;
   }
 
+  public static List<String> makeOncForGraphemes(Alignment align) {
+    List<String> graphMarks = makeSyllMarksFor(align);
+    List<String> oncMarks = Lists.newArrayListWithCapacity(graphMarks.size());
+    for (String graphMark : graphMarks) {
+      oncMarks.add(SyllTagTrainer.onlySyllStructreFromTag(graphMark));
+    }
+    return oncMarks;
+  }
+
+  // gets the ONC coding as graphone grams from a training time alignment, output cardinality |XY graphones|
   public static List<String> makeSyllGramsFromMarks(Alignment align) {
     return makeSyllGramsFromMarks(makeSyllMarksFor(align));
   }
 
+  // gets the ONC coding as graphone grams from a joint (T x S) labelling (that would be produced by
+  // the joint syll test time tagger (not the syll chain one). Input cardinality |X|, output |XY graphones|
   public static List<String> makeSyllGramsFromMarks(List<String> marks) {
     List<String> outGrams = Lists.newArrayList();
     StringBuilder sb = new StringBuilder();
@@ -266,6 +279,8 @@ public class SyllTagTrainer {
     return outs;
   }
 
+  // produces Y/Z tags on graphemes where Z indicates the grapemes that are the last in a
+  // syllable
   public static List<String> makeSyllableGraphEndMarksFor(Alignment align) {
     List<String> endings = Lists.newArrayList();
     SyllCounter counter = new SyllCounter();
@@ -288,6 +303,8 @@ public class SyllTagTrainer {
     return endings;
   }
 
+  // takes a sequence of Y/Z tags indicating the _last grapheme_ in a syll and produces the set of grapheme
+  // indexes that start syllables
   public static Set<Integer> startsFromSyllGraphMarks(Sequence<?> outSeq) {
     Set<Integer> starts = Sets.newHashSet();
     starts.add(0);
@@ -299,6 +316,8 @@ public class SyllTagTrainer {
     return starts;
   }
 
+  // takes a test time alignment and the set of grapheme syll start indexes ( from a syllchain eval) and
+  // produce the joint (T x S) labels in graphone grams (to send to the pronouncer)
   public static List<String> makeSyllMarksFor(Alignment align, Set<Integer> graphSyllStarts) {
     List<Boolean> starts = align.getXStartMarks();
     List<String> sylls = Lists.newArrayListWithCapacity(align.getWordUnigrams().size());

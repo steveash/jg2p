@@ -3,6 +3,7 @@ import com.github.steveash.jg2p.syll.SWord
 import com.github.steveash.jg2p.syll.SyllTagTrainer
 import com.github.steveash.jg2p.syllchain.SyllChainTrainer
 import com.github.steveash.jg2p.util.ModelReadWrite
+import com.github.steveash.jg2p.util.Percent
 import com.google.common.collect.Sets
 import com.google.common.primitives.Ints
 
@@ -27,9 +28,11 @@ import com.google.common.primitives.Ints
  */
 
 def inputFile = "cmu7b.train"
+def testFile = "cmu7b.test"
 def inputs = InputReader.makePSaurusReader().readFromClasspath(inputFile)
+def testInputs = InputReader.makePSaurusReader().readFromClasspath(testFile)
 println "reading model..."
-def aligner = ModelReadWrite.readTrainAlignerFrom("../resources/pipe_43sy_F11_5.dat")
+def aligner = ModelReadWrite.readTrainAlignerFrom("../resources/pipe_43sy_cmu7_orig_oncpsyll.dat")
 def aligns = inputs.collectMany { rec ->
   def res = aligner.align(rec.xWord, rec.yWord, 1)
   if (!res.isEmpty()) {
@@ -45,17 +48,14 @@ println "done training, checking..."
 
 int countWords = 0;
 int correctWords = 0;
-int countSylls = 0;
-int correctSylls = 0;
-aligns.each { rec ->
-  def predict = model.sylls(rec)
-  def expected = SyllTagTrainer.makeSyllMarksFor(rec)
+testInputs.each { rec ->
+  def predictStarts = model.tagSyllStarts(rec.left.value)
+  def expectWord = rec.right as SWord
+  def expect = expectWord.bounds.toSet()
   countWords += 1
-  if (predict.graphoneSyllableGrams.equals(expected)) {
+  if (predictStarts.equals(expect)) {
     correctWords += 1
   }
-//  countSylls += expected.size()
-//  correctSylls += Sets.intersection(predict.toSet(), expected.toSet()).size()
 }
-println "Checked $countWords and got $correctWords completely right"
+println "Checked $countWords and got $correctWords completely right " + Percent.print(correctWords, countWords)
 //println "Checked $countSylls sylls and got $correctSylls right"

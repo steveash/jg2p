@@ -16,7 +16,10 @@
 
 package com.github.steveash.jg2p.syllchain;
 
+import com.google.common.collect.Sets;
+
 import com.github.steveash.jg2p.align.Alignment;
+import com.github.steveash.jg2p.syll.SWord;
 import com.github.steveash.jg2p.syll.SyllTagTrainer;
 
 import java.io.Serializable;
@@ -57,6 +60,7 @@ public class SyllChainModel implements Serializable {
 
     Sequence inSeq = (Sequence) instance.getData();
     Sequence<Object> outSeqs = crf.getMaxLatticeFactory().newMaxLattice(crf, inSeq).bestOutputSequence();
-    return SyllTagTrainer.startsFromSyllGraphMarks(outSeqs);
+//    return SyllTagTrainer.startsFromSyllGraphMarks(outSeqs);
+    return Sets.newHashSet(SWord.convertOncToBoundaries(outSeqs));
   }
 }

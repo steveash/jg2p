@@ -242,6 +242,8 @@ public class SWord extends Word {
     return bounds;
   }
 
+  // takes a list of ONC codes and produces a set of the indexes for that sequence that
+  // correspond to starting syllables
   public static List<Integer> convertOncToBoundaries(Sequence<?> marks) {
     ArrayList<Integer> result = Lists.newArrayList();
     if (marks.size() == 0) return result;

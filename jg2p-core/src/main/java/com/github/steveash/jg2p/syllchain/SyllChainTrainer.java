@@ -97,8 +97,8 @@ public class SyllChainTrainer {
     for (Alignment align : aligns) {
 
       Word orig = Word.fromSpaceSeparated(align.getWordAsSpaceString());
-//      Word marks = Word.fromGrams(SyllTagTrainer.makeSyllableGraphEndMarksFor(align));
-      Word marks = Word.fromGrams(SyllTagTrainer.makeOncForGraphemes(align));
+      Word marks = Word.fromGrams(SyllTagTrainer.makeSyllableGraphEndMarksFor(align));
+//      Word marks = Word.fromGrams(SyllTagTrainer.makeOncForGraphemes(align));
       Preconditions.checkState(orig.unigramCount() == marks.unigramCount());
 
       Instance ii = new Instance(orig.getValue(), marks.getValue(), null, null);

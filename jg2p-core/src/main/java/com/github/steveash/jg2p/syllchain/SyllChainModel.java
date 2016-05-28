@@ -60,7 +60,7 @@ public class SyllChainModel implements Serializable {
 
     Sequence inSeq = (Sequence) instance.getData();
     Sequence<Object> outSeqs = crf.getMaxLatticeFactory().newMaxLattice(crf, inSeq).bestOutputSequence();
-//    return SyllTagTrainer.startsFromSyllGraphMarks(outSeqs);
-    return Sets.newHashSet(SWord.convertOncToBoundaries(outSeqs));
+    return SyllTagTrainer.startsFromSyllGraphMarks(outSeqs);
+//    return Sets.newHashSet(SWord.convertOncToBoundaries(outSeqs));
   }
 }

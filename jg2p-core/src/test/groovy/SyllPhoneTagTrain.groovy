@@ -23,7 +23,8 @@ import org.apache.commons.lang3.ArrayUtils
 
 /**
  * This loads syllable data from the celex->arpabet input files and learns a syll phone tagger
- * which just predicts syllable boundaries with 98% accuracy
+ * which just predicts syllable boundaries with 94-98% accuracy depending on if you use output
+ * onc codings (98%) vs boundary indicators (94%)
  * @author Steve Ash
  */
 

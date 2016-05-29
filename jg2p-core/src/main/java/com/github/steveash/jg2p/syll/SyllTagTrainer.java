@@ -19,7 +19,6 @@ package com.github.steveash.jg2p.syll;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.PeekingIterator;
 import com.google.common.collect.Sets;
@@ -41,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -58,6 +58,8 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.Sequence;
+
+import static com.google.common.collect.Iterators.peekingIterator;
 
 /**
  * Trains a CRF to predict synonym structure from aligned.  We have two kinds of structure we are modelling here -- the
@@ -282,11 +284,12 @@ public class SyllTagTrainer {
   // produces Y/Z tags on graphemes where Z indicates the grapemes that are the last in a
   // syllable
   public static List<String> makeSyllableGraphEndMarksFor(Alignment align) {
+
     List<String> endings = Lists.newArrayList();
     SyllCounter counter = new SyllCounter();
     List<String> syllGrams = align.getGraphoneSyllableGrams();
     List<String> codes = Grams.flattenGrams(syllGrams);
-    PeekingIterator<String> iter = Iterators.peekingIterator(codes.iterator());
+    PeekingIterator<String> iter = peekingIterator(codes.iterator());
     Preconditions.checkState(codes.size() == align.getWordUnigrams().size());
     int syllIndex = 0;
     if (!iter.hasNext()) {
@@ -300,6 +303,41 @@ public class SyllTagTrainer {
     }
     endings.add(SyllEnd); // last one is always a boundary
     Preconditions.checkState(codes.size() == endings.size());
+    return endings;
+  }
+
+  public static List<String> makeSyllableGraphEndMarksFromConstrained(Alignment align) {
+    SWord sword = align.getSyllWord();
+    Preconditions.checkNotNull(sword, "can only use this for training time");
+    List<String> endings = Lists.newArrayList();
+    int syllCount = 0;
+    int yy = 0;
+    Iterator<Pair<List<String>, List<String>>> iter = align.getGraphonesSplit().iterator();
+    while (iter.hasNext()) {
+      Pair<List<String>, List<String>> graphone = iter.next();
+      boolean nextGraphoneStartsSyll = false;
+      if (iter.hasNext()) {
+        int nextPhoneIndex = yy + graphone.getRight().size();
+        if (sword.isStartOfSyllable(nextPhoneIndex)) {
+          nextGraphoneStartsSyll = true;
+        }
+      } else {
+        // last graphone always ends the sylls
+        nextGraphoneStartsSyll = true;
+      }
+      yy += graphone.getRight().size();
+      // dump the graphes out
+      List<String> graphs = graphone.getLeft();
+      for (int i = 0; i < graphs.size(); i++) {
+        if (i == (graphs.size() - 1) && nextGraphoneStartsSyll) {
+          endings.add(SyllEnd);
+          syllCount += 1;
+        } else {
+          endings.add(SyllCont);
+        }
+      }
+    }
+    Preconditions.checkState(syllCount == sword.syllCount(), "syllables dont match", endings, sword, align);
     return endings;
   }
 

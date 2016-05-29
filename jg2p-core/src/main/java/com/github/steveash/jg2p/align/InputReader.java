@@ -163,9 +163,9 @@ public class InputReader {
       if (!xGood.matches()) {
         return null;
       }
-      if (isNotBlank(xGood.group(2))) {
-        return null;
-      }
+//      if (isNotBlank(xGood.group(2))) {
+//        return null;
+//      }
       x = xGood.group(1);
 
       String y = line.substring(split + 2);

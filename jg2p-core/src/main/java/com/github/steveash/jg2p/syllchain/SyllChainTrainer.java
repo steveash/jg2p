@@ -55,7 +55,15 @@ import cc.mallet.types.LabelAlphabet;
  */
 public class SyllChainTrainer {
 
+//  private static final boolean USE_BIO_CODING = true;
+
   private static final Logger log = LoggerFactory.getLogger(SyllChainTrainer.class);
+
+  private CRF initFrom = null;
+
+  public void setInitFrom(CRF initFrom) {
+    this.initFrom = initFrom;
+  }
 
   public SyllChainModel train(List<Alignment> aligns) {
     log.info("About to train the syll chain...");
@@ -73,13 +81,17 @@ public class SyllChainTrainer {
     CRF crf = new CRF(pipe, null);
     crf.addOrderNStates(examples, new int[]{1}, null, null, null, null, false);
     crf.addStartState();
-//    crf.setWeightsDimensionAsIn(examples, false);
+    crf.setWeightsDimensionAsIn(examples, true);
+
+    if (initFrom != null) {
+      crf.initializeApplicableParametersFrom(initFrom);
+    }
 
     log.info("Starting syllchain training...");
     CRFTrainerByThreadedLabelLikelihood trainer = new CRFTrainerByThreadedLabelLikelihood(crf, 8);
     trainer.setGaussianPriorVariance(2);
-//    trainer.setUseSomeUnsupportedTrick(false);
-//    trainer.setAddNoFactors(true);
+    trainer.setAddNoFactors(true);
+//    trainer.setUseSomeUnsupportedTrick(true);
     trainer.train(examples);
     trainer.shutdown();
     watch.stop();
@@ -97,8 +109,10 @@ public class SyllChainTrainer {
     for (Alignment align : aligns) {
 
       Word orig = Word.fromSpaceSeparated(align.getWordAsSpaceString());
-      Word marks = Word.fromGrams(SyllTagTrainer.makeSyllableGraphEndMarksFor(align));
+//      Word marks = Word.fromGrams(SyllTagTrainer.makeSyllableGraphEndMarksFor(align));
 //      Word marks = Word.fromGrams(SyllTagTrainer.makeOncForGraphemes(align));
+      Word marks = Word.fromGrams(SyllTagTrainer.makeSyllableGraphEndMarksFromConstrained(align));
+
       Preconditions.checkState(orig.unigramCount() == marks.unigramCount());
 
       Instance ii = new Instance(orig.getValue(), marks.getValue(), null, null);

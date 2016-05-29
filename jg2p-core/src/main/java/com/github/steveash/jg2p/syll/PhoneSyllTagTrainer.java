@@ -49,6 +49,7 @@ import cc.mallet.types.LabelAlphabet;
  * @author Steve Ash
  */
 public class PhoneSyllTagTrainer {
+  public static final boolean USE_ONC_CODING = false;
 
   private static final Logger log = LoggerFactory.getLogger(PhoneSyllTagTrainer.class);
 
@@ -88,7 +89,10 @@ public class PhoneSyllTagTrainer {
     // O,O    O,N   -O,C-
     // N,O    N,N   N,C
     // C,O    ?C,N?   C,C
-    Pattern forbidden = Pattern.compile("(O,C|<START>,C|O,<END>)", Pattern.CASE_INSENSITIVE);
+    Pattern forbidden = null;
+    if (USE_ONC_CODING) {
+      forbidden = Pattern.compile("(O,C|<START>,C|O,<END>)", Pattern.CASE_INSENSITIVE);
+    }
     crf.addOrderNStates(trainData, new int[]{1}, null, null, forbidden, null, false);
     crf.addStartState();
     crf.setWeightsDimensionAsIn(trainData);

@@ -68,4 +68,15 @@ class SyllTagTrainerTest extends GroovyTestCase {
     println marks
     assert marks.count {it == "Z"} == 4
   }
+
+  void testSyllMarksConstrained() {
+    def alg = new Alignment(Word.fromNormalString("photography"), [
+        Pair.of("p h", "F"), Pair.of("o", "OH"), Pair.of("t", "T"), Pair.of("o", "AH"), Pair.of("g r", "G R"),
+        Pair.of("a", "AE"), Pair.of("p h", "F"), Pair.of("y", "EE EE")
+    ], 1.0, null, new SWord("F OH T AH G R AE F EE EE", "0 2 4 7"))
+    def marks = SyllTagTrainer.makeSyllableGraphEndMarksFromConstrained(alg)
+    println alg
+    println marks
+    assert marks.count {it == "Z"} == 4
+  }
 }

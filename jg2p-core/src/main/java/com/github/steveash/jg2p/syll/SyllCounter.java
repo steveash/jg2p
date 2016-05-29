@@ -20,6 +20,8 @@ import com.google.common.base.Preconditions;
 
 import java.util.List;
 
+import cc.mallet.types.Sequence;
+
 /**
  * @author Steve Ash
  */
@@ -29,6 +31,16 @@ public class SyllCounter {
     SyllCounter counter = new SyllCounter();
     for (String gram : grams) {
       counter.onNextGram(gram);
+    }
+    return counter.currentSyllable() + 1; // 0 based index
+  }
+
+  public static int countSyllablesInSequence(Sequence seq) {
+    SyllCounter counter = new SyllCounter();
+    for (int i = 0; i < seq.size(); i++) {
+      String tag = (String) seq.get(i);
+      Preconditions.checkState(tag.length() == 1, tag);
+      counter.onNextCode(tag.charAt(0));
     }
     return counter.currentSyllable() + 1; // 0 based index
   }

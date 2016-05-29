@@ -40,6 +40,10 @@ public class SyllChainModel implements Serializable {
 
   private final CRF crf;
 
+  public CRF getCrf() {
+    return crf;
+  }
+
   public SyllChainModel(CRF crf) {
     this.crf = crf;
   }

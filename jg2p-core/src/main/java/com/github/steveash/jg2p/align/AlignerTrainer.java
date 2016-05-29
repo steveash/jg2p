@@ -64,6 +64,7 @@ public class AlignerTrainer {
   private final Set<Pair<String, String>> allowed;
   private final Set<Pair<String,String>> blocked;
   private final Penalizer penalizer;
+  private ProbTable initFrom = null;
 
   public AlignerTrainer(TrainOptions trainOpts) {
     this(trainOpts, null);
@@ -100,7 +101,11 @@ public class AlignerTrainer {
     this.penalizer = gramOpts.makePenalizer();
   }
 
-//  private static XyWalker decorateForAllowed(TrainOptions trainOpts, XyWalker w) {
+  public void setInitFrom(ProbTable initFrom) {
+    this.initFrom = initFrom;
+  }
+
+  //  private static XyWalker decorateForAllowed(TrainOptions trainOpts, XyWalker w) {
 //    try {
 //      Set<Pair<String, String>> allowed = FilterWalkerDecorator.readFromFile(trainOpts.alignAllowedFile);
 //      return new FilterWalkerDecorator(w, allowed);
@@ -295,14 +300,22 @@ public class AlignerTrainer {
       walker.forward(record.getLeft(), record.getRight(), new XyWalker.Visitor() {
         @Override
         public void visit(int xxBefore, int xxAfter, String xGram, int yyBefore, int yyAfter, String yGram) {
-          originalCounts.addProb(xGram, yGram, 1.0);
+
+          double initValue = 1.0;
+          if (initFrom != null) {
+            double maybeInitFrom = initFrom.prob(xGram, yGram);
+            if (maybeInitFrom > 0) {
+              initValue = maybeInitFrom;
+            }
+          }
+          originalCounts.addProb(xGram, yGram, initValue);
           if (allowed == null) {
-            counts.addProb(xGram, yGram, 1.0);
+            counts.addProb(xGram, yGram, initValue);
             return;
           }
           // use allowed file to constrain the joint distribution
           if (allowed.contains(Pair.of(xGram, yGram))) {
-            counts.addProb(xGram, yGram, 1.0);
+            counts.addProb(xGram, yGram, initValue);
           } else {
             blocked.add(Pair.of(xGram, yGram));
           }

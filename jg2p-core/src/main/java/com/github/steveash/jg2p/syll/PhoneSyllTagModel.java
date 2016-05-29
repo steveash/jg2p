@@ -28,6 +28,8 @@ import cc.mallet.fst.CRF;
 import cc.mallet.types.Instance;
 import cc.mallet.types.Sequence;
 
+import static com.github.steveash.jg2p.syll.SyllCounter.countSyllablesInSequence;
+
 /**
  * this model knows how to take a sequence of phones and predict where syllable boundaries are
  *
@@ -48,20 +50,26 @@ public class PhoneSyllTagModel implements Serializable {
   }
 
   public List<Integer> syllStarts(Word word) {
-    Sequence<String> seq = getCoding(word);
-//    return SWord.convertEndMarkersToBoundaries(seq);
-    List<Integer> starts = SWord.convertOncToBoundaries(seq);
-    return starts;
+    return syllStarts(word, -1);
   }
 
-  private Sequence<String> getCoding(Word word) {
+  public List<Integer> syllStarts(Word word, int expectedSylls) {
+    Sequence<String> seq = getCoding(word, expectedSylls);
+    if (PhoneSyllTagTrainer.USE_ONC_CODING) {
+      return SWord.convertOncToBoundaries(seq);
+    } else {
+      return SWord.convertEndMarkersToBoundaries(seq);
+    }
+  }
+
+  private Sequence<String> getCoding(Word word, int expectedSylls) {
     Instance instance = new Instance(word, null, null, null);
     instance = crf.getInputPipe().instanceFrom(instance);
     Sequence inSeq = (Sequence) instance.getData();
-    List<Sequence<Object>> outSeqs = crf.getMaxLatticeFactory().newMaxLattice(crf, inSeq).bestOutputSequences(5);
+    List<Sequence<Object>> outSeqs = crf.getMaxLatticeFactory().newMaxLattice(crf, inSeq).bestOutputSequences(10);
     for (Sequence outSeq : outSeqs) {
       // see if the outSeq is legal and if so then return it
-      if (isLegal(word.getValue(), outSeq)) {
+      if (isLegal(word.getValue(), outSeq, expectedSylls)) {
         return outSeq;
       }
     }
@@ -69,22 +77,32 @@ public class PhoneSyllTagModel implements Serializable {
     return (Sequence) outSeqs.get(0);
   }
 
-  private boolean isLegal(List<String> phones, Sequence marks) {
-    return true; // with onc we dont have anything to check
+  private boolean isLegal(List<String> phones, Sequence marks, int expectedSylls) {
+    if (PhoneSyllTagTrainer.USE_ONC_CODING) {
+      if (expectedSylls > 0) {
+        return (countSyllablesInSequence(marks) == expectedSylls);
+      }
+      return true;
+    }
     // trying to exclude illegal boundaries instead of just coding the onc...
-//    boolean sawVowel = false;
-//    Preconditions.checkState(phones.size() == marks.size());
-//    for (int i = 0; i < marks.size(); i++) {
-//      if (Phonemes.isVowel(phones.get(i))) {
-//        sawVowel = true;
-//      }
-//      if (marks.get(i).equals("1")) {
-//        if (!sawVowel) {
-//          return false; // have to have a vowel
-//        }
-//        sawVowel = false;
-//      }
-//    }
-//    return true;
+    boolean sawVowel = false;
+    int syllCount = 0;
+    Preconditions.checkState(phones.size() == marks.size());
+    for (int i = 0; i < marks.size(); i++) {
+      if (Phonemes.isVowel(phones.get(i))) {
+        sawVowel = true;
+      }
+      if (marks.get(i).equals("1")) {
+        if (!sawVowel) {
+          return false; // have to have a vowel
+        }
+        syllCount += 1;
+        sawVowel = false;
+      }
+    }
+    if (expectedSylls > 0) {
+      return (expectedSylls == syllCount);
+    }
+    return true;
   }
 }

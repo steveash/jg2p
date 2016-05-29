@@ -19,9 +19,10 @@ package com.github.steveash.jg2p.syllchain;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 
+import com.github.steveash.jg2p.Grams;
 import com.github.steveash.jg2p.Word;
-import com.github.steveash.jg2p.align.AlignModel;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.seq.LeadingTrailingFeature;
 import com.github.steveash.jg2p.seq.NeighborShapeFeature;
@@ -30,12 +31,16 @@ import com.github.steveash.jg2p.seq.StringListToTokenSequence;
 import com.github.steveash.jg2p.seq.SurroundingTokenFeature;
 import com.github.steveash.jg2p.seq.TokenSequenceToFeature;
 import com.github.steveash.jg2p.seq.TokenWindow;
+import com.github.steveash.jg2p.syll.SWord;
 import com.github.steveash.jg2p.syll.SyllTagTrainer;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import cc.mallet.fst.CRF;
 import cc.mallet.fst.CRFTrainerByThreadedLabelLikelihood;
@@ -170,5 +175,53 @@ public class SyllChainTrainer {
         new TokenWindow(-3, 3),
         new TokenWindow(-4, 1)
     );
+  }
+
+  public static Set<Integer> splitGraphsByPhoneSylls(Alignment ali) {
+    SWord sword = ali.getSyllWord();
+    Preconditions.checkNotNull(sword, "cant use this at test time");
+    Preconditions.checkArgument(ali.getGraphones().size() > 0, "empty alignment");
+    HashSet<Integer> starts = Sets.newHashSet();
+    starts.add(0); // always the first is a start
+    int owedSyll = 0;
+    int xx = 0;
+    int yy = 0;
+    // we skip the first labelled phoneme because we always deliberately add 0 and sometimes epsilon graph
+    boolean sawFirst = false;
+    for (Pair<List<String>, List<String>> graphone : ali.getGraphonesSplit()) {
+      if (owedSyll > 0) {
+        starts.add(xx);
+        owedSyll = 0;
+      }
+      List<String> graphs = graphone.getLeft();
+      List<String> phones = graphone.getRight();
+      boolean sawNewSyll = false;
+      boolean sawMultiSyll = false;
+      for (int i = 0; i < phones.size(); i++) {
+        if (phones.get(i).equals(Grams.EPSILON)) continue; // skip epsilons
+
+        if (sword.isStartOfSyllable(yy)) {
+          if (sawFirst) {
+            starts.add(xx);
+          } else {
+            sawFirst = true;
+          }
+          if (sawNewSyll) {
+            sawMultiSyll = true;
+          }
+          sawNewSyll = true;
+        }
+        yy += 1;
+      }
+      if (sawMultiSyll) {
+        owedSyll += 1;
+      }
+      if (graphs.size() > 0 && !graphs.get(0).equals(Grams.EPSILON)) {
+        xx += graphs.size();
+      }
+    }
+    Preconditions.checkState(xx == ali.getInputWord().unigramCount(), "bad ending gram count", ali.getInputWord());
+    Preconditions.checkState(yy == sword.unigramCount(), "bad ending phone count ", ali.getInputWord());
+    return starts;
   }
 }

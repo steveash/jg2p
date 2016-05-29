@@ -162,6 +162,20 @@ public class SWord extends Word {
     return syllableStress;
   }
 
+  public String getSpaceWordWithSylls() {
+    StringBuilder sb = new StringBuilder();
+    if (this.unigramCount() <= 0) return "";
+    sb.append("'").append(this.gramAt(0));
+    for (int i = 1; i < this.unigramCount(); i++) {
+      sb.append(" ");
+      if (isStartOfSyllable(i)) {
+        sb.append("'");
+      }
+      sb.append(this.gramAt(i));
+    }
+    return sb.toString();
+  }
+
   public List<String> getOncCodingForPhones() {
     ArrayList<String> marks = Lists.newArrayListWithCapacity(this.unigramCount());
     int state = 0;

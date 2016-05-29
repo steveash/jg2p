@@ -5,6 +5,7 @@ import com.github.steveash.jg2p.align.WindowXyWalker
 import com.github.steveash.jg2p.syll.SWord
 import com.github.steveash.jg2p.syll.SyllPreserving
 import com.github.steveash.jg2p.syllchain.SyllChainTrainer
+import com.github.steveash.jg2p.train.PipelineTrainer
 import com.github.steveash.jg2p.util.GroovyLogger
 import com.github.steveash.jg2p.util.ModelReadWrite
 import com.github.steveash.jg2p.util.Percent
@@ -38,10 +39,10 @@ out = new GroovyLogger(log)
 def inputFile = "cmu7b.train"
 def testFile = "cmu7b.test"
 def inputs = InputReader.makePSaurusReader().readFromClasspath(inputFile)
+inputs = inputs.findAll {PipelineTrainer.keepTrainable.apply(it)}
 def testInputs = InputReader.makePSaurusReader().readFromClasspath(testFile)
 println "reading model..."
-//def aligner = ModelReadWrite.readTrainAlignerFrom("../resources/pipe_43sy_cmu7_orig_1.dat")
-def aligner = ModelReadWrite.readTrainAlignerFrom("../resources/syllchainAlignConstrained.dat") 
+def aligner1 = ModelReadWrite.readTrainAlignerFrom("../resources/pipe_43sy_cmu7_orig_1.dat")
 def syllgmodel = ModelReadWrite.readSyllTagFrom("../resources/pipe_43sy_cmu7_orig_1.dat")
 //def syllmodel = ReadWrite.readFromFile(PhoneSyllTagModel.class, new File("../resources/syllphonetag.dat"))
 
@@ -52,16 +53,21 @@ opts.onlyOneGrams = false
 opts.maxPronouncerTrainingIterations = 200
 opts.useCityBlockPenalty = true
 opts.useWindowWalker = true
-def ww = new WindowXyWalker(opts.makeGramOptions())
-def sp = new SyllPreserving(ww)
+//def ww = new WindowXyWalker(opts.makeGramOptions())
+//def sp = new SyllPreserving(ww)
 
 println "training the training aligner with syll constraints"
-//def at = new AlignerTrainer(opts, sp)
-//at.initFrom = aligner.transitions
-//def alignModel = at.train(inputs)
-alignModel = aligner
+def at = new AlignerTrainer(opts)
+at.initFrom = aligner1.transitions
+def alignModel = at.train(inputs)
+
+//alignModel = aligner
 println "writing model out"
-//ReadWrite.writeTo(alignModel, new File("../resources/syllchainAlignConstrained.dat"))
+ReadWrite.writeTo(alignModel, new File("../resources/syllchainAlignNoConstrain.dat"))
+if (true) {
+  println "done"
+  System.exit(1)
+}
 
 println "collecting alignments with the trained model"
 def aligns = inputs.collectMany { rec ->

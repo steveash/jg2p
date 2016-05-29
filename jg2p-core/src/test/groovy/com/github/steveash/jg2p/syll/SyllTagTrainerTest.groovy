@@ -82,6 +82,7 @@ class SyllTagTrainerTest extends GroovyTestCase {
 
   void testSyllMarksConstrainedViolated() {
     //E|X|P|O|N|E|N|T I|A|L L|Y -> EH|K S|P|OW|N|EH|N|SH|AH|L|IY
+    //[[Y, Y, Z, Z, Y, Z, Y, Y, Y, Y, Z], SWord-[0, 2, 4, 6, 7]-IH G Z AA N ER EY SH AH N, E X|O|N|E|R|A|T I|O|N -> |IH|G Z|AA|N ER|EY|SH|AH|N
     def alg = new Alignment(Word.fromNormalString("exponentially"), [
         Pair.of("e", "EH"), Pair.of("x", "K S"), Pair.of("p", "P"), Pair.of("o", "OW"), Pair.of("n", "N"),
         Pair.of("e", "EH"), Pair.of("n", "N"), Pair.of("t i", "SH"), Pair.of("a", "AH"), Pair.of("l l", "L"),

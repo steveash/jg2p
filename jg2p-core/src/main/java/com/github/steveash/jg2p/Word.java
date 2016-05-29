@@ -30,6 +30,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -167,6 +168,17 @@ public class Word implements Iterable<String>, Comparable<Word> {
         return Pair.of(input, "");
       }
     });
+  }
+
+  public String splitBy(Set<Integer> syllStarts) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < unigramCount(); i++) {
+      if (i > 0 && syllStarts.contains(i)) {
+        sb.append(".");
+      }
+      sb.append(gramAt(i));
+    }
+    return sb.toString();
   }
 
   @Override

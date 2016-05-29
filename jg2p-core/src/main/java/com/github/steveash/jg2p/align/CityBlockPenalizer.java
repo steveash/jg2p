@@ -42,12 +42,26 @@ public class CityBlockPenalizer implements Penalizer {
       yCount = EPS_PENALTY;
     }
     double penalty = (xCount + yCount) * PENALTY_SCALE;
-    if (xCount == 1 && yCount == 1 && weirdSinglePairing(xGram, yGram)) {
-      penalty *= 1.4;
+    if (isWhitelisted(xGram, yGram, xCount, yCount)) {
+      penalty = 1.0;
+//    }else if (xCount == 1 && yCount == 1 && weirdSinglePairing(xGram, yGram)) {
+//      penalty *= 1.4;
     } else if (!isSpokenLetter(xGram, yGram) && weirdPhoneCombo(yGram)) {
       penalty *= 1.4;
     }
     return Math.pow(prob, penalty);
+  }
+
+  private boolean isWhitelisted(String xGram, String yGram, int xCount, int yCount) {
+    if (xCount == 2 && yCount == 2) {
+      if (xGram.equalsIgnoreCase("W H") && yGram.equalsIgnoreCase("HH W")) {
+        return true;
+      }
+      if (xGram.equalsIgnoreCase("H U") && yGram.equalsIgnoreCase("Y UW")) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private boolean weirdSinglePairing(String xGram, String yGram) {

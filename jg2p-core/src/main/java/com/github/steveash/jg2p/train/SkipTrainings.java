@@ -22,11 +22,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;
 
+import com.github.steveash.jg2p.align.InputRecord;
 import com.github.steveash.jg2p.util.Funcs;
 
 import java.io.IOException;
 
 /**
+ * allows pipeline trainer to exlude known noisy values from the training set; you can put just the graphemes or you
+ * can put graphemes^^phonemesAsSpaceString (no stress indicators)
  * @author Steve Ash
  */
 public class SkipTrainings {
@@ -51,7 +54,15 @@ public class SkipTrainings {
 
   private final ImmutableSet<String> skips;
 
-  public boolean skip(String graphs) {
-    return skips.contains(graphs.toLowerCase());
+  public boolean skip(InputRecord rec) {
+    String graphs = rec.getLeft().getAsNoSpaceString().toLowerCase();
+    if (skips.contains(graphs)) {
+      return true;
+    }
+    String phones = rec.getRight().getAsSpaceString().toLowerCase();
+    if (skips.contains(graphs + "^^" + phones)) {
+      return true;
+    }
+    return false;
   }
 }

@@ -91,7 +91,7 @@ public class PipelineTrainer {
       if (PatternFacade.canTranscode(input.xWord)) {
         return false;
       }
-      if (skips.skip(input.xWord.getAsNoSpaceString())) {
+      if (skips.skip(input)) {
         return false;
       }
       if (Graphemes.isAllVowelsOrConsonants(input.xWord)) {

@@ -113,10 +113,11 @@ public class SyllChainTrainer {
     InstanceList instances = new InstanceList(pipe);
     for (Alignment align : aligns) {
 
+      Set<Integer> graphStarts = SyllChainTrainer.splitGraphsByPhoneSylls(align);
       Word orig = Word.fromSpaceSeparated(align.getWordAsSpaceString());
 //      Word marks = Word.fromGrams(SyllTagTrainer.makeSyllableGraphEndMarksFor(align));
 //      Word marks = Word.fromGrams(SyllTagTrainer.makeOncForGraphemes(align));
-      Word marks = Word.fromGrams(SyllTagTrainer.makeSyllableGraphEndMarksFromConstrained(align));
+      Word marks = Word.fromGrams(SyllTagTrainer.makeSyllableGraphEndMarksFromGraphStarts(align.getInputWord(), graphStarts));
 
       Preconditions.checkState(orig.unigramCount() == marks.unigramCount());
 

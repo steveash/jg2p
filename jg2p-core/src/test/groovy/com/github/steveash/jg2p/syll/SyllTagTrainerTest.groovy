@@ -70,27 +70,10 @@ class SyllTagTrainerTest extends GroovyTestCase {
   }
 
   void testSyllMarksConstrained() {
-    def alg = new Alignment(Word.fromNormalString("photography"), [
-        Pair.of("p h", "F"), Pair.of("o", "OH"), Pair.of("t", "T"), Pair.of("o", "AH"), Pair.of("g r", "G R"),
-        Pair.of("a", "AE"), Pair.of("p h", "F"), Pair.of("y", "EE EE")
-    ], 1.0, null, new SWord("F OH T AH G R AE F EE EE", "0 2 4 7"))
-    def marks = SyllTagTrainer.makeSyllableGraphEndMarksFromConstrained(alg)
-    println alg
+    def word = Word.fromNormalString("photography")
+
+    def marks = SyllTagTrainer.makeSyllableGraphEndMarksFromGraphStarts(word, [0, 3, 5, 8].toSet())
     println marks
     assert marks.count {it == "Z"} == 4
-  }
-
-  void testSyllMarksConstrainedViolated() {
-    //E|X|P|O|N|E|N|T I|A|L L|Y -> EH|K S|P|OW|N|EH|N|SH|AH|L|IY
-    //[[Y, Y, Z, Z, Y, Z, Y, Y, Y, Y, Z], SWord-[0, 2, 4, 6, 7]-IH G Z AA N ER EY SH AH N, E X|O|N|E|R|A|T I|O|N -> |IH|G Z|AA|N ER|EY|SH|AH|N
-    def alg = new Alignment(Word.fromNormalString("exponentially"), [
-        Pair.of("e", "EH"), Pair.of("x", "K S"), Pair.of("p", "P"), Pair.of("o", "OW"), Pair.of("n", "N"),
-        Pair.of("e", "EH"), Pair.of("n", "N"), Pair.of("t i", "SH"), Pair.of("a", "AH"), Pair.of("l l", "L"),
-        Pair.of("y", "IY")
-    ], 1.0, null, new SWord("EH K S P OW N EH N SH AH L IY", "0 2 5 8 10"))
-    def marks = SyllTagTrainer.makeSyllableGraphEndMarksFromConstrained(alg)
-    println alg
-    println marks
-    assert marks.count {it == "Z"} == 5
   }
 }

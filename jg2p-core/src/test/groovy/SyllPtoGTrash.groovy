@@ -13,8 +13,8 @@ inputs = inputs.findAll { PipelineTrainer.keepTrainable.apply(it)}
 //inputs = inputs.findAll{it.left.asNoSpaceString.equalsIgnoreCase("huguenots")}
 def testInputs = InputReader.makePSaurusReader().readFromClasspath(testFile)
 println "reading model..."
-def aligner1 = ModelReadWrite.readTrainAlignerFrom("../resources/pipe_43sy_cmu7_orig_1.dat")
-//def aligner2 = ModelReadWrite.readTrainAlignerFrom("../resources/syllchainAlignConstrained.dat")
+//def aligner1 = ModelReadWrite.readTrainAlignerFrom("../resources/pipe_43sy_cmu7_orig_1.dat")
+def aligner1 = ModelReadWrite.readTrainAlignerFrom("../resources/syllchainAlignNoConstrain.dat")
 
 int total = 0
 int exactMatch = 0
@@ -22,6 +22,7 @@ int split1 = 0
 int syllCountMatch = 0
 //int split2 = 0
 println "evaluating aligns"
+def alwaysPrint = ["whitecotton", "whisenant", "hugenots"].toSet()
 inputs.each { rec ->
   def sword = rec.right as SWord
   def res1 = aligner1.align(rec.left, rec.right, 1)
@@ -35,14 +36,17 @@ inputs.each { rec ->
     println "just did $total"
   }
   boolean shouldPrint = false
-  if (rec.left.asNoSpaceString.equalsIgnoreCase("huguenots")) {
+  if (alwaysPrint.contains(rec.left.asNoSpaceString.toLowerCase())) {
+    shouldPrint = true
+  }
+  if (res1.score < -350) {
     shouldPrint = true
   }
   def splits = isSplit(res1)
   if (!splits.empty) {
 //    println "$split1 - splits $splits for ${rec.left.asNoSpaceString} = ${sword.spaceWordWithSylls} = $res1"
     split1 += 1
-    shouldPrint = true
+//    shouldPrint = true
   }
   def graphStarts = SyllChainTrainer.splitGraphsByPhoneSylls(res1)
   if (sword.syllCount() == graphStarts.size()) {

@@ -39,6 +39,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -283,6 +284,7 @@ public class SyllTagTrainer {
 
   // produces Y/Z tags on graphemes where Z indicates the grapemes that are the last in a
   // syllable
+  @Deprecated
   public static List<String> makeSyllableGraphEndMarksFor(Alignment align) {
 
     List<String> endings = Lists.newArrayList();
@@ -303,49 +305,6 @@ public class SyllTagTrainer {
     }
     endings.add(SyllEnd); // last one is always a boundary
     Preconditions.checkState(codes.size() == endings.size());
-    return endings;
-  }
-
-  public static List<String> makeSyllableGraphEndMarksFromConstrained(Alignment align) {
-    SWord sword = align.getSyllWord();
-    Preconditions.checkNotNull(sword, "can only use this for training time");
-    List<String> endings = Lists.newArrayList();
-    int syllCount = 0;
-    int yy = 0;
-    Iterator<Pair<List<String>, List<String>>> iter = align.getGraphonesSplit().iterator();
-    while (iter.hasNext()) {
-      Pair<List<String>, List<String>> graphone = iter.next();
-      boolean nextGraphoneStartsSyll = false;
-      List<String> phones = graphone.getRight();
-      if (iter.hasNext()) {
-        int nextPhoneIndex = yy + phones.size();
-        if (sword.isStartOfSyllable(nextPhoneIndex)) {
-          nextGraphoneStartsSyll = true;
-        }
-        // if the constraint is violated then go ahead and mark if this graphone splits it
-        for (int i = 1; i < phones.size(); i++) {
-          // start i = 1 to skip the first otherwise we would double mark
-          if (sword.isStartOfSyllable(yy + i)) {
-            nextGraphoneStartsSyll = true;
-          }
-        }
-      } else {
-        // last graphone always ends the sylls
-        nextGraphoneStartsSyll = true;
-      }
-      yy += phones.size();
-      // dump the graphes out
-      List<String> graphs = graphone.getLeft();
-      for (int i = 0; i < graphs.size(); i++) {
-        if (i == (graphs.size() - 1) && nextGraphoneStartsSyll) {
-          endings.add(SyllEnd);
-          syllCount += 1;
-        } else {
-          endings.add(SyllCont);
-        }
-      }
-    }
-    Preconditions.checkState(syllCount == sword.syllCount(), "syllables dont match", endings, sword, align);
     return endings;
   }
 
@@ -591,5 +550,17 @@ public class SyllTagTrainer {
         new TokenWindow(-3, 1),
         new TokenWindow(-4, 1)
     );
+  }
+
+  public static List<String> makeSyllableGraphEndMarksFromGraphStarts(Word word, Set<Integer> graphStarts) {
+    ArrayList<String> results = Lists.newArrayListWithCapacity(word.unigramCount());
+    for (int i = 0; i < word.unigramCount(); i++) {
+      if (graphStarts.contains(i + 1) || i == (word.unigramCount() - 1)) {
+        results.add(SyllEnd);
+      } else {
+        results.add(SyllCont);
+      }
+    }
+    return results;
   }
 }

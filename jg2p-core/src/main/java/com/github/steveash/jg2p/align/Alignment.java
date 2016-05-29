@@ -28,6 +28,7 @@ import com.google.common.collect.Lists;
 import com.github.steveash.jg2p.Word;
 import com.github.steveash.jg2p.syll.SWord;
 import com.github.steveash.jg2p.syll.SyllTagTrainer;
+import com.github.steveash.jg2p.syllchain.SyllChainTrainer;
 import com.github.steveash.jg2p.util.Funcs;
 import com.github.steveash.jg2p.util.Zipper;
 
@@ -122,7 +123,13 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
   }
 
   public Set<Integer> getGraphemeSyllStarts() {
-    return this.graphemeSyllStarts;
+    if (this.graphemeSyllStarts != null) {
+      return this.graphemeSyllStarts;
+    }
+    if (syllWord != null) {
+      return SyllChainTrainer.splitGraphsByPhoneSylls(this);
+    }
+    return null;
   }
 
   void append(String xGram, String yGram) {

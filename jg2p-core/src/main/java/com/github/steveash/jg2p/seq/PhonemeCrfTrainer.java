@@ -62,13 +62,15 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  */
 public class PhonemeCrfTrainer {
 
+//  public static final String PROP_ALIGNMENT = "prop_alignment";
+  public static final String PROP_STRUCTURE = "prop_structure";
+
   private static final Logger log = LoggerFactory.getLogger(PhonemeCrfTrainer.class);
 
   public static PhonemeCrfTrainer open(TrainOptions opts) {
     PhonemeCrfTrainer pct = new PhonemeCrfTrainer(opts);
     return pct;
   }
-
 
   private final TrainOptions opts;
 
@@ -251,7 +253,7 @@ public class PhonemeCrfTrainer {
     LabelAlphabet labelAlpha = (LabelAlphabet) labelPipe.getTargetAlphabet();
 
     return new SerialPipes(ImmutableList.of(
-        new AlignmentToTokenSequence(alpha, labelAlpha, true, true, true),   // convert to token sequence
+        new AlignmentToTokenSequence(alpha, labelAlpha, true, true, false),   // convert to token sequence
         new TokenSequenceLowercase(),                       // make all lowercase
         new NeighborTokenFeature(true, makeNeighbors()),         // grab neighboring graphemes
         new NeighborShapeFeature(true, makeShapeNeighs()),
@@ -259,6 +261,8 @@ public class PhonemeCrfTrainer {
 //        new WindowFeature(true, 6),
         new NeighborSyllableFeature(-2, -1, 1, 2),
         new SyllCountingFeature(),
+        new NearSyllFeature(true),
+        new NearSyllFeature(false),
 //        new SyllMarkingFeature(),
         new EndingVowelFeature(),
         //new SonorityFeature2(true),

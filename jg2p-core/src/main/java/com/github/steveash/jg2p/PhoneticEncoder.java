@@ -28,7 +28,6 @@ import com.github.steveash.jg2p.align.Aligner;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.seq.PhonemeCrfModel;
 import com.github.steveash.jg2p.seq.TagResult;
-import com.github.steveash.jg2p.syll.SyllCounter;
 import com.github.steveash.jg2p.util.Zipper;
 
 import net.sf.jsefa.csv.annotation.CsvDataType;
@@ -200,10 +199,10 @@ public class PhoneticEncoder implements Serializable {
         if (!results.isEmpty() && tagResult.sequenceLogProbability() < tagMinScore) {
           continue;
         }
-        List<String> maybeSyll = alignment.getGraphoneSyllableGrams();
+        Set<Integer> graphemeSyllStarts = alignment.getGraphemeSyllStarts();
         int syllCount = 0;
-        if (maybeSyll != null) {
-          syllCount = SyllCounter.countSyllablesInGrams(maybeSyll);
+        if (graphemeSyllStarts != null) {
+          syllCount = graphemeSyllStarts.size();
         }
         Encoding e = Encoding.createEncoding(graphemes, tagResult.phones(), tagResult.phoneGrams(), alignment.getScore(),
                                              tagResult.sequenceLogProbability(), tagResult.getLogScore2(), syllCount);

@@ -17,49 +17,60 @@
 package com.github.steveash.jg2p.syll;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.phoseq.Graphemes;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.List;
+import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.FluentIterable.from;
 import static com.google.common.collect.Iterables.cycle;
 import static org.apache.commons.lang3.StringUtils.left;
 import static org.apache.commons.lang3.StringUtils.right;
 
 /**
+ * Type that describes a lot of substructure for a word
  * @author Steve Ash
  */
 public class SyllStructure {
 
 
-  private final List<String> syllText; // one entry per syllable with the text of that syll (no spaces)
-  private final List<String> syllCodes; // one matching entry with codes (no spaces)
-  private final List<Integer> graphoneIndexToSyllableIndex;
-  private final List<Boolean> graphoneIndexContainsVowel;
+  private final List<String> syllText; // one entry per syllable with the text of that syll (no spaces) |Sylls|
+  private final List<String> syllCodes; // one matching entry with codes (no spaces) |Sylls|
+  private final List<String> oncGrams; // one space separate onc coding per graphone |Graphones|
+  private final List<Integer> graphoneIndexToSyllableIndex; // one per graphone with syll index |Graphones|
+  private final List<Integer> graphemeIndexToSyllableIndex; // one per grapheme with syll index |Graphemes|
+  private final List<Integer> graphemeIndexToSyllableSequence; // sequences the graphemes in each syllable as 0, 1 |Graphemes|
+  private final List<Boolean> graphoneIndexContainsVowel; // one per graphone with true if it contains nucleus vowel |Graphones|
   private final int syllCount;
+  private final int graphemeCount;
 
   public SyllStructure(Alignment align) {
-    this(align.getAllXTokensAsList(), align.getGraphoneSyllableGrams());
+    this(align.getAllXTokensAsList(),
+         checkNotNull(align.getGraphoneSyllableGrams()),
+         checkNotNull(align.getGraphemeSyllStarts()));
   }
 
-  public SyllStructure(List<String> textGraphones, List<String> syllGraphones) {
+  public SyllStructure(List<String> textGraphones, List<String> syllGraphones, Set<Integer> graphemeSyllStarts) {
     Preconditions.checkArgument(textGraphones.size() == syllGraphones.size(), "mismatched arg lists");
-    this.syllCount = SyllCounter.countSyllablesInGrams(syllGraphones);
+    this.syllCount = graphemeSyllStarts.size();
     syllText = Lists.newArrayListWithCapacity(syllCount);
     syllCodes = Lists.newArrayListWithCapacity(syllCount);
+    oncGrams = ImmutableList.copyOf(syllGraphones);
     graphoneIndexToSyllableIndex = Lists.newArrayListWithCapacity(textGraphones.size());
     graphoneIndexContainsVowel = Lists.newArrayList(from(cycle(false)).limit(textGraphones.size()));
+    graphemeIndexToSyllableIndex = Lists.newArrayListWithExpectedSize(textGraphones.size());
+    graphemeIndexToSyllableSequence = Lists.newArrayListWithExpectedSize(textGraphones.size());
 
     StringBuilder tb = new StringBuilder();
     StringBuilder cb = new StringBuilder();
-    SyllCounter counter = new SyllCounter();
+    int xx = 0;
+    int syllIndex = -1;
+    int syllSeq = 0;
     for (int i = 0; i < textGraphones.size(); i++) {
       String textGram = textGraphones.get(i);
       String syllGram = syllGraphones.get(i);
@@ -74,28 +85,49 @@ public class SyllStructure {
         if (Graphemes.isVowel(String.valueOf(textChar)) && syllCode == SyllTagTrainer.NucleusChar) {
           graphoneIndexContainsVowel.set(i, true);
         }
-        int prev = counter.currentSyllable();
-        counter.onNextCode(syllCode);
-        int curr = counter.currentSyllable();
-        if (curr > prev) {
+        if (graphemeSyllStarts.contains(xx)) {
           breakSylls(syllText, tb, syllCodes, cb);
+          syllIndex += 1;
+          syllSeq = 0;
         }
-        if (j == 0) {
-          // this is the first graph in the gram so set the syllable index
-          graphoneIndexToSyllableIndex.add(curr);
-        }
+        safeSet(graphemeIndexToSyllableIndex, xx, syllIndex);
+        safeSet(graphemeIndexToSyllableSequence, xx, syllSeq);
+        safeSet(graphoneIndexToSyllableIndex, i, syllIndex); // since syll indexes are always increasing this works
         tb.append(textChar);
         cb.append(syllCode);
+        xx += 1;
+        syllSeq += 1;
       }
     }
     breakSylls(syllText, tb, syllCodes, cb);
+    this.graphemeCount = xx;
     Preconditions.checkState(syllText.size() == syllCount);
     Preconditions.checkState(syllText.size() == syllCodes.size());
     Preconditions.checkState(graphoneIndexToSyllableIndex.size() == textGraphones.size());
   }
 
+  private static void safeSet(List<Integer> list, int index, int value) {
+    if (index < list.size()) {
+      list.set(index, value);
+      return;
+    }
+    if (index == list.size()) {
+      list.add(value);
+      return;
+    }
+    throw new IllegalStateException("Cannot set past the end " + list + " index " + index);
+  }
+
+  public int getGraphemeCount() {
+    return graphemeCount;
+  }
+
   public int getSyllIndexForGraphoneGramIndex(int graphoneGramIndex) {
     return graphoneIndexToSyllableIndex.get(graphoneGramIndex);
+  }
+
+  public int getSyllSequenceForGraphemeIndex(int graphemeIndex) {
+    return graphemeIndexToSyllableSequence.get(graphemeIndex);
   }
 
   public String getSyllPart(int syllIndex) {
@@ -110,8 +142,24 @@ public class SyllStructure {
     return syllCount - 1;
   }
 
+  public String oncGramForGraphoneIndex(int graphoneGramIndex) {
+    return oncGrams.get(graphoneGramIndex);
+  }
+
+  public List<String> getOncGrams() {
+    return oncGrams;
+  }
+
+  public int getSyllIndexForGraphemeIndex(int graphemeIndex) {
+    return graphemeIndexToSyllableIndex.get(graphemeIndex);
+  }
+
   public boolean graphoneGramIndexContainsNucleus(int graphoneGramIndex) {
     return graphoneIndexContainsVowel.get(graphoneGramIndex);
+  }
+
+  public String getSyllGraphsForSyllIndex(int syllIndex) {
+    return syllText.get(syllIndex);
   }
 
   public String getSyllPart(int syllIndex, int maxOnset, int maxNucleus, int maxCoda) {

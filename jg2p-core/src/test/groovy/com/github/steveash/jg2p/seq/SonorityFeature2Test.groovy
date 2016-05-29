@@ -30,7 +30,9 @@ class SonorityFeature2Test extends GroovyTestCase {
   void testSonority() {
     def inst = new Instance(new Alignment(Word.fromNormalString("psychology"),
                                           Word.fromNormalString("psychology").getLeftOnlyPairs(), 0.0,
-                                          Word.fromNormalString("OONOONONON").value, null), null, null, null)
+                                          Word.fromNormalString("OONOONONON").value, null)
+                                .withGraphemeSyllStarts([0, 3, 6, 8].toSet())
+                            , null, null, null)
     def pipe1 = new AlignmentToTokenSequence(new Alphabet(), new Alphabet())
     def pipe2 = new SonorityFeature2(true)
     def result = pipe2.pipe(pipe1.pipe(inst))
@@ -42,7 +44,8 @@ class SonorityFeature2Test extends GroovyTestCase {
   void testSonorityAfter() {
     def inst = new Instance(new Alignment(Word.fromNormalString("psychology"),
                                           Word.fromNormalString("psychology").getLeftOnlyPairs(), 0.0,
-                                          Word.fromNormalString("OONOONONON").value, null), null, null, null)
+                                          Word.fromNormalString("OONOONONON").value, null)
+                                .withGraphemeSyllStarts([0, 3, 6, 8].toSet()), null, null, null)
     def pipe1 = new AlignmentToTokenSequence(new Alphabet(), new Alphabet())
     def pipe2 = new SonorityFeature2(false)
     def result = pipe2.pipe(pipe1.pipe(inst))

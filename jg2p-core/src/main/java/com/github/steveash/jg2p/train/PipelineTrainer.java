@@ -139,7 +139,7 @@ public class PipelineTrainer {
       if (opts.trainSyllTag) checkState(opts.useSyllableTagger, "cant train syll tag without using syll tagger");
       if (opts.useSyllableTagger) checkState(isNotBlank(opts.initSyllTagFromFile) || opts.trainSyllTag,
                                              "if using syll tagger, must have a syll tag model or train one");
-      if (!opts.trainTrainingAligner) {
+      if (!opts.trainTrainingAligner || isNotBlank(opts.initTrainingAlignerFromFile)) {
         loadedTrainingAligner = ModelReadWrite.readTrainAlignerFrom(opts.initTrainingAlignerFromFile);
       }
       if (!opts.trainTestingAligner) {
@@ -267,6 +267,9 @@ public class PipelineTrainer {
   private AlignModel makeTrainingAligner() {
     if (opts.trainTrainingAligner) {
       AlignerTrainer alignTrainer = new AlignerTrainer(opts);
+      if (loadedTrainingAligner != null) {
+        alignTrainer.setInitFrom(loadedTrainingAligner.getTransitions());
+      }
       return alignTrainer.train(inputs);
     }
     return checkNotNull(loadedTrainingAligner, "shouldve already been loaded in init()");

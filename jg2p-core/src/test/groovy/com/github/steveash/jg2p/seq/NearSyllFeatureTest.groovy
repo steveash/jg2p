@@ -25,34 +25,34 @@ import com.github.steveash.jg2p.align.Alignment
 /**
  * @author Steve Ash
  */
-class VowelWindowFeatureTest extends GroovyTestCase {
+class NearSyllFeatureTest extends GroovyTestCase {
 
-  void testOnlyLast() {
+  void testRelative() {
     def inst = new Instance(new Alignment(Word.fromNormalString("psychology"),
                                           Word.fromNormalString("psychology").getLeftOnlyPairs(), 0.0,
                                           Word.fromNormalString("OONOONONON").value, null)
                                 .withGraphemeSyllStarts([0, 3, 6, 8].toSet()), null, null, null)
     def pipe1 = new AlignmentToTokenSequence(new Alphabet(), new Alphabet())
-    def pipe2 = VowelWindowFeature.makeOnlyLastVowel()
+    def pipe2 = new NearSyllFeature(true)
     def result = pipe2.pipe(pipe1.pipe(inst))
     def ts = result.getData() as TokenSequence
     println ts
-    assert ts.get(5).getFeatureValue('VWF_LAST_gY') > 0
-    assert ts.get(2).getFeatureValue('VWF_LAST_gY') > 0
-    assert ts.get(0).getFeatureValue('VWF_LAST_gY') == 0.0d
+    assert ts.get(1).getFeatureValue("NEARSYLL_NEXT_s_2") > 0
+    assert ts.get(2).getFeatureValue("NEARSYLL_NEXT_y_1") > 0
+    assert ts.get(9).getFeatureValue("NEARSYLL_NEXT_y_-1") > 0
   }
 
-  void testBefore() {
+  void testRelativePrev() {
     def inst = new Instance(new Alignment(Word.fromNormalString("psychology"),
                                           Word.fromNormalString("psychology").getLeftOnlyPairs(), 0.0,
                                           Word.fromNormalString("OONOONONON").value, null)
                                 .withGraphemeSyllStarts([0, 3, 6, 8].toSet()), null, null, null)
     def pipe1 = new AlignmentToTokenSequence(new Alphabet(), new Alphabet())
-    def pipe2 = VowelWindowFeature.makeRelative(-1)
+    def pipe2 = new NearSyllFeature(false)
     def result = pipe2.pipe(pipe1.pipe(inst))
     def ts = result.getData() as TokenSequence
     println ts
-    assert ts.get(5).getFeatureValue('VWF_REL-1_psY') > 0
-    assert ts.get(9).getFeatureValue('VWF_REL-1_lO') > 0
+    assert ts.get(1).getFeatureValue("NEARSYLL_PREV_s_-1") > 0
+    assert ts.get(3).getFeatureValue("NEARSYLL_PREV_c_1") > 0
   }
 }

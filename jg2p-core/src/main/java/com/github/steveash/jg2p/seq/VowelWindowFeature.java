@@ -16,17 +16,14 @@
 
 package com.github.steveash.jg2p.seq;
 
-import com.google.common.collect.Lists;
-
 import com.github.steveash.jg2p.syll.SyllStructure;
-import com.github.steveash.jg2p.util.TokenSeqUtil;
-
-import java.util.List;
 
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Instance;
 import cc.mallet.types.Token;
 import cc.mallet.types.TokenSequence;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * finds the next nucleus vowel and for the next nearest vowel -- emits a window of (up to two chars
@@ -62,9 +59,9 @@ public class VowelWindowFeature extends Pipe {
   public Instance pipe(Instance inst) {
 
     TokenSequence ts = (TokenSequence) inst.getData();
-    List<String> graphoneText = Lists.transform(ts, TokenSeqUtil.tokenToString);
-    List<String> graphoneCodes = Lists.transform(ts, NeighborSyllableFeature.TokenToSyllGram);
-    SyllStructure struct = new SyllStructure(graphoneText, graphoneCodes);
+
+    SyllStructure struct = (SyllStructure) ts.getProperty(PhonemeCrfTrainer.PROP_STRUCTURE);
+    checkNotNull(struct, "cant use struct without sylls", inst);
     for (int i = 0; i < ts.size(); i++) {
       Token tt = ts.get(i);
       if (!struct.graphoneGramIndexContainsNucleus(i)) {

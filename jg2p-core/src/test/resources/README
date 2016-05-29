@@ -36,3 +36,6 @@ dt_reranker2_2.dat - this is the log reg RR model trained off the psaur_rerank_t
 dt_reranker2_3.dat - logregRR, psaur_rerank_train_50k.txt, log xform of alignscore, GausPrior=3
 dt_reranker2_4.dat - logregRR, psaur_rerank_train_50k.txt, log xform of alignscore, GausPrior=10
 dt_reranker6_1.dat - logregRR this is using the F5+retag model
+
+2016-05-29
+pipe_43sy_cmu7_fixsg_1 - first trained model with fixed syll grapheme boundaries

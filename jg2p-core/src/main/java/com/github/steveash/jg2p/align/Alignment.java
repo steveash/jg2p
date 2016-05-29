@@ -35,6 +35,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -62,7 +63,7 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
   // these are only used when we're dealing with syllable words
   private final List<String> graphoneSyllableGrams;
   private final SWord syllWord;
-
+  private final Set<Integer> graphemeSyllStarts;
 
   public Alignment(Word input, double score) {
     this(input, Lists.<Pair<String, String>>newArrayList(), score);
@@ -72,12 +73,23 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
     this(input, finalList, score, null, null);
   }
 
-  public Alignment(Word input, List<Pair<String, String>> finalList, double score, List<String> graphoneSyllableGrams, SWord syllWord) {
+  public Alignment(Word input, List<Pair<String, String>> finalList, double score, List<String> graphoneSyllableGrams,
+                   SWord syllWord) {
+    this(input, finalList, score, graphoneSyllableGrams, syllWord, null);
+  }
+
+  private Alignment(Word input,
+                   List<Pair<String, String>> finalList,
+                   double score,
+                   List<String> graphoneSyllableGrams,
+                   SWord syllWord,
+                   Set<Integer> graphemeSyllStarts) {
     this.input = input;
     this.graphones = finalList;
     this.score = score;
     this.graphoneSyllableGrams = graphoneSyllableGrams;
     this.syllWord = syllWord;
+    this.graphemeSyllStarts = graphemeSyllStarts;
   }
 
   public List<Pair<String, String>> getGraphones() {
@@ -96,7 +108,7 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
       return graphoneSyllableGrams;
     }
     if (syllWord != null) {
-      return SyllTagTrainer.makeSyllGramsFromMarks(this);
+      return SyllTagTrainer.makeOncGramsFromTraining(this);
     }
     return null;
   }
@@ -107,6 +119,10 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
 
   public Word getInputWord() {
     return input;
+  }
+
+  public Set<Integer> getGraphemeSyllStarts() {
+    return this.graphemeSyllStarts;
   }
 
   void append(String xGram, String yGram) {
@@ -250,6 +266,11 @@ public class Alignment implements Iterable<Pair<String, String>>, Comparable<Ali
 
   public Alignment withGraphoneSyllGrams(List<String> graphoneSyllGrams) {
     return new Alignment(this.input, this.graphones, this.score, graphoneSyllGrams, this.syllWord);
+  }
+
+  public Alignment withGraphemeSyllStarts(Set<Integer> graphemeSyllStarts) {
+    return new Alignment(this.input, this.graphones, this.score, this.graphoneSyllableGrams, this.syllWord,
+                         graphemeSyllStarts);
   }
 
   @Override

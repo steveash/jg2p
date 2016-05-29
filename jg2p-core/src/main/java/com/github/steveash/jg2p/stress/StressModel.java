@@ -47,7 +47,7 @@ public class StressModel implements Serializable {
   }
 
   public Alignment enrichWithSyllStarts(Alignment align, Set<Integer> starts) {
-    List<String> syllCodes = SyllTagTrainer.makeSyllMarksFor(align, starts);
+    List<String> syllCodes = SyllTagTrainer.makeOncGramsForTesting(align, starts);
     return align.withGraphoneSyllGrams(syllCodes);
   }
 
@@ -57,6 +57,6 @@ public class StressModel implements Serializable {
 
     Sequence inSeq = (Sequence) instance.getData();
     Sequence<Object> outSeqs = crf.getMaxLatticeFactory().newMaxLattice(crf, inSeq).bestOutputSequence();
-    return SyllTagTrainer.startsFromSyllGraphMarks(outSeqs);
+    return SyllTagTrainer.startsFromGraphemeSyllEnding(outSeqs);
   }
 }

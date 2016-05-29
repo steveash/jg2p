@@ -17,9 +17,9 @@
 package com.github.steveash.jg2p.seq;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 import com.github.steveash.jg2p.phoseq.Graphemes;
+import com.github.steveash.jg2p.syll.SyllStructure;
 import com.github.steveash.jg2p.syll.SyllTagTrainer;
 
 import java.util.List;
@@ -28,7 +28,8 @@ import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Instance;
 import cc.mallet.types.Token;
 import cc.mallet.types.TokenSequence;
-import kylmshade.a.a.A;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * For each vowel in the sequence we're going to emit a sonority pattern that captures the sonority structure around
@@ -50,8 +51,9 @@ public class SonorityFeature2 extends Pipe {
   public Instance pipe(Instance inst) {
 
     TokenSequence ts = (TokenSequence) inst.getData();
-
-    List<String> sylls = Lists.transform(ts, NeighborSyllableFeature.TokenToSyllGram);
+    SyllStructure struct = (SyllStructure) ts.getProperty(PhonemeCrfTrainer.PROP_STRUCTURE);
+    checkNotNull(struct, "no sylls", inst);
+    List<String> sylls = struct.getOncGrams();
     Preconditions.checkState(sylls.size() == ts.size());
 
     for (int i = 0; i < ts.size(); i++) {

@@ -16,10 +16,7 @@
 
 package com.github.steveash.jg2p.syllchain;
 
-import com.google.common.collect.Sets;
-
 import com.github.steveash.jg2p.align.Alignment;
-import com.github.steveash.jg2p.syll.SWord;
 import com.github.steveash.jg2p.syll.SyllTagTrainer;
 
 import java.io.Serializable;
@@ -54,8 +51,8 @@ public class SyllChainModel implements Serializable {
   }
 
   public Alignment enrichWithSyllStarts(Alignment align, Set<Integer> starts) {
-    List<String> syllCodes = SyllTagTrainer.makeSyllMarksFor(align, starts);
-    return align.withGraphoneSyllGrams(syllCodes);
+    List<String> syllCodes = SyllTagTrainer.makeOncGramsForTesting(align, starts);
+    return align.withGraphoneSyllGrams(syllCodes).withGraphemeSyllStarts(starts);
   }
 
   public Set<Integer> tagSyllStarts(List<String> wordUnigrams) {
@@ -64,7 +61,7 @@ public class SyllChainModel implements Serializable {
 
     Sequence inSeq = (Sequence) instance.getData();
     Sequence<Object> outSeqs = crf.getMaxLatticeFactory().newMaxLattice(crf, inSeq).bestOutputSequence();
-    return SyllTagTrainer.startsFromSyllGraphMarks(outSeqs);
+    return SyllTagTrainer.startsFromGraphemeSyllEnding(outSeqs);
 //    return Sets.newHashSet(SWord.convertOncToBoundaries(outSeqs));
   }
 }

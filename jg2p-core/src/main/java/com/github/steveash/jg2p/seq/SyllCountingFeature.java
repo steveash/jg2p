@@ -16,17 +16,14 @@
 
 package com.github.steveash.jg2p.seq;
 
-import com.google.common.collect.Lists;
-
-import com.github.steveash.jg2p.syll.SyllCounter;
-import com.github.steveash.jg2p.syll.SyllTagTrainer;
-
-import java.util.List;
+import com.github.steveash.jg2p.syll.SyllStructure;
 
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Instance;
 import cc.mallet.types.Token;
 import cc.mallet.types.TokenSequence;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * emits a feature for SYLLCNT_X where X is the current syllable this grapheme is in
@@ -37,13 +34,11 @@ public class SyllCountingFeature extends Pipe {
   @Override
   public Instance pipe(Instance inst) {
     TokenSequence ts = (TokenSequence) inst.getData();
-    List<String> sg = Lists.transform(ts, NeighborSyllableFeature.TokenToSyllGram);
-    SyllCounter counter = new SyllCounter();
+    SyllStructure struct = (SyllStructure) ts.getProperty(PhonemeCrfTrainer.PROP_STRUCTURE);
+    checkNotNull(struct, "no sylls", inst);
     for (int i = 0; i < ts.size(); i++) {
       Token tok = ts.get(i);
-      String s = sg.get(i);
-      counter.onNextGram(s);
-      tok.setFeatureValue("SYLLCNT_" + counter.currentSyllable(), 1.0);
+      tok.setFeatureValue("SYLLCNT_" + struct.getSyllIndexForGraphoneGramIndex(i), 1.0);
     }
     return inst;
   }

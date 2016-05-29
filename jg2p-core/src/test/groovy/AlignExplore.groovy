@@ -15,18 +15,10 @@
  */
 
 import com.github.steveash.jg2p.Word
-import com.github.steveash.jg2p.align.AlignModel
 import com.github.steveash.jg2p.syll.SWord
 import com.github.steveash.jg2p.syll.SyllCounter
-import com.github.steveash.jg2p.syll.SyllStructure
 import com.github.steveash.jg2p.syll.SyllTagTrainer
-import com.github.steveash.jg2p.util.Histogram
-import com.github.steveash.jg2p.util.JenksBreaks
 import com.github.steveash.jg2p.util.ModelReadWrite
-import com.github.steveash.jg2p.util.Percent
-import com.github.steveash.jg2p.util.ReadWrite
-import org.apache.commons.lang3.ArrayUtils
-import org.apache.commons.math3.stat.descriptive.rank.Percentile
 
 /**
  * @author Steve Ash
@@ -38,7 +30,7 @@ def graphs = Word.fromNormalString("CASUALLY")
 def phones = new SWord("K AE ZH AH W AH L IY", "0 2 4 6")
 def result = model.align(graphs, phones, 1)
 def first = result.first()
-def sylls = SyllTagTrainer.makeSyllMarksFor(first)
+def sylls = SyllTagTrainer.makeJointCodesForTraining(first)
 def testFirst = model2.inferAlignments(graphs, 1).first()
 
 println "train aligner = $first"

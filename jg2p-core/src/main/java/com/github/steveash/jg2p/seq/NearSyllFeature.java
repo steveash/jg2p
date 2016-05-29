@@ -16,6 +16,7 @@
 
 package com.github.steveash.jg2p.seq;
 
+import com.github.steveash.jg2p.Grams;
 import com.github.steveash.jg2p.syll.SyllStructure;
 
 import cc.mallet.pipe.Pipe;
@@ -26,25 +27,47 @@ import cc.mallet.types.TokenSequence;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * emits a feature for SYLLCNT_X where X is the current syllable this grapheme is in
+ * emits a feature like NEARSYLL_NEXT_graph_countToNext or NEXT_graph_X for those graphs that are last
  * @author Steve Ash
  */
-public class SyllMarkingFeature extends Pipe {
+public class NearSyllFeature extends Pipe {
 
-  private static final long serialVersionUID = -2121131855504897619L;
+  private static final long serialVersionUID = 6132320827737141523L;
+
+  private final boolean isNext; // false if doing prev, true if next
+
+  public NearSyllFeature(boolean isNext) {
+    this.isNext = isNext;
+  }
 
   @Override
   public Instance pipe(Instance inst) {
     TokenSequence ts = (TokenSequence) inst.getData();
     SyllStructure struct = (SyllStructure) ts.getProperty(PhonemeCrfTrainer.PROP_STRUCTURE);
     checkNotNull(struct, "no sylls", inst);
-    int prevSyll = -1;
+    int xx = 0;
     for (int i = 0; i < ts.size(); i++) {
       Token tok = ts.get(i);
-      int currSyll = struct.getSyllIndexForGraphoneGramIndex(i);
-      if (prevSyll != currSyll) {
-        tok.setFeatureValue("SYLLMARK_" + currSyll, 1.0);
-        prevSyll = currSyll;
+      for (String grapheme : Grams.iterateSymbols(tok.getText())) {
+        int relative;
+        int syllIndex = struct.getSyllIndexForGraphemeIndex(xx);
+        int mySyllSeq = struct.getSyllSequenceForGraphemeIndex(xx);
+        // 01201
+        // YYZYZ
+        if (isNext) {
+          int graphsInSyllable = struct.getSyllGraphsForSyllIndex(syllIndex).length(); // no zeroes
+          relative = (graphsInSyllable - mySyllSeq);
+          if (syllIndex == struct.getLastSyllIndex()) {
+            relative = -1;
+          }
+        } else {
+          relative = mySyllSeq + 1;
+          if (syllIndex == 0) {
+            relative = -1;
+          }
+        }
+        tok.setFeatureValue("NEARSYLL_" + (isNext ? "NEXT_" : "PREV_") + grapheme + "_" + relative, 1.0);
+        xx += 1;
       }
     }
     return inst;

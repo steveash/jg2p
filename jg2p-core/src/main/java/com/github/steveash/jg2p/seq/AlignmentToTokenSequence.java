@@ -19,7 +19,7 @@ package com.github.steveash.jg2p.seq;
 import com.google.common.base.Preconditions;
 
 import com.github.steveash.jg2p.align.Alignment;
-import com.github.steveash.jg2p.syll.SyllCounter;
+import com.github.steveash.jg2p.syll.SyllStructure;
 
 import java.io.Serializable;
 import java.util.List;
@@ -29,6 +29,8 @@ import cc.mallet.types.Alphabet;
 import cc.mallet.types.Instance;
 import cc.mallet.types.Token;
 import cc.mallet.types.TokenSequence;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Converts an alignment in the data segment to a token sequence (incorporating syllable info if present)
@@ -60,6 +62,7 @@ public class AlignmentToTokenSequence extends Pipe implements Serializable {
 
     List<String> xList = source.getAllXTokensAsList();
     TokenSequence xTokens = makeTokenSeq(xList);
+//    xTokens.setProperty(PhonemeCrfTrainer.PROP_ALIGNMENT, source);
     inst.setData(xTokens);
     if (inst.getTarget() != null && updateTarget) {
       List<String> target = (List<String>) inst.getTarget();
@@ -67,19 +70,17 @@ public class AlignmentToTokenSequence extends Pipe implements Serializable {
       inst.setTarget(makeTokenSeq(target));
     }
     if (updateSyllable) {
-      SyllCounter counter = new SyllCounter();
-      List<String> sylls = source.getGraphoneSyllableGrams();
-      if (sylls == null) {
-        throw new IllegalArgumentException("no syllables present " + source);
-      }
+      List<String> sylls = checkNotNull(source.getGraphoneSyllableGrams(), "no syllables", source);
+      SyllStructure struct = new SyllStructure(source);
+      xTokens.setProperty(PhonemeCrfTrainer.PROP_STRUCTURE, struct);
+
       Preconditions.checkState(sylls.size() == xList.size(), "graphemes and syll markers not equal");
       for (int i = 0; i < xTokens.size(); i++) {
         Token token = xTokens.get(i);
         String syll = sylls.get(i);
-        counter.onNextGram(syll);
         String syllFeat = syll;
         if (updateSyllTokenCount) {
-          syllFeat += "_" + token.getText().toLowerCase() + "_" + counter.currentSyllable();
+          syllFeat += "_" + token.getText().toLowerCase() + "_" + struct.getSyllIndexForGraphoneGramIndex(i);
         }
         token.setFeatureValue("SYL_" + syllFeat, 1.0);
         token.setProperty(SYLL_GRAM, syll);

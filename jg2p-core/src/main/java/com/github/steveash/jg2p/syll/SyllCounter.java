@@ -23,6 +23,8 @@ import java.util.List;
 import cc.mallet.types.Sequence;
 
 /**
+ * Counting syllables using the ONC coding only makes sense if you are counting phoneme sequences;
+ * grapheme sequences have all of the ambiguities of G2P
  * @author Steve Ash
  */
 public class SyllCounter {

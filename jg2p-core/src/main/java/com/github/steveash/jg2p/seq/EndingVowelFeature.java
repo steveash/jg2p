@@ -17,18 +17,17 @@
 package com.github.steveash.jg2p.seq;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 import com.github.steveash.jg2p.phoseq.Graphemes;
-import com.github.steveash.jg2p.syll.SyllCounter;
+import com.github.steveash.jg2p.syll.SyllStructure;
 import com.github.steveash.jg2p.syll.SyllTagTrainer;
-
-import java.util.List;
 
 import cc.mallet.pipe.Pipe;
 import cc.mallet.types.Instance;
 import cc.mallet.types.Token;
 import cc.mallet.types.TokenSequence;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * If the last char is E or Y then it goes through and tags the vowels leading up to that with
@@ -46,16 +45,15 @@ public class EndingVowelFeature extends Pipe {
     if (lastChar != 'y' && lastChar != 'e') {
       return inst;
     }
-    List<String> sg = Lists.transform(ts, NeighborSyllableFeature.TokenToSyllGram);
-    Preconditions.checkState(sg.size() == ts.size());
-    int lastSyllIndex = SyllCounter.countSyllablesInGrams(sg) - 1; // want last index
-    SyllCounter counter = new SyllCounter();
+
+    SyllStructure struct = (SyllStructure) ts.getProperty(PhonemeCrfTrainer.PROP_STRUCTURE);
+    checkNotNull(struct, "no sylls", inst);
+    int lastSyllIndex = struct.getLastSyllIndex();
     for (int i = 0; i < ts.size(); i++) {
       String tag = null;
       Token t = ts.get(i);
-      String s = sg.get(i);
-      counter.onNextGram(s);
-      int thisSyllIndex = counter.currentSyllable();
+      String s = struct.oncGramForGraphoneIndex(i);
+      int thisSyllIndex = struct.getSyllIndexForGraphoneGramIndex(i);
       String text = t.getText();
       Preconditions.checkState(text.length() == s.length(), "grams doesnt match syll grams");
       for (int j = 0; j < text.length(); j++) {

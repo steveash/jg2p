@@ -48,24 +48,24 @@ opts.useCityBlockPenalty = true
 opts.useWindowWalker = true
 opts.useSyllableTagger = true
 opts.maxPronouncerTrainingIterations = 400
-def inFile = "../resources/pipe_43sy_cmu7_F11_6.dat"
-opts.initTrainingAlignerFromFile = inFile
+def inFile = "../resources/pipe_43sy_cmu7_orig_1.dat"
+opts.initTrainingAlignerFromFile = "../resources/SyllChain1.dat"
 opts.initTestingAlignerFromFile = inFile
 opts.initCrfFromModelFile = inFile
 opts.initPhoneSyllModelFromFile = "../resources/syllphonetag.dat"
 //opts.initRerankerFromFile = "../resources/pip_rr.dat"
 opts.graphoneLanguageModelOrder = 8
 opts.graphoneLanguageModelOrderForTraining = 8
-opts.trainTrainingAligner = false
-opts.trainTestingAligner = false
-opts.trainPronouncer = false
+//opts.trainTrainingAligner = true
+//opts.trainTestingAligner = true
+//opts.trainPronouncer = true
 //opts.trimFeaturesByGradientGain = 2.1
 
-//opts.trainAll();
+opts.trainAll();
 //opts.useInputRerankExampleCsv = "../resources/pip_rre.csv"
 //opts.trainReranker = true
 //opts.writeOutputRerankExampleCsv = "../resources/rerank_inputs.csv"
-def outFile = "../resources/pipe_43sy_cmu7_F11_6a.dat"
+def outFile = "../resources/pipe_43sy_cmu7_fixsg_1.dat"
 
 
 def log = LoggerFactory.getLogger("psaurus")

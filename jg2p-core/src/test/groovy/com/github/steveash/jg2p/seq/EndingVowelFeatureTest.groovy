@@ -30,7 +30,8 @@ class EndingVowelFeatureTest extends GroovyTestCase {
   void testTrailingE() {
     def inst = new Instance(new Alignment(Word.fromNormalString("promade"),
                                Word.fromNormalString("promade").getLeftOnlyPairs(), 0.0,
-                               Word.fromNormalString("OONONCC").value, null), null, null, null)
+                               Word.fromNormalString("OONONCC").value, null).withGraphemeSyllStarts([0, 3].toSet()),
+                            null, null, null)
     def pipe1 = new AlignmentToTokenSequence(new Alphabet(), new Alphabet())
     def pipe2 = new EndingVowelFeature()
     def result = pipe2.pipe(pipe1.pipe(inst))

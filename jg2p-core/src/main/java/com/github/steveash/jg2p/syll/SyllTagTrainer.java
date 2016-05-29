@@ -316,16 +316,24 @@ public class SyllTagTrainer {
     while (iter.hasNext()) {
       Pair<List<String>, List<String>> graphone = iter.next();
       boolean nextGraphoneStartsSyll = false;
+      List<String> phones = graphone.getRight();
       if (iter.hasNext()) {
-        int nextPhoneIndex = yy + graphone.getRight().size();
+        int nextPhoneIndex = yy + phones.size();
         if (sword.isStartOfSyllable(nextPhoneIndex)) {
           nextGraphoneStartsSyll = true;
+        }
+        // if the constraint is violated then go ahead and mark if this graphone splits it
+        for (int i = 1; i < phones.size(); i++) {
+          // start i = 1 to skip the first otherwise we would double mark
+          if (sword.isStartOfSyllable(yy + i)) {
+            nextGraphoneStartsSyll = true;
+          }
         }
       } else {
         // last graphone always ends the sylls
         nextGraphoneStartsSyll = true;
       }
-      yy += graphone.getRight().size();
+      yy += phones.size();
       // dump the graphes out
       List<String> graphs = graphone.getLeft();
       for (int i = 0; i < graphs.size(); i++) {

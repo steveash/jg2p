@@ -40,7 +40,8 @@ def testFile = "cmu7b.test"
 def inputs = InputReader.makePSaurusReader().readFromClasspath(inputFile)
 def testInputs = InputReader.makePSaurusReader().readFromClasspath(testFile)
 println "reading model..."
-def aligner = ModelReadWrite.readTrainAlignerFrom("../resources/pipe_43sy_cmu7_orig_1.dat")
+//def aligner = ModelReadWrite.readTrainAlignerFrom("../resources/pipe_43sy_cmu7_orig_1.dat")
+def aligner = ModelReadWrite.readTrainAlignerFrom("../resources/syllchainAlignConstrained.dat") 
 def syllgmodel = ModelReadWrite.readSyllTagFrom("../resources/pipe_43sy_cmu7_orig_1.dat")
 //def syllmodel = ReadWrite.readFromFile(PhoneSyllTagModel.class, new File("../resources/syllphonetag.dat"))
 
@@ -55,11 +56,12 @@ def ww = new WindowXyWalker(opts.makeGramOptions())
 def sp = new SyllPreserving(ww)
 
 println "training the training aligner with syll constraints"
-def at = new AlignerTrainer(opts, sp)
-at.initFrom = aligner.transitions
-def alignModel = at.train(inputs)
+//def at = new AlignerTrainer(opts, sp)
+//at.initFrom = aligner.transitions
+//def alignModel = at.train(inputs)
+alignModel = aligner
 println "writing model out"
-ReadWrite.writeTo(alignModel, new File("../resources/syllchainAlignConstrained.dat"))
+//ReadWrite.writeTo(alignModel, new File("../resources/syllchainAlignConstrained.dat"))
 
 println "collecting alignments with the trained model"
 def aligns = inputs.collectMany { rec ->

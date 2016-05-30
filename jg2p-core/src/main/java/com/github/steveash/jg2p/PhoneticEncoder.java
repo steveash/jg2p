@@ -244,7 +244,8 @@ public class PhoneticEncoder implements Serializable {
     // to make the syllables ignoring the alignment
     List<String> flattened = Grams.flattenGrams(sample.getGraphoneSyllableGrams());
     Preconditions.checkState(flattened.size() == input.unigramCount());
-    return new Alignment(input, Zipper.upTo(input.getValue(), ""), 0, flattened, null);
+    return new Alignment(input, Zipper.upTo(input.getValue(), ""), 0, flattened, null)
+        .withGraphemeSyllStarts(sample.getGraphemeSyllStarts());
   }
 
   public PhoneticEncoder withAligner(Aligner aligner) {

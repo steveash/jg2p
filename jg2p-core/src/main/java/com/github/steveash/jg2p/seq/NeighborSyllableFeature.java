@@ -39,6 +39,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class NeighborSyllableFeature extends Pipe {
 
+  private static final long serialVersionUID = 8898019144990632231L;
   private final ImmutableList<TokenWindow> windows;
 
   public NeighborSyllableFeature(int... neighbors) {

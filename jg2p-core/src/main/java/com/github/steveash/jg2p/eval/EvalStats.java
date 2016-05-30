@@ -62,6 +62,8 @@ public class EvalStats {
   final AtomicLong words = new AtomicLong(0);
   final AtomicLong zeroResultWords = new AtomicLong(0);
   final AtomicLong top1CorrectWords = new AtomicLong(0);
+  final AtomicLong multiValueMatches = new AtomicLong(0);
+  final AtomicLong multiValueGroupCount = new AtomicLong(0);
 
   final AtomicLong phones = new AtomicLong(0);
   final AtomicLong top1PhoneEdits = new AtomicLong(0);
@@ -78,6 +80,9 @@ public class EvalStats {
 
   long onNewResult(InputRecordGroup test, @Nullable PhoneticEncoder.Encoding topResult, int matchedRank) {
     long newTotal = words.incrementAndGet();
+    if (test.getAcceptableYWords().size() > 1) {
+      multiValueGroupCount.incrementAndGet();
+    }
     if (topResult == null) {
       zeroResultWords.incrementAndGet();
       return newTotal;
@@ -93,6 +98,9 @@ public class EvalStats {
         top1CorrectWords.getAndIncrement();
         phones.addAndGet(good.unigramCount());
         // no edits
+        if (test.getAcceptableYWords().size() > 1) {
+          multiValueMatches.incrementAndGet();
+        }
         return newTotal; // found the best
       }
       int edits = ListEditDistance.editDistance(good.getValue(), resultPhones.getValue(), minEdits);

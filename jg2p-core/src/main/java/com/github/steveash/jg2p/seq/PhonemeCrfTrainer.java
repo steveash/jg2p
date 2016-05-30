@@ -264,6 +264,8 @@ public class PhonemeCrfTrainer {
 //        new NearSyllFeature(true),
 //        new NearSyllFeature(false),
 //        new SyllMarkingFeature(),
+        new SyllSequenceFeature(),
+        new SyllRelativeMarkFeature(),
         new EndingVowelFeature(),
         //new SonorityFeature2(true),
         //new SonorityFeature2(false),

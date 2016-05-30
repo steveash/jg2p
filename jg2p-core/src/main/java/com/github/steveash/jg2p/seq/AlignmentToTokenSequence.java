@@ -38,11 +38,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class AlignmentToTokenSequence extends Pipe implements Serializable {
   private static final long serialVersionUID = -7681162543291251873L;
-  public static final String SYLL_GRAM = "syllGram";
 
   private final boolean updateTarget;
   private final boolean updateSyllable;
-  private final boolean updateSyllTokenCount;
+  @Deprecated private final boolean updateSyllTokenCount;
 
   public AlignmentToTokenSequence(Alphabet dataDict, Alphabet targetDict) {
     this(dataDict, targetDict, true, true, false);
@@ -70,8 +69,9 @@ public class AlignmentToTokenSequence extends Pipe implements Serializable {
       inst.setTarget(makeTokenSeq(target));
     }
     if (updateSyllable) {
-      List<String> sylls = checkNotNull(source.getGraphoneSyllableGrams(), "no syllables", source);
+      checkNotNull(source.getGraphoneSyllableGrams(), "no syllables", source);
       SyllStructure struct = new SyllStructure(source);
+      List<String> sylls = struct.getOncGrams();
       xTokens.setProperty(PhonemeCrfTrainer.PROP_STRUCTURE, struct);
 
       Preconditions.checkState(sylls.size() == xList.size(), "graphemes and syll markers not equal");
@@ -82,8 +82,7 @@ public class AlignmentToTokenSequence extends Pipe implements Serializable {
         if (updateSyllTokenCount) {
           syllFeat += "_" + token.getText().toLowerCase() + "_" + struct.getSyllIndexForGraphoneGramIndex(i);
         }
-        token.setFeatureValue("SYL_" + syllFeat, 1.0);
-        token.setProperty(SYLL_GRAM, syll);
+//        token.setFeatureValue("SYL_" + syllFeat, 1.0);
       }
     }
     return inst;

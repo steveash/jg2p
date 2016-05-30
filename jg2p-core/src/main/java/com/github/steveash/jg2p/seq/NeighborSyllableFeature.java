@@ -16,11 +16,10 @@
 
 package com.github.steveash.jg2p.seq;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
+import com.github.steveash.jg2p.syll.SyllStructure;
 import com.github.steveash.jg2p.util.TokenSeqUtil;
 
 import java.util.List;
@@ -31,6 +30,7 @@ import cc.mallet.types.Token;
 import cc.mallet.types.TokenSequence;
 
 import static com.github.steveash.jg2p.seq.TokenWindow.makeTokenWindowsForInts;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Puts features for the neighboring syllable tokens
@@ -38,15 +38,6 @@ import static com.github.steveash.jg2p.seq.TokenWindow.makeTokenWindowsForInts;
  * @author Steve Ash
  */
 public class NeighborSyllableFeature extends Pipe {
-
-  public static final Function<Token, String> TokenToSyllGram = new Function<Token, String>() {
-    @Override
-    public String apply(Token input) {
-      String gram = (String) input.getProperty(AlignmentToTokenSequence.SYLL_GRAM);
-      if (gram != null) return gram;
-      throw new IllegalArgumentException("cannot find syllable feature for token " + input);
-    }
-  };
 
   private final ImmutableList<TokenWindow> windows;
 
@@ -57,7 +48,10 @@ public class NeighborSyllableFeature extends Pipe {
   @Override
   public Instance pipe(Instance carrier) {
     TokenSequence ts = (TokenSequence) carrier.getData();
-    List<String> sylls = Lists.transform(ts, TokenToSyllGram);
+    SyllStructure struct = (SyllStructure) ts.getProperty(PhonemeCrfTrainer.PROP_STRUCTURE);
+    checkNotNull(struct, "no sylls", carrier);
+
+    List<String> sylls = struct.getOncGrams();
     Preconditions.checkState(ts.size() == sylls.size(), "sylls and grams dont equal size");
     for (int i = 0; i < ts.size(); i++) {
       Token t = ts.get(i);

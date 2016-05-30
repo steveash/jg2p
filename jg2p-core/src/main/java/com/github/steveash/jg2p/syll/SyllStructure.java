@@ -18,8 +18,10 @@ package com.github.steveash.jg2p.syll;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
+import com.github.steveash.jg2p.Grams;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.phoseq.Graphemes;
 
@@ -40,7 +42,7 @@ public class SyllStructure {
 
 
   private final List<String> syllText; // one entry per syllable with the text of that syll (no spaces) |Sylls|
-  private final List<String> syllCodes; // one matching entry with codes (no spaces) |Sylls|
+  private final List<String> syllCodes; // one matching entry with onc codes (no spaces) |Sylls|
   private final List<String> oncGrams; // one space separate onc coding per graphone |Graphones|
   private final List<Integer> graphoneIndexToSyllableIndex; // one per graphone with syll index |Graphones|
   private final List<Integer> graphemeIndexToSyllableIndex; // one per grapheme with syll index |Graphemes|
@@ -132,6 +134,12 @@ public class SyllStructure {
 
   public String getSyllPart(int syllIndex) {
     return getSyllPart(syllIndex, -1, -1, -1);
+  }
+
+  public String getOncCodeAtGraphoneAndSequence(int graphoneIndex, int sequenceInGraphone) {
+    String oncGram = oncGrams.get(graphoneIndex);
+    // these are space separated so...
+    return Iterables.get(Grams.iterateSymbols(oncGram), sequenceInGraphone);
   }
 
   public int getSyllCount() {

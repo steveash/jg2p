@@ -169,19 +169,26 @@ public class ProbTable implements Iterable<Table.Cell<String,String,Double>>, Ex
    * Y's for the row equal 1
    * @return
    */
-//  public ProbTable makeRowNormalizedCopy() {
-//    ProbTable result = new ProbTable();
-//    for (String row : xRows()) {
-//      Map<String, Double> yProbs = getYProbForX(row);
-//      Double total = yProbs.values().stream().reduce(0.0, Double::sum);
-//      if (total != 0.0) {
-//        for (String y : yProbs.keySet()) {
-//          result.setProb(row, y, yProbs.getOrDefault(y, 0.0) / total);
-//        }
-//      }
-//    }
-//    return result;
-//  }
+  public ProbTable makeRowNormalizedCopy() {
+    ProbTable result = new ProbTable();
+    for (String row : xRows()) {
+      Map<String, Double> yProbs = getYProbForX(row);
+      double total = 0;
+      for (Double dbl : yProbs.values()) {
+        total += dbl;
+      }
+      if (total != 0.0) {
+        for (String y : yProbs.keySet()) {
+          Double maybe = yProbs.get(y);
+          if (maybe == null) {
+            maybe = 0.0;
+          }
+          result.setProb(row, y, maybe / total);
+        }
+      }
+    }
+    return result;
+  }
 
   public Set<String> xRows() {
     return xyProb.rowKeySet();

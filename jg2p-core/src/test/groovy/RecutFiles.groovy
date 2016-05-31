@@ -19,6 +19,7 @@ import com.github.steveash.jg2p.syll.SWord
  */
 
 /**
+ * Creates random shuffles of the test/train sets
  * @author Steve Ash
  */
 List<InputRecord> recs = []

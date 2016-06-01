@@ -65,9 +65,11 @@ class EvalPrinter {
     }
     pw.println(StringUtils.repeat('*', 20))
     // final stats at the bottom
+    def totalPhones = stats.phones.get()
     pw.println(String.format("* Word  Accuracy: %.4f   (WER %.4f)", stats.wordAccuracy(), stats.wordErrorRate()));
     pw.println(String.format("* Phone Accuracy: %.4f   (PER %.4f)", stats.phoneAccuracy(), stats.phoneErrorRate()));
     pw.println(String.format(" * Word top 1 matched %d of %d", stats.top1CorrectWords.get(), totalWords));
+    pw.println(String.format(" * Phone top 1 matched %d of %d", (totalPhones - stats.top1PhoneEdits.get()), totalPhones));
     pw.println(String.format(" * Words the produced zero results %d", stats.zeroResultWords.get()))
     pw.println(String.format(" * Multi-value matches %d of %d (%s)", stats.multiValueMatches.get(),
                              stats.multiValueGroupCount.get(), Percent.print(stats.multiValueMatches.get(),

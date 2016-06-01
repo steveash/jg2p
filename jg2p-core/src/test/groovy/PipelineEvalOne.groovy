@@ -20,7 +20,7 @@ import com.github.steveash.jg2p.util.GroovyLogger
 import com.github.steveash.jg2p.util.ReadWrite
 import org.slf4j.LoggerFactory
 
-def modelFile = "../resources/pipe_42sy_F10_4.dat"
+def modelFile = "../resources/pipe_43sy_cmu7_fixsg_1.dat"
 
 
 def log = LoggerFactory.getLogger("psaurus")

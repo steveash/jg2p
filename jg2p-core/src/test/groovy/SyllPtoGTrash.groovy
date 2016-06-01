@@ -1,32 +1,28 @@
-import com.github.steveash.jg2p.align.Alignment
+import com.github.steveash.jg2p.Grams
 import com.github.steveash.jg2p.align.InputReader
+import com.github.steveash.jg2p.align.ProbTable
+import com.github.steveash.jg2p.phoseq.Phonemes
 import com.github.steveash.jg2p.syll.SWord
-import com.github.steveash.jg2p.syllchain.SyllChainTrainer
 import com.github.steveash.jg2p.train.PipelineTrainer
 import com.github.steveash.jg2p.util.ModelReadWrite
-import com.github.steveash.jg2p.util.Percent
+import com.google.common.math.DoubleMath
+import org.apache.commons.lang3.tuple.Pair
 
 def inputFile = "cmu7b.train"
 def testFile = "cmu7b.test"
 def inputs = InputReader.makePSaurusReader().readFromClasspath(inputFile)
-inputs = inputs.findAll { PipelineTrainer.keepTrainable.apply(it)}
-//inputs = inputs.findAll{it.left.asNoSpaceString.equalsIgnoreCase("huguenots")}
+inputs = inputs.findAll { PipelineTrainer.keepTrainable.apply(it) }
 def testInputs = InputReader.makePSaurusReader().readFromClasspath(testFile)
 println "reading model..."
-//def aligner1 = ModelReadWrite.readTrainAlignerFrom("../resources/pipe_43sy_cmu7_orig_1.dat")
 def aligner1 = ModelReadWrite.readTrainAlignerFrom("../resources/syllchainAlignNoConstrain.dat")
 
 int total = 0
-int exactMatch = 0
-int split1 = 0
-int syllCountMatch = 0
-//int split2 = 0
-println "evaluating aligns"
-def alwaysPrint = ["whitecotton", "whisenant", "hugenots"].toSet()
+def pt1 = new ProbTable()
+def pt2 = new ProbTable()
+
 inputs.each { rec ->
   def sword = rec.right as SWord
   def res1 = aligner1.align(rec.left, rec.right, 1)
-//  def res2 = aligner2.align(rec.left, rec.right, 1)
   if (res1.empty) {
     return
   }
@@ -35,50 +31,48 @@ inputs.each { rec ->
   if (total % 10000 == 0) {
     println "just did $total"
   }
-  boolean shouldPrint = false
-  if (alwaysPrint.contains(rec.left.asNoSpaceString.toLowerCase())) {
-    shouldPrint = true
-  }
-  if (res1.score < -350) {
-    shouldPrint = true
-  }
-  def splits = isSplit(res1)
-  if (!splits.empty) {
-//    println "$split1 - splits $splits for ${rec.left.asNoSpaceString} = ${sword.spaceWordWithSylls} = $res1"
-    split1 += 1
-//    shouldPrint = true
-  }
-  def graphStarts = SyllChainTrainer.splitGraphsByPhoneSylls(res1)
-  if (sword.syllCount() == graphStarts.size()) {
-    syllCountMatch += 1
-  } else {
-    shouldPrint = true
-  }
-  if (shouldPrint) {
-    println "predicted ${graphStarts.sort()} - ${rec.left.splitBy(graphStarts)} = ${sword.spaceWordWithSylls} = $res1"
-  }
-}
-println "Done $exactMatch of $total exact match " + Percent.print(exactMatch, total)
-println "Unconstrained aligner splits $split1 " + Percent.print(split1, total)
-println "Graph coding mismatches ${total - syllCountMatch} " + Percent.print(syllCountMatch, total)
 
-def isSplit(Alignment ali) {
-  int yy = 0
-  def sword = ali.syllWord
-  def splits = []
-  ali.graphonesSplit.each { graphone ->
-    def graphs = graphone.left
-    def phones = graphone.right
-    for (int i = 1; i < phones.size(); i++) {
-      if (sword.isStartOfSyllable(yy + i)) {
-        if (graphs == ["X"] && phones == ["K","S"]) {
-          // skip this known case
-        } else {
-          splits << (yy + i)
+  res1.graphonesSplit.each { Pair<List<String>, List<String>> pair ->
+    pair.left.each { g ->
+      pair.right.each { p ->
+        if (Grams.EPSILON.equalsIgnoreCase(p)) {
+          return
         }
+        if (Grams.EPSILON.equalsIgnoreCase(g)) {
+          return
+        }
+        def pc = Phonemes.getClassForPhone(p)
+        pt1.addProb(g, p, 1.0)
+        pt2.addProb(g, pc, 1.0)
       }
     }
-    yy += phones.size()
   }
-  return splits
+}
+
+printOut(new File("../resources/graphphonespace.csv"), pt1)
+printOut(new File("../resources/graphpclassspace.csv"), pt2)
+println "done"
+
+def printOut(File file, ProbTable rawTable) {
+
+  file.withPrintWriter { pw ->
+    def tab = rawTable.makeRowNormalizedCopy()
+    def hdr = tab.yCols().sort()
+    pw.println("X," + hdr.join(",") + ",Entropy")
+    tab.xRows().sort().each { x ->
+      StringBuilder sb = new StringBuilder()
+      sb.append(x)
+      double sum = 0;
+      hdr.each { y ->
+        def p = tab.prob(x, y)
+        if (p > 0) {
+          sum += (p * DoubleMath.log2(p))
+        }
+        sb.append(",").append(p)
+      }
+
+      sb.append(",").append(-1 * sum)
+      pw.println(sb.toString())
+    }
+  }
 }

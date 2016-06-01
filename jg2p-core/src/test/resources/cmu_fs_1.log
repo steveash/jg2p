@@ -1,0 +1,250 @@
+2016-05-31 21:16:25,631  INFO ForkJoinPool-1-worker-29 rerank.RerankExampleCollector - Completed 100324 of 118995 84.3069%
+2016-05-31 21:16:30,634  INFO ForkJoinPool-1-worker-24 rerank.RerankExampleCollector - Completed 100854 of 118995 84.7506%
+2016-05-31 21:16:35,647  INFO ForkJoinPool-1-worker-12 rerank.RerankExampleCollector - Completed 101408 of 118995 85.2162%
+2016-05-31 21:16:40,634  INFO ForkJoinPool-1-worker-26 rerank.RerankExampleCollector - Completed 101960 of 118995 85.6599%
+2016-05-31 21:16:45,638  INFO ForkJoinPool-1-worker-33 rerank.RerankExampleCollector - Completed 102477 of 118995 86.1103%
+2016-05-31 21:16:50,633  INFO ForkJoinPool-1-worker-6 rerank.RerankExampleCollector - Completed 103040 of 118995 86.5566%
+2016-05-31 21:16:55,658  INFO ForkJoinPool-1-worker-30 rerank.RerankExampleCollector - Completed 103588 of 118995 87.0263%
+2016-05-31 21:17:00,638  INFO ForkJoinPool-1-worker-29 rerank.RerankExampleCollector - Completed 104113 of 118995 87.4843%
+2016-05-31 21:17:05,651  INFO ForkJoinPool-1-worker-6 rerank.RerankExampleCollector - Completed 104588 of 118995 87.8634%
+2016-05-31 21:17:10,665  INFO ForkJoinPool-1-worker-20 rerank.RerankExampleCollector - Completed 105140 of 118995 88.3558%
+2016-05-31 21:17:15,645  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 105605 of 118995 88.7348%
+2016-05-31 21:17:20,658  INFO ForkJoinPool-1-worker-22 rerank.RerankExampleCollector - Completed 106039 of 118995 89.0836%
+2016-05-31 21:17:25,644  INFO ForkJoinPool-1-worker-24 rerank.RerankExampleCollector - Completed 106515 of 118995 89.4912%
+2016-05-31 21:17:30,656  INFO ForkJoinPool-1-worker-5 rerank.RerankExampleCollector - Completed 106871 of 118995 89.7962%
+2016-05-31 21:17:35,655  INFO ForkJoinPool-1-worker-21 rerank.RerankExampleCollector - Completed 107189 of 118995 90.0702%
+2016-05-31 21:17:40,664  INFO ForkJoinPool-1-worker-28 rerank.RerankExampleCollector - Completed 107472 of 118995 90.3013%
+2016-05-31 21:17:45,689  INFO ForkJoinPool-1-worker-24 rerank.RerankExampleCollector - Completed 107719 of 118995 90.5114%
+2016-05-31 21:17:50,632  INFO ForkJoinPool-1-worker-21 rerank.RerankExampleCollector - Completed 107924 of 118995 90.6912%
+2016-05-31 21:17:55,637  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 108075 of 118995 90.8189%
+2016-05-31 21:18:00,663  INFO ForkJoinPool-1-worker-21 rerank.RerankExampleCollector - Completed 108180 of 118995 90.9114%
+2016-05-31 21:18:05,658  INFO ForkJoinPool-1-worker-21 rerank.RerankExampleCollector - Completed 108274 of 118995 90.9895%
+2016-05-31 21:18:10,669  INFO ForkJoinPool-1-worker-21 rerank.RerankExampleCollector - Completed 108362 of 118995 91.0643%
+2016-05-31 21:18:15,736  INFO ForkJoinPool-1-worker-21 rerank.RerankExampleCollector - Completed 108456 of 118995 91.1433%
+2016-05-31 21:18:20,691  INFO ForkJoinPool-1-worker-29 rerank.RerankExampleCollector - Completed 108551 of 118995 91.2215%
+2016-05-31 21:18:25,676  INFO ForkJoinPool-1-worker-21 rerank.RerankExampleCollector - Completed 108637 of 118995 91.2946%
+2016-05-31 21:18:30,641  INFO ForkJoinPool-1-worker-21 rerank.RerankExampleCollector - Completed 108725 of 118995 91.3660%
+2016-05-31 21:18:35,631  INFO ForkJoinPool-1-worker-22 rerank.RerankExampleCollector - Completed 108828 of 118995 91.4526%
+2016-05-31 21:18:40,774  INFO ForkJoinPool-1-worker-21 rerank.RerankExampleCollector - Completed 108920 of 118995 91.5333%
+2016-05-31 21:18:45,764  INFO ForkJoinPool-1-worker-21 rerank.RerankExampleCollector - Completed 108983 of 118995 91.5845%
+2016-05-31 21:18:50,695  INFO ForkJoinPool-1-worker-22 rerank.RerankExampleCollector - Completed 109051 of 118995 91.6417%
+2016-05-31 21:18:55,642  INFO ForkJoinPool-1-worker-22 rerank.RerankExampleCollector - Completed 109129 of 118995 91.7089%
+2016-05-31 21:19:00,708  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 109221 of 118995 91.7854%
+2016-05-31 21:19:05,717  INFO ForkJoinPool-1-worker-22 rerank.RerankExampleCollector - Completed 109292 of 118995 91.8442%
+2016-05-31 21:19:10,633  INFO ForkJoinPool-1-worker-21 rerank.RerankExampleCollector - Completed 109384 of 118995 91.9223%
+2016-05-31 21:19:15,713  INFO ForkJoinPool-1-worker-21 rerank.RerankExampleCollector - Completed 109470 of 118995 91.9955%
+2016-05-31 21:19:20,794  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 109529 of 118995 92.0442%
+2016-05-31 21:19:25,753  INFO ForkJoinPool-1-worker-21 rerank.RerankExampleCollector - Completed 109564 of 118995 92.0736%
+2016-05-31 21:19:30,812  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 109598 of 118995 92.1022%
+2016-05-31 21:19:35,712  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 109632 of 118995 92.1316%
+2016-05-31 21:19:40,757  INFO ForkJoinPool-1-worker-21 rerank.RerankExampleCollector - Completed 109672 of 118995 92.1644%
+2016-05-31 21:19:45,695  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 109710 of 118995 92.1963%
+2016-05-31 21:19:50,795  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 109761 of 118995 92.2392%
+2016-05-31 21:19:55,738  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 109808 of 118995 92.2795%
+2016-05-31 21:20:00,740  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 109852 of 118995 92.3148%
+2016-05-31 21:20:05,692  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 109895 of 118995 92.3526%
+2016-05-31 21:20:10,845  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 109947 of 118995 92.3955%
+2016-05-31 21:20:15,726  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 109996 of 118995 92.4375%
+2016-05-31 21:20:20,643  INFO ForkJoinPool-1-worker-21 rerank.RerankExampleCollector - Completed 110045 of 118995 92.4787%
+2016-05-31 21:20:25,720  INFO ForkJoinPool-1-worker-21 rerank.RerankExampleCollector - Completed 110086 of 118995 92.5123%
+2016-05-31 21:20:30,693  INFO ForkJoinPool-1-worker-21 rerank.RerankExampleCollector - Completed 110126 of 118995 92.5467%
+2016-05-31 21:20:35,733  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 110169 of 118995 92.5829%
+2016-05-31 21:20:40,671  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 110204 of 118995 92.6123%
+2016-05-31 21:20:45,634  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 110253 of 118995 92.6535%
+2016-05-31 21:20:50,890  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 110292 of 118995 92.6862%
+2016-05-31 21:20:55,685  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 110325 of 118995 92.7140%
+2016-05-31 21:21:00,682  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 110366 of 118995 92.7484%
+2016-05-31 21:21:05,700  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 110404 of 118995 92.7804%
+2016-05-31 21:21:10,690  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 110436 of 118995 92.8073%
+2016-05-31 21:21:15,657  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 110477 of 118995 92.8417%
+2016-05-31 21:21:20,635  INFO ForkJoinPool-1-worker-13 rerank.RerankExampleCollector - Completed 110516 of 118995 92.8745%
+2016-05-31 21:21:21,475  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCollector - Waiting for writer to catch up...
+2016-05-31 21:21:21,478  INFO  Actor Thread 1 rerank.RerankExampleCollector - Done writing examples to /tmp/reranker-ex4637283952044426854csv
+2016-05-31 21:21:21,487  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCollector - Finished all 110526 entries, skipped 265 of them
+2016-05-31 21:21:21,896  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 50000 input reranker example csv records...
+2016-05-31 21:21:22,161  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 100000 input reranker example csv records...
+2016-05-31 21:21:22,563  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 150000 input reranker example csv records...
+2016-05-31 21:21:22,803  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 200000 input reranker example csv records...
+2016-05-31 21:21:23,044  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 250000 input reranker example csv records...
+2016-05-31 21:21:23,288  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 300000 input reranker example csv records...
+2016-05-31 21:21:23,556  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 350000 input reranker example csv records...
+2016-05-31 21:21:23,842  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 400000 input reranker example csv records...
+2016-05-31 21:21:24,127  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 450000 input reranker example csv records...
+2016-05-31 21:21:24,411  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 500000 input reranker example csv records...
+2016-05-31 21:21:24,665  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 550000 input reranker example csv records...
+2016-05-31 21:21:24,908  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 600000 input reranker example csv records...
+2016-05-31 21:21:25,150  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 650000 input reranker example csv records...
+2016-05-31 21:21:25,409  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 700000 input reranker example csv records...
+2016-05-31 21:21:25,660  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 750000 input reranker example csv records...
+2016-05-31 21:21:25,921  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 800000 input reranker example csv records...
+2016-05-31 21:21:26,187  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 850000 input reranker example csv records...
+2016-05-31 21:21:26,447  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 900000 input reranker example csv records...
+2016-05-31 21:21:26,709  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 950000 input reranker example csv records...
+2016-05-31 21:21:26,970  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1000000 input reranker example csv records...
+2016-05-31 21:21:27,234  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1050000 input reranker example csv records...
+2016-05-31 21:21:27,501  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1100000 input reranker example csv records...
+2016-05-31 21:21:30,056  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1150000 input reranker example csv records...
+2016-05-31 21:21:30,308  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1200000 input reranker example csv records...
+2016-05-31 21:21:30,557  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1250000 input reranker example csv records...
+2016-05-31 21:21:30,813  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1300000 input reranker example csv records...
+2016-05-31 21:21:31,074  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1350000 input reranker example csv records...
+2016-05-31 21:21:31,329  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1400000 input reranker example csv records...
+2016-05-31 21:21:31,571  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1450000 input reranker example csv records...
+2016-05-31 21:21:31,814  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1500000 input reranker example csv records...
+2016-05-31 21:21:32,062  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1550000 input reranker example csv records...
+2016-05-31 21:21:32,304  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1600000 input reranker example csv records...
+2016-05-31 21:21:32,546  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1650000 input reranker example csv records...
+2016-05-31 21:21:32,786  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1700000 input reranker example csv records...
+2016-05-31 21:21:33,021  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1750000 input reranker example csv records...
+2016-05-31 21:21:33,253  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1800000 input reranker example csv records...
+2016-05-31 21:21:33,492  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1850000 input reranker example csv records...
+2016-05-31 21:21:33,733  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1900000 input reranker example csv records...
+2016-05-31 21:21:46,288  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 1950000 input reranker example csv records...
+2016-05-31 21:21:46,541  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 2000000 input reranker example csv records...
+2016-05-31 21:21:46,784  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 2050000 input reranker example csv records...
+2016-05-31 21:21:47,022  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 2100000 input reranker example csv records...
+2016-05-31 21:21:47,270  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 2150000 input reranker example csv records...
+2016-05-31 21:21:47,513  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 2200000 input reranker example csv records...
+2016-05-31 21:21:47,753  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 2250000 input reranker example csv records...
+2016-05-31 21:21:47,997  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 2300000 input reranker example csv records...
+2016-05-31 21:21:48,242  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 2350000 input reranker example csv records...
+2016-05-31 21:21:48,486  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 2400000 input reranker example csv records...
+2016-05-31 21:21:48,737  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 2450000 input reranker example csv records...
+2016-05-31 21:21:48,991  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 2500000 input reranker example csv records...
+2016-05-31 21:21:49,250  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 2550000 input reranker example csv records...
+2016-05-31 21:21:49,503  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Parsed 2600000 input reranker example csv records...
+2016-05-31 21:21:49,724  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Got 2644002 inputs to train on from many lines of input
+2016-05-31 21:21:50,199  INFO groovy.lang.GroovyShell.main() rerank.RerankExampleCsvReader - Got 110261 grouped example lists from reader
+2016-05-31 21:21:50,215  INFO groovy.lang.GroovyShell.main() rerank.Rerank3Trainer - Using the syll phone tagger in the reranker
+2016-05-31 21:22:01,364  INFO groovy.lang.GroovyShell.main() rerank.Rerank3Trainer - Loaded 10000 instances ...
+2016-05-31 21:22:12,080  INFO groovy.lang.GroovyShell.main() rerank.Rerank3Trainer - Loaded 20000 instances ...
+2016-05-31 21:22:23,169  INFO groovy.lang.GroovyShell.main() rerank.Rerank3Trainer - Loaded 30000 instances ...
+2016-05-31 21:22:33,561  INFO groovy.lang.GroovyShell.main() rerank.Rerank3Trainer - Loaded 40000 instances ...
+2016-05-31 21:22:43,991  INFO groovy.lang.GroovyShell.main() rerank.Rerank3Trainer - Loaded 50000 instances ...
+2016-05-31 21:22:54,598  INFO groovy.lang.GroovyShell.main() rerank.Rerank3Trainer - Loaded 60000 instances ...
+2016-05-31 21:23:05,212  INFO groovy.lang.GroovyShell.main() rerank.Rerank3Trainer - Loaded 70000 instances ...
+2016-05-31 21:23:15,702  INFO groovy.lang.GroovyShell.main() rerank.Rerank3Trainer - Loaded 80000 instances ...
+2016-05-31 21:23:26,057  INFO groovy.lang.GroovyShell.main() rerank.Rerank3Trainer - Loaded 90000 instances ...
+2016-05-31 21:23:37,000  INFO groovy.lang.GroovyShell.main() rerank.Rerank3Trainer - Loaded 100000 instances ...
+2016-05-31 21:23:48,863  INFO groovy.lang.GroovyShell.main() rerank.Rerank3Trainer - Loaded 110000 instances ...
+2016-05-31 21:23:49,124  INFO groovy.lang.GroovyShell.main() rerank.Rerank3Trainer - Loaded all 110261 instances
+2016-05-31 21:24:09,610  INFO groovy.lang.GroovyShell.main() jg2p.PipelineModelProxy - Writing the proxy out...
+2016-05-31 21:24:13,507  INFO groovy.lang.GroovyShell.main()              psaurus - Wrote to ../resources/pipe_43sy_cmu1_fixsg_1.dat
+2016-05-31 21:24:13,507  INFO groovy.lang.GroovyShell.main()              psaurus - Entire training process took 3.239 h
+2016-05-31 21:24:13,507  INFO groovy.lang.GroovyShell.main()              psaurus - ***********************************Finished*************************************
+2016-05-31 21:24:13,507  INFO groovy.lang.GroovyShell.main()              psaurus - testing right now...
+2016-05-31 21:24:13,615  INFO groovy.lang.GroovyShell.main()              psaurus - Starting eval with encoder com.github.steveash.jg2p.PipelineEncoder@7ce70767
+2016-05-31 21:24:13,753  INFO groovy.lang.GroovyShell.main()        eval.BulkEval - Evaluating 12308 input word groups
+2016-05-31 21:24:14,028  INFO ForkJoinPool-2-worker-20        eval.BulkEval - Completed 2 of 12308  0.0162%
+2016-05-31 21:24:15,656  INFO ForkJoinPool-2-worker-22        eval.BulkEval - Completed 313 of 12308  2.5431%
+2016-05-31 21:24:17,658  INFO ForkJoinPool-2-worker-26        eval.BulkEval - Completed 604 of 12308  4.9074%
+2016-05-31 21:24:19,660  INFO ForkJoinPool-2-worker-21        eval.BulkEval - Completed 933 of 12308  7.5804%
+2016-05-31 21:24:21,659  INFO ForkJoinPool-2-worker-32        eval.BulkEval - Completed 1227 of 12308  9.9691%
+2016-05-31 21:24:23,662  INFO ForkJoinPool-2-worker-21        eval.BulkEval - Completed 1546 of 12308  12.5609%
+2016-05-31 21:24:25,660  INFO ForkJoinPool-2-worker-7        eval.BulkEval - Completed 1840 of 12308  14.9496%
+2016-05-31 21:24:27,672  INFO ForkJoinPool-2-worker-33        eval.BulkEval - Completed 2156 of 12308  17.5171%
+2016-05-31 21:24:29,658  INFO ForkJoinPool-2-worker-1        eval.BulkEval - Completed 2454 of 12308  19.9383%
+2016-05-31 21:24:31,664  INFO ForkJoinPool-2-worker-25        eval.BulkEval - Completed 2776 of 12308  22.5544%
+2016-05-31 21:24:33,664  INFO ForkJoinPool-2-worker-29        eval.BulkEval - Completed 3099 of 12308  25.1787%
+2016-05-31 21:24:35,666  INFO ForkJoinPool-2-worker-8        eval.BulkEval - Completed 3431 of 12308  27.8762%
+2016-05-31 21:24:37,686  INFO ForkJoinPool-2-worker-31        eval.BulkEval - Completed 3728 of 12308  30.2892%
+2016-05-31 21:24:39,657  INFO ForkJoinPool-2-worker-25        eval.BulkEval - Completed 4032 of 12308  32.7592%
+2016-05-31 21:24:41,663  INFO ForkJoinPool-2-worker-16        eval.BulkEval - Completed 4350 of 12308  35.3429%
+2016-05-31 21:24:43,657  INFO ForkJoinPool-2-worker-13        eval.BulkEval - Completed 4670 of 12308  37.9428%
+2016-05-31 21:24:45,670  INFO ForkJoinPool-2-worker-12        eval.BulkEval - Completed 4980 of 12308  40.4615%
+2016-05-31 21:24:47,656  INFO ForkJoinPool-2-worker-1        eval.BulkEval - Completed 5305 of 12308  43.1020%
+2016-05-31 21:24:49,661  INFO ForkJoinPool-2-worker-31        eval.BulkEval - Completed 5612 of 12308  45.5964%
+2016-05-31 21:24:51,660  INFO ForkJoinPool-2-worker-19        eval.BulkEval - Completed 5938 of 12308  48.2450%
+2016-05-31 21:24:53,661  INFO ForkJoinPool-2-worker-27        eval.BulkEval - Completed 6248 of 12308  50.7637%
+2016-05-31 21:24:55,664  INFO ForkJoinPool-2-worker-4        eval.BulkEval - Completed 6533 of 12308  53.0793%
+2016-05-31 21:24:57,657  INFO ForkJoinPool-2-worker-18        eval.BulkEval - Completed 6844 of 12308  55.6061%
+2016-05-31 21:24:59,660  INFO ForkJoinPool-2-worker-8        eval.BulkEval - Completed 7138 of 12308  57.9948%
+2016-05-31 21:25:01,664  INFO ForkJoinPool-2-worker-12        eval.BulkEval - Completed 7399 of 12308  60.1154%
+2016-05-31 21:25:03,677  INFO ForkJoinPool-2-worker-13        eval.BulkEval - Completed 7673 of 12308  62.3416%
+2016-05-31 21:25:05,664  INFO ForkJoinPool-2-worker-20        eval.BulkEval - Completed 7946 of 12308  64.5596%
+2016-05-31 21:25:07,656  INFO ForkJoinPool-2-worker-2        eval.BulkEval - Completed 8245 of 12308  66.9890%
+2016-05-31 21:25:09,659  INFO ForkJoinPool-2-worker-33        eval.BulkEval - Completed 8537 of 12308  69.3614%
+2016-05-31 21:25:11,668  INFO ForkJoinPool-2-worker-19        eval.BulkEval - Completed 8816 of 12308  71.6282%
+2016-05-31 21:25:13,657  INFO ForkJoinPool-2-worker-32        eval.BulkEval - Completed 9103 of 12308  73.9600%
+2016-05-31 21:25:15,677  INFO ForkJoinPool-2-worker-15        eval.BulkEval - Completed 9383 of 12308  76.2350%
+2016-05-31 21:25:17,663  INFO ForkJoinPool-2-worker-11        eval.BulkEval - Completed 9655 of 12308  78.4449%
+2016-05-31 21:25:19,660  INFO ForkJoinPool-2-worker-7        eval.BulkEval - Completed 9940 of 12308  80.7605%
+2016-05-31 21:25:21,661  INFO ForkJoinPool-2-worker-29        eval.BulkEval - Completed 10210 of 12308  82.9542%
+2016-05-31 21:25:23,661  INFO ForkJoinPool-2-worker-8        eval.BulkEval - Completed 10501 of 12308  85.3185%
+2016-05-31 21:25:25,656  INFO ForkJoinPool-2-worker-10        eval.BulkEval - Completed 10789 of 12308  87.6584%
+2016-05-31 21:25:27,667  INFO ForkJoinPool-2-worker-29        eval.BulkEval - Completed 11058 of 12308  89.8440%
+2016-05-31 21:25:29,661  INFO ForkJoinPool-2-worker-13        eval.BulkEval - Completed 11356 of 12308  92.2652%
+2016-05-31 21:25:31,668  INFO ForkJoinPool-2-worker-9        eval.BulkEval - Completed 11646 of 12308  94.6214%
+2016-05-31 21:25:33,657  INFO ForkJoinPool-2-worker-28        eval.BulkEval - Completed 11921 of 12308  96.8557%
+2016-05-31 21:25:35,675  INFO ForkJoinPool-2-worker-26        eval.BulkEval - Completed 12164 of 12308  98.8300%
+2016-05-31 21:25:37,831  INFO ForkJoinPool-2-worker-20        eval.BulkEval - Completed 12286 of 12308  99.8213%
+2016-05-31 21:25:39,224  INFO groovy.lang.GroovyShell.main()        eval.BulkEval - Finished evaluating all 12308
+2016-05-31 21:25:39,230  INFO groovy.lang.GroovyShell.main()              psaurus - ******************* ../resources/pipe_43sy_cmu1_fixsg_1.dat ********************
+2016-05-31 21:25:39,231  INFO groovy.lang.GroovyShell.main()              psaurus - * Histogram of how many pronunciations per word
+2016-05-31 21:25:39,262  INFO groovy.lang.GroovyShell.main()              psaurus -  * Words with 1 variants = 11562  93.9389%
+2016-05-31 21:25:39,262  INFO groovy.lang.GroovyShell.main()              psaurus -  * Words with 2 variants = 706  5.7361%
+2016-05-31 21:25:39,262  INFO groovy.lang.GroovyShell.main()              psaurus -  * Words with 3 variants = 29  0.2356%
+2016-05-31 21:25:39,262  INFO groovy.lang.GroovyShell.main()              psaurus -  * Words with 4 variants = 11  0.0894%
+2016-05-31 21:25:39,263  INFO groovy.lang.GroovyShell.main()              psaurus - ********************
+2016-05-31 21:25:39,268  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 8 results returned = 2  0.0162%
+2016-05-31 21:25:39,268  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 9 results returned = 3  0.0244%
+2016-05-31 21:25:39,268  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 10 results returned = 15  0.1219%
+2016-05-31 21:25:39,268  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 11 results returned = 13  0.1056%
+2016-05-31 21:25:39,268  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 12 results returned = 21  0.1706%
+2016-05-31 21:25:39,268  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 13 results returned = 40  0.3250%
+2016-05-31 21:25:39,268  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 14 results returned = 121  0.9831%
+2016-05-31 21:25:39,268  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 15 results returned = 356  2.8924%
+2016-05-31 21:25:39,268  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 16 results returned = 149  1.2106%
+2016-05-31 21:25:39,269  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 17 results returned = 277  2.2506%
+2016-05-31 21:25:39,269  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 18 results returned = 485  3.9405%
+2016-05-31 21:25:39,269  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 19 results returned = 826  6.7111%
+2016-05-31 21:25:39,269  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 20 results returned = 1265  10.2779%
+2016-05-31 21:25:39,269  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 21 results returned = 1016  8.2548%
+2016-05-31 21:25:39,269  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 22 results returned = 1427  11.5941%
+2016-05-31 21:25:39,269  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 23 results returned = 2012  16.3471%
+2016-05-31 21:25:39,269  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 24 results returned = 2006  16.2983%
+2016-05-31 21:25:39,269  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 25 results returned = 2272  18.4595%
+2016-05-31 21:25:39,269  INFO groovy.lang.GroovyShell.main()              psaurus -  * Queries with 26 results returned = 2  0.0162%
+2016-05-31 21:25:39,269  INFO groovy.lang.GroovyShell.main()              psaurus - ********************
+2016-05-31 21:25:39,269  INFO groovy.lang.GroovyShell.main()              psaurus - * Counters
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_00 = 9142
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_01 = 1157
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_02 = 481
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_03 = 256
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_04 = 148
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_05 = 87
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_06 = 62
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_07 = 41
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_08 = 29
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_09 = 18
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_10 = 15
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_11 = 9
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_12 = 12
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_13 = 7
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_14 = 4
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_15 = 3
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_16 = 4
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_17 = 7
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_18 = 2
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_19 = 2
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_20 = 2
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_21 = 1
+2016-05-31 21:25:39,279  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_22 = 2
+2016-05-31 21:25:39,280  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_24 = 1
+2016-05-31 21:25:39,280  INFO groovy.lang.GroovyShell.main()              psaurus -  * RIGHT_TOP_NONE = 816
+2016-05-31 21:25:39,280  INFO groovy.lang.GroovyShell.main()              psaurus - ********************
+2016-05-31 21:25:39,280  INFO groovy.lang.GroovyShell.main()              psaurus - IR metrics for various top-k configurations
+2016-05-31 21:25:39,293  INFO groovy.lang.GroovyShell.main()              psaurus -  * IR_ALL_TOP1 = Prec  0.743 (Max 1.000), Recall  0.698 (Max 0.939)
+2016-05-31 21:25:39,293  INFO groovy.lang.GroovyShell.main()              psaurus -  * IR_ALL_TOP2 = Prec  0.432 (Max 0.530), Recall  0.811 (Max 0.996)
+2016-05-31 21:25:39,293  INFO groovy.lang.GroovyShell.main()              psaurus -  * IR_ALL_TOP3 = Prec  0.303 (Max 0.355), Recall  0.853 (Max 0.999)
+2016-05-31 21:25:39,294  INFO groovy.lang.GroovyShell.main()              psaurus -  * IR_ALL_TOP4 = Prec  0.234 (Max 0.266), Recall  0.879 (Max 1.000)
+2016-05-31 21:25:39,294  INFO groovy.lang.GroovyShell.main()              psaurus -  * IR_MULTI_TOP1 = Prec  0.788 (Max 1.000), Recall  0.381 (Max 0.483)
+2016-05-31 21:25:39,294  INFO groovy.lang.GroovyShell.main()              psaurus -  * IR_MULTI_TOP2 = Prec  0.648 (Max 1.000), Recall  0.627 (Max 0.967)
+2016-05-31 21:25:39,294  INFO groovy.lang.GroovyShell.main()              psaurus -  * IR_MULTI_TOP3 = Prec  0.479 (Max 0.685), Recall  0.695 (Max 0.993)
+2016-05-31 21:25:39,294  INFO groovy.lang.GroovyShell.main()              psaurus -  * IR_MULTI_TOP4 = Prec  0.394 (Max 0.517), Recall  0.763 (Max 1.000)
+2016-05-31 21:25:39,294  INFO groovy.lang.GroovyShell.main()              psaurus - ********************
+2016-05-31 21:25:39,295  INFO groovy.lang.GroovyShell.main()              psaurus - * Word  Accuracy: 0.7428   (WER 0.2572)
+2016-05-31 21:25:39,295  INFO groovy.lang.GroovyShell.main()              psaurus - * Phone Accuracy: 0.9395   (PER 0.0605)
+2016-05-31 21:25:39,296  INFO groovy.lang.GroovyShell.main()              psaurus -  * Word top 1 matched 9142 of 12308
+2016-05-31 21:25:39,296  INFO groovy.lang.GroovyShell.main()              psaurus -  * Words the produced zero results 0
+2016-05-31 21:25:39,296  INFO groovy.lang.GroovyShell.main()              psaurus -  * Multi-value matches 588 of 746 (78.8204%)

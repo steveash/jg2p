@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory
 //def testFile = "cmudict.2kA.txt"
 //def testFile = "g014b2b.test"
 def testFile = "cmu7b.test"
-def modelFile = "../resources/pipe_43sy_cmu7_F11_5a.dat"
+def modelFile = "../resources/pipe_43sy_cmu7_fixsg_3.dat"
 
 //def test = InputReader.makeDefaultFormatReader().readFromClasspath(testFile)
 def test = InputReader.makePSaurusReader().readFromClasspath(testFile)
@@ -40,7 +40,7 @@ def watch = Stopwatch.createStarted()
 log.info("Starting eval of with $testFile with $modelFile")
 
 def model = ReadWrite.readFromFile(PipelineModel, new File(modelFile))
-model.makeSparse()
+//model.makeSparse()
 //def enc = new GraphoneSortingEncoder(model)
 //def enc = PhoneticEncoder.adapt(model.phoneticEncoder)
 def enc = new PipelineEncoder(model)

@@ -1,5 +1,6 @@
+#!/bin/bash
 export MAVEN_OPTS="-Xmx20g"
-read -p "Do you want to auto-delete the instance after finishing y/n? " AUTOCLOSE
+read -e -p "Do you want to auto-delete the instance after finishing y/n? " -i n AUTOCLOSE
 mvn -f ../../../pom.xml exec:java -Dexec.mainClass=groovy.lang.GroovyShell -Dexec.classpathScope=test -Dexec.arguments="$1"
 if [ "$AUTOCLOSE" = "y" ]; then
 	read -p "Enter anything to skip shutdown: " -t 60 DOSHUT

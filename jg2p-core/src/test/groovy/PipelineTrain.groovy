@@ -36,20 +36,27 @@ def inputFile = "cmu7b.train"
 def testFile = "cmu7b.test"
 //def inputFile = "cmudict.2kA.txt"
 //def inputFile = "g014b2b.test"
-def inputs = InputReader.makePSaurusReader().readFromClasspath(inputFile)
+def inputsO = InputReader.makePSaurusReader().readFromClasspath(inputFile)
+def inputs = []
+def seenWords = [].toSet()
+inputsO.each {
+  if (seenWords.add(it.left)) {
+    inputs << it
+  }
+}
 //def inputs = InputReader.makeDefaultFormatReader().readFromClasspath(inputFile)
 
 def testImmediately = true
 def opts = new TrainOptions()
-opts.maxXGram = 2
-opts.maxYGram = 2
-opts.onlyOneGrams = true
-opts.useCityBlockPenalty = false
+opts.maxXGram = 4
+opts.maxYGram = 3
+opts.onlyOneGrams = false
+opts.useCityBlockPenalty = true
 opts.useWindowWalker = true
-opts.useSyllableTagger = false
+opts.useSyllableTagger = true
 opts.maxPronouncerTrainingIterations = 400
-//def inFile = "../resources/pipe_43sy_cmu7_fixsg_1.dat"
-def inFile = "../resources/pipe_22_F10_3.dat"
+def inFile = "../resources/pipe_43sy_cmu7_fixsg_1.dat"
+//def inFile = "../resources/pipe_22_F10_3.dat"
 //opts.initTrainingAlignerFromFile = inFile // "../resources/syllchainAlignNoConstrain.dat"
 opts.initTestingAlignerFromFile = inFile
 opts.initCrfFromModelFile = inFile

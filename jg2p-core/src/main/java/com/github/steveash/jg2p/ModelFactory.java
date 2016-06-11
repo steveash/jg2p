@@ -16,6 +16,9 @@
 
 package com.github.steveash.jg2p;
 
+import com.github.steveash.jg2p.syllchain.ChainSyllabifierAdapter;
+import com.github.steveash.jg2p.syllchain.SyllChainModel;
+import com.github.steveash.jg2p.syllchain.Syllabifier;
 import com.github.steveash.jg2p.util.ReadWrite;
 
 /**
@@ -24,11 +27,22 @@ import com.github.steveash.jg2p.util.ReadWrite;
 public class ModelFactory {
 
   public static PipelineEncoder createFromClasspath(String resourceName) {
-      try {
-        PipelineModel model = ReadWrite.readFromClasspath(PipelineModel.class, resourceName);
-        return new PipelineEncoder(model);
-      } catch (Exception e) {
-        throw new ModelException("Problem loading the cmu default model from the classpath", e);
-      }
+    try {
+      PipelineModel model = ReadWrite.readFromClasspath(PipelineModel.class, resourceName);
+      model.makeSparse();
+      return new PipelineEncoder(model);
+    } catch (Exception e) {
+      throw new ModelException("Problem loading the cmu default model from the classpath for " +
+          resourceName, e);
     }
+  }
+
+  public static Syllabifier createSyllFromClasspath(String resourceName) {
+    try {
+      SyllChainModel model = ReadWrite.readFromClasspath(SyllChainModel.class, resourceName);
+      return new ChainSyllabifierAdapter(model);
+    } catch (Exception e) {
+      throw new ModelException("Problem loading the syllabifier from " + resourceName, e);
+    }
+  }
 }

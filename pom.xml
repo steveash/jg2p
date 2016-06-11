@@ -8,7 +8,8 @@
   <description>Java grapheme to phoneme encoder using joint-modelling and CRFs</description>
   <modules>
     <module>jg2p-core</module>
-    <module>jg2p-model-cmu</module>
+    <module>jg2p-pipe-cmu</module>
+    <module>jg2p-syllg-cmu</module>
   </modules>
   <packaging>pom</packaging>
 

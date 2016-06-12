@@ -40,6 +40,7 @@ public class ModelFactory {
   public static Syllabifier createSyllFromClasspath(String resourceName) {
     try {
       SyllChainModel model = ReadWrite.readFromClasspath(SyllChainModel.class, resourceName);
+      model.getCrf().makeParametersHashSparse();
       return new ChainSyllabifierAdapter(model);
     } catch (Exception e) {
       throw new ModelException("Problem loading the syllabifier from " + resourceName, e);

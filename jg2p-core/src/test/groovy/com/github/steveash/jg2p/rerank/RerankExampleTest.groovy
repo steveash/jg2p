@@ -27,7 +27,7 @@ class RerankExampleTest extends GroovyTestCase {
 
   void testCsvInOut() {
     def abc = ImmutableList.of("A", "B", "C")
-    def encA = PhoneticEncoder.Encoding.createEncoding(abc, abc, abc, 2.123, 3.456, 10.0)
+    def encA = PhoneticEncoder.Encoding.createEncoding(abc, abc, abc, 2.123, 3.456, 10.0, 3)
 
     def ex = new RerankExample()
     ex.dupCount = 1

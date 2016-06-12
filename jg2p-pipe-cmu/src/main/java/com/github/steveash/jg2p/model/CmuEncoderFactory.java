@@ -19,6 +19,7 @@ package com.github.steveash.jg2p.model;
 import com.github.steveash.jg2p.Encoder;
 import com.github.steveash.jg2p.ModelFactory;
 import com.github.steveash.jg2p.PipelineEncoder;
+import com.github.steveash.jg2p.SimpleEncoder;
 
 /**
  * Main entry point to create a CMU model
@@ -29,5 +30,9 @@ public class CmuEncoderFactory {
   public static Encoder create() {
     PipelineEncoder pipe = ModelFactory.createFromClasspath("pipeline_cmu_default.dat");
     return pipe;
+  }
+
+  public static SimpleEncoder createSimple() {
+    return new SimpleEncoder(create());
   }
 }

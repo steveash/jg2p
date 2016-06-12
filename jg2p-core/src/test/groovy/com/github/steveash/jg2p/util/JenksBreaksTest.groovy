@@ -17,7 +17,6 @@
 package com.github.steveash.jg2p.util
 
 import com.google.common.collect.Lists
-import groovy.xml.MarkupBuilder
 import org.junit.Test
 
 import static org.junit.Assert.assertEquals

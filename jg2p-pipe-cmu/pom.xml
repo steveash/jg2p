@@ -22,6 +22,16 @@
       <groupId>com.github.steveash.jg2p</groupId>
       <artifactId>jg2p-core</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.codehaus.gpars</groupId>
+          <artifactId>gpars</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>net.sf.jsefa</groupId>
+          <artifactId>jsefa</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 </project>

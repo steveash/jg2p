@@ -33,7 +33,7 @@ public class AbbrevBuilder {
 
   public AbbrevBuilder append(String gram) {
     if (!collapseDupGram) {
-      doAppend(gram);
+      doAppend(gram.trim());
       return this;
     }
     boolean firstThisTime = true;

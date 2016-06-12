@@ -57,40 +57,4 @@ class SyllStructureTest extends GroovyTestCase {
     assert struct.getSyllIndexForGraphemeIndex(6) == 2
     assert struct.getSyllIndexForGraphemeIndex(7) == 2
   }
-
-  void testStructure2() {
-    //e|x|p|o|n|e|n|t i|a|l l|y -> EH|K S|P|OW|N|EH|N|SH|AH|L|IY (score 1.0000)
-    //e.xpo.nen.tia.lly
-    def struct = new SyllStructure(["e", "x", "p", "o", "n", "e", "n", "t i", "a", "l l", "y"],
-                                   SyllTagTrainer.makeSyllMarksFor(),
-                                   [0, 2, 4].toSet()
-    );
-    println struct
-    assert struct.syllCount == 3
-    assert struct.getSyllPart(0) == "nA"
-    assert struct.getSyllPart(1) == "mA"
-    assert struct.getSyllPart(2) == "stAy"
-
-    assert struct.getSyllPart(0, 1, 1, 0) == "nA"
-    assert struct.getSyllPart(0, 1, 0, 0) == "n"
-    assert struct.getSyllPart(2, 1, 1, 0) == "tA"
-    assert struct.getSyllPart(2, 1, 1, 1) == "tAy"
-    assert struct.getSyllPart(2, 2, 0, 1) == "sty"
-
-    assert !struct.graphoneGramIndexContainsNucleus(0)
-    assert struct.graphoneGramIndexContainsNucleus(1)
-    assert struct.graphoneGramIndexContainsNucleus(2)
-    assert !struct.graphoneGramIndexContainsNucleus(3)
-    assert !struct.graphoneGramIndexContainsNucleus(4)
-    assert struct.graphoneGramIndexContainsNucleus(5)
-
-    assert struct.getSyllIndexForGraphemeIndex(0) == 0
-    assert struct.getSyllIndexForGraphemeIndex(1) == 0
-    assert struct.getSyllIndexForGraphemeIndex(2) == 1
-    assert struct.getSyllIndexForGraphemeIndex(3) == 1
-    assert struct.getSyllIndexForGraphemeIndex(4) == 2
-    assert struct.getSyllIndexForGraphemeIndex(5) == 2
-    assert struct.getSyllIndexForGraphemeIndex(6) == 2
-    assert struct.getSyllIndexForGraphemeIndex(7) == 2
-  }
 }

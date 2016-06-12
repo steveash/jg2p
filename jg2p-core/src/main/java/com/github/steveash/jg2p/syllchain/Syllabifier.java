@@ -30,11 +30,11 @@ import java.util.Set;
  */
 public abstract class Syllabifier {
 
-  int syllableCount(String word) {
+  public int syllableCount(String word) {
     return tagSyllStarts(word).size();
   }
 
-  List<String> splitIntoSyllables(String word) {
+  public List<String> splitIntoSyllables(String word) {
     ArrayList<String> sylls = Lists.newArrayList();
     Set<Integer> breaks = tagSyllStarts(word);
     List<Integer> sortedBreaks = Ordering.natural().sortedCopy(breaks);

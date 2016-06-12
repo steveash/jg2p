@@ -56,7 +56,7 @@ public class PipelineModelProxy implements Externalizable {
 
   @Override
   public void writeExternal(ObjectOutput out) throws IOException {
-    log.info("Writing the proxy out...");
+//    log.info("Writing the proxy out...");
     ObjectOutputStream os = (ObjectOutputStream) out;
     os.writeInt(VERSION); // version / magic number starting
     // in version 42 we write out each object independently and flush after each so that if worse came to worse
@@ -74,7 +74,7 @@ public class PipelineModelProxy implements Externalizable {
 
   @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    log.info("Reading the proxy in....");
+//    log.info("Reading the proxy in....");
     int version = in.readInt();
     Preconditions.checkState(version >= 42 && version <= 42);
     this.model = new PipelineModel();

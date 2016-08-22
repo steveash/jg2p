@@ -136,7 +136,7 @@
       <dependency>
         <groupId>com.github.steveash.kylm</groupId>
         <artifactId>kylm</artifactId>
-        <version>1.1.2</version>
+        <version>1.1.4-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>com.sun.xml.bind</groupId>
@@ -157,6 +157,11 @@
         <groupId>net.sf.jsefa</groupId>
         <artifactId>jsefa</artifactId>
         <version>1.1.1.RELEASE</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.steveash.jopenfst</groupId>
+        <artifactId>jopenfst</artifactId>
+        <version>1.0-SNAPSHOT</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

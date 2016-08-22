@@ -82,6 +82,10 @@
       <groupId>net.sf.jsefa</groupId>
       <artifactId>jsefa</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.github.steveash.jopenfst</groupId>
+      <artifactId>jopenfst</artifactId>
+    </dependency>
   </dependencies>
 
   <build>

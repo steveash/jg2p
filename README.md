@@ -7,6 +7,8 @@ joint "graphone" language model.
 Out of the box you get:
 * Phonetic Encoder for English words (trained using CMUDict 0.7b)
 * Syllabifier to split English words into syllables (trained using CMUDict 0.7b)
+* Toolkit for building your own CRF Pipeline based transducers
+* Port of the Phonetasaurus WFST implementation of G2P transduction in Java (see SeqTransducer)
 
 If you just want to use these without worrying about building your own models, see the Quick Start
 section below. If you want to train your own models, then see the Training Your Own Models section

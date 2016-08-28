@@ -18,6 +18,7 @@ package com.github.steveash.jg2p.wfst;
 
 import com.github.steveash.jopenfst.io.Convert;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -25,6 +26,7 @@ import java.io.File;
 /**
  * @author Steve Ash
  */
+@Ignore // just a one-off to spot check
 public class LangModelToFstTest {
 
   @Test

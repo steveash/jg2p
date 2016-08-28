@@ -72,7 +72,7 @@ public class PhoneticEncoder implements Serializable {
   private AlignModel alignModel = null;
 
   @CsvDataType
-  public static class Encoding {
+  public static class Encoding implements EncodingResult {
 
     @CsvField(pos = 1)
     public List<String> alignment;
@@ -130,11 +130,11 @@ public class PhoneticEncoder implements Serializable {
     }
 
     public Encoding withReplacedPhoneme(int index, String newPhoneme) {
-      ArrayList<String> newPhones = Lists.newArrayList(this.phones);
+      ArrayList<String> newPhones = Lists.newArrayList(this.getPhones());
       newPhones.set(index, newPhoneme);
       Encoding result = createEncoding(this.alignment, newPhones, this.graphones, alignScore, tagScore, retagScore, wordSyllCount);
       result.isPostProcessed = true;
-      result.rank = this.rank;
+      result.setRank(this.getRank());
       result.alignRank = this.alignRank;
       return result;
     }
@@ -149,12 +149,26 @@ public class PhoneticEncoder implements Serializable {
         sb.append("<null>");
       }
       sb.append(" -> ");
-      if (phones != null) {
-        sb.append(spaceJoiner.join(phones));
+      if (getPhones() != null) {
+        sb.append(spaceJoiner.join(getPhones()));
       } else {
         sb.append("<null>");
       }
       return sb.toString();
+    }
+
+    @Override
+    public List<String> getPhones() {
+      return phones;
+    }
+
+    @Override
+    public int getRank() {
+      return rank;
+    }
+
+    public void setRank(int rank) {
+      this.rank = rank;
     }
   }
 
@@ -206,7 +220,7 @@ public class PhoneticEncoder implements Serializable {
         }
         Encoding e = Encoding.createEncoding(graphemes, tagResult.phones(), tagResult.phoneGrams(), alignment.getScore(),
                                              tagResult.sequenceLogProbability(), tagResult.getLogScore2(), syllCount);
-        if (e.phones != null && !e.phones.isEmpty()) {
+        if (e.getPhones() != null && !e.getPhones().isEmpty()) {
           results.add(e);
           ar.encodings.add(e);
         }
@@ -224,7 +238,7 @@ public class PhoneticEncoder implements Serializable {
     }
     // set the overall ranks
     for (int i = 0; i < results.size(); i++) {
-      results.get(i).rank = i;
+      results.get(i).setRank(i);
     }
     result.overallResults.addAll(results);
     return result;
@@ -353,7 +367,7 @@ public class PhoneticEncoder implements Serializable {
 
     public int rankOfMatchingPhones(List<String> phones) {
       for (int i = 0; i < encodings.size(); i++) {
-        if (encodings.get(i).phones.equals(phones)) {
+        if (encodings.get(i).getPhones().equals(phones)) {
           return i;
         }
       }

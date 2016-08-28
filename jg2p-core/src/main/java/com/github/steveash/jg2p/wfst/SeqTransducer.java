@@ -17,6 +17,7 @@
 package com.github.steveash.jg2p.wfst;
 
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
@@ -26,13 +27,12 @@ import com.github.steveash.jg2p.Word;
 import com.github.steveash.jopenfst.Fst;
 import com.github.steveash.jopenfst.ImmutableFst;
 import com.github.steveash.jopenfst.ImmutableSymbolTable;
-import com.github.steveash.jopenfst.MutableArc;
 import com.github.steveash.jopenfst.MutableFst;
 import com.github.steveash.jopenfst.MutableState;
-import com.github.steveash.jopenfst.io.Convert;
 import com.github.steveash.jopenfst.operations.ArcSort;
 import com.github.steveash.jopenfst.operations.Compose;
 import com.github.steveash.jopenfst.operations.NShortestPaths;
+import com.github.steveash.jopenfst.operations.PrecomputedComposeFst;
 import com.github.steveash.jopenfst.operations.Project;
 import com.github.steveash.jopenfst.operations.ProjectType;
 import com.github.steveash.jopenfst.operations.RemoveEpsilon;
@@ -62,8 +62,10 @@ public class SeqTransducer implements Serializable {
   private static final double precision = 0.85;
   private static final double ratio = 0.72;
   private static final int beamWidth = 1500;
+  private static final TropicalSemiring RING = TropicalSemiring.INSTANCE;
 
   private final ImmutableFst fst;
+  private final PrecomputedComposeFst fstCompose;
   private final ImmutableBiMap<String, Integer> skipInputIndexes;
   private final ImmutableFst epsMapper;
   private final EntryFstMaker entryMaker;
@@ -71,6 +73,7 @@ public class SeqTransducer implements Serializable {
 
   public SeqTransducer(ImmutableFst fst, int order) {
     this.fst = fst;
+    this.fstCompose = Compose.precomputeInner(this.fst, RING);
     this.order = order;
     ImmutableSymbolTable isyms = this.fst.getInputSymbols();
     ImmutableSymbolTable osyms = this.fst.getOutputSymbols();
@@ -79,12 +82,13 @@ public class SeqTransducer implements Serializable {
       builder.put(skipString, isyms.get(skipString));
     }
     skipInputIndexes = builder.build();
-    epsMapper = makeEpsMapper(osyms, skipInputIndexes.keySet());
+//    epsMapper = makeEpsMapper(osyms, skipInputIndexes.keySet());
+    epsMapper = null;
     entryMaker = new EntryFstMaker(fst.getInputSymbols().symbols());
   }
 
   private static ImmutableFst makeEpsMapper(ImmutableSymbolTable osyms, ImmutableSet<String> skipLabels) {
-    MutableFst epsMapper = new MutableFst();
+    MutableFst epsMapper = new MutableFst(RING);
     epsMapper.setInputSymbolsAsCopy(osyms);
     epsMapper.setOutputSymbolsAsCopy(osyms);
     MutableState start = epsMapper.newStartState();
@@ -94,9 +98,9 @@ public class SeqTransducer implements Serializable {
       if (skipLabels.contains(cursor.key)) {
         olabel = oeps;
       }
-      start.addArc(new MutableArc(cursor.value, olabel, 0, start));
+      epsMapper.addArc(start, cursor.value, olabel, start, RING.one());
     }
-    start.setFinalWeight(0.0);
+    start.setFinalWeight(RING.one());
     ArcSort.sortByInput(epsMapper);
     return new ImmutableFst(epsMapper);
   }
@@ -115,7 +119,7 @@ public class SeqTransducer implements Serializable {
 //    double[] thetas = computeThetas(inputWord.unigramCount());
 //    int n = Math.min(inputWord.unigramCount() + 1, order);
 //    MutableFst allFst = MutableFst.copyFrom(this.fst);
-    MutableFst composed = Compose.compose(efst, MutableFst.copyFrom(this.fst), TropicalSemiring.INSTANCE);
+    MutableFst composed = Compose.composeWithPrecomputed(efst, this.fstCompose);
 //    Convert.export(composed, "composed.fst");
     Project.apply(composed, ProjectType.OUTPUT);
 
@@ -137,11 +141,13 @@ public class SeqTransducer implements Serializable {
   private List<WordResult> convertResults(List<PathDecoder.CandidatePath> bestPaths) {
     ArrayList<WordResult> results = Lists.newArrayListWithCapacity(bestPaths.size());
     for (PathDecoder.CandidatePath path : bestPaths) {
-      results.add(new WordResult(Word.fromGrams(path.getPathStates()), path.getCost()));
+      ImmutableList<String> pathStates = path.getPathStates();
+      if (!pathStates.isEmpty()) {
+        results.add(new WordResult(Word.fromGrams(pathStates), path.getCost()));
+      }
     }
     return results;
   }
-
 
   private double[] computeThetas(int count) {
     /*

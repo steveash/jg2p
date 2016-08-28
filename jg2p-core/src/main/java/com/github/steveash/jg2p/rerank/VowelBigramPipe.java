@@ -27,16 +27,16 @@ public class VowelBigramPipe implements RerankFeature {
 
   @Override
   public void emitFeatures(RerankFeatureBag data) {
-    for (int i = 0; i < data.getExample().getEncoding().phones.size(); i++) {
-      String p = data.getExample().getEncoding().phones.get(i);
+    for (int i = 0; i < data.getExample().getEncoding().getPhones().size(); i++) {
+      String p = data.getExample().getEncoding().getPhones().get(i);
       if (!Phonemes.isVowel(p)) {
         continue;
       }
       if (i > 0) {
-        data.setBinary("bgm_" + data.getExample().getEncoding().phones.get(i - 1) + "_" + p);
+        data.setBinary("bgm_" + data.getExample().getEncoding().getPhones().get(i - 1) + "_" + p);
       }
-      if (i + 1 < data.getExample().getEncoding().phones.size()) {
-        data.setBinary("bgm_" + p + "_" + data.getExample().getEncoding().phones.get(i + 1));
+      if (i + 1 < data.getExample().getEncoding().getPhones().size()) {
+        data.setBinary("bgm_" + p + "_" + data.getExample().getEncoding().getPhones().get(i + 1));
       }
     }
   }

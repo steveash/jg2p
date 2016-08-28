@@ -54,6 +54,9 @@ public class InputRecordGroup {
   }
 
   public boolean isMatching(List<String> phones) {
+    if (phones.isEmpty()) {
+      return false;
+    }
     Word word = Word.fromGrams(phones);
     word.throwIfNotUnigram();
     return acceptableYWords.contains(word);

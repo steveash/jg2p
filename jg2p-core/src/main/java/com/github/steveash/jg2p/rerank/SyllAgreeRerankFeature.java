@@ -41,7 +41,7 @@ public class SyllAgreeRerankFeature implements RerankFeature {
     if (gramSyllCount <= 0) {
       return;
     }
-    List<Integer> starts = phoneSyllTagModel.syllStarts(Word.fromGrams(ex.getEncoding().phones));
+    List<Integer> starts = phoneSyllTagModel.syllStarts(Word.fromGrams(ex.getEncoding().getPhones()));
     bag.setFeature("syll_diff", starts.size() - gramSyllCount);
   }
 }

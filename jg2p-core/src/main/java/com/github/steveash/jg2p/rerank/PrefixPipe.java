@@ -41,7 +41,7 @@ public class PrefixPipe implements RerankFeature {
   public void emitFeatures(RerankFeatureBag data) {
     String graphChar = data.getExample().getWordGraphs().get(0).substring(0, 1);
     if (Graphemes.isConsonant(graphChar) && Phonemes.isSimpleConsonantGraph(graphChar)) {
-      addPrefix(data, graphChar, data.getExample().getEncoding().phones);
+      addPrefix(data, graphChar, data.getExample().getEncoding().getPhones());
     }
   }
 }

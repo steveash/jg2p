@@ -31,7 +31,7 @@ public class ShapePipe implements RerankFeature {
   @Override
   public void emitFeatures(RerankFeatureBag data) {
     String wordShape = WordShape.graphShape(data.getExample().getWordGraphs(), false);
-    String ansShape = WordShape.phoneShape(data.getExample().getEncoding().phones, false);
+    String ansShape = WordShape.phoneShape(data.getExample().getEncoding().getPhones(), false);
     int dist = StringUtils.getLevenshteinDistance(wordShape, ansShape, DIST_BASE);
     double distFeature = 1.0;
     if (dist > 0) {

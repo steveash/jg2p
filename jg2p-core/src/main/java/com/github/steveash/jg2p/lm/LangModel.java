@@ -52,7 +52,7 @@ public class LangModel implements Serializable {
     if (isGraphoneModel) {
       return makeGraphoneSeq(enc.alignment, enc.graphones);
     }
-    return makePhonemeSeq(enc.phones);
+    return makePhonemeSeq(enc.getPhones());
   }
 
   public static List<String> makeSequenceFromAlignment(Alignment align, boolean useGraphoneModel) {

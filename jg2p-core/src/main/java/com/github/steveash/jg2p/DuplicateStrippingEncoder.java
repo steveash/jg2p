@@ -19,6 +19,8 @@ package com.github.steveash.jg2p;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import com.github.steveash.jg2p.wfst.SeqTransducerPhoneticEncoderAdapter;
+
 import java.util.List;
 import java.util.Set;
 
@@ -37,6 +39,9 @@ public class DuplicateStrippingEncoder implements Encoder {
     if (delegate instanceof DuplicateStrippingEncoder) {
       return delegate;
     }
+    if (delegate instanceof SeqTransducerPhoneticEncoderAdapter) {
+      return delegate;
+    }
     return new DuplicateStrippingEncoder(delegate);
   }
 
@@ -45,14 +50,14 @@ public class DuplicateStrippingEncoder implements Encoder {
   }
 
   @Override
-  public List<PhoneticEncoder.Encoding> encode(Word input) {
-    List<PhoneticEncoder.Encoding> results = encoder.encode(input);
-    List<PhoneticEncoder.Encoding> output = Lists.newArrayListWithCapacity(results.size());
+  public List<? extends EncodingResult> encode(Word input) {
+    List<? extends EncodingResult> results = encoder.encode(input);
+    List<EncodingResult> output = Lists.newArrayListWithCapacity(results.size());
     Set<List<String>> seenPhoneSeqs = Sets.newHashSetWithExpectedSize(results.size());
     int newRank = 0;
-    for (PhoneticEncoder.Encoding result : results) {
-      if (seenPhoneSeqs.add(result.phones)) {
-        result.rank = newRank++;
+    for (EncodingResult result : results) {
+      if (seenPhoneSeqs.add(result.getPhones())) {
+        result.setRank(newRank++);
         output.add(result);
       }
     }

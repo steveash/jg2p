@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Steve Ash
+ * Copyright 2016 Steve Ash
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,13 @@ package com.github.steveash.jg2p;
 import java.util.List;
 
 /**
- * Base interface of all of the strategies that take a word and produce an ordered list of encodings with the best
- * at the top
  * @author Steve Ash
  */
-public interface Encoder {
+public interface EncodingResult {
 
-  List<? extends EncodingResult> encode(Word input);
+  List<String> getPhones();
+
+  int getRank();
+
+  void setRank(int rank);
 }

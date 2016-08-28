@@ -24,7 +24,7 @@ import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 
-import com.github.steveash.jg2p.PhoneticEncoder;
+import com.github.steveash.jg2p.EncodingResult;
 import com.github.steveash.jg2p.Word;
 import com.github.steveash.jg2p.util.ListEditDistance;
 
@@ -78,7 +78,7 @@ public class EvalStats {
         }
       });
 
-  long onNewResult(InputRecordGroup test, @Nullable PhoneticEncoder.Encoding topResult, int matchedRank) {
+  long onNewResult(InputRecordGroup test, @Nullable EncodingResult topResult, int matchedRank) {
     long newTotal = words.incrementAndGet();
     if (test.getAcceptableYWords().size() > 1) {
       multiValueGroupCount.incrementAndGet();
@@ -87,7 +87,7 @@ public class EvalStats {
       zeroResultWords.incrementAndGet();
       return newTotal;
     }
-    Word resultPhones = Word.fromGrams(topResult.phones);
+    Word resultPhones = Word.fromGrams(topResult.getPhones());
     resultPhones.throwIfNotUnigram();
 
     int minEdits = Integer.MAX_VALUE;

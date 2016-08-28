@@ -68,13 +68,13 @@ public class VowelReplacer {
       if (results == null) {
         results = Maps.newHashMap();
         for (PhoneticEncoder.Encoding encoding : original) {
-          results.put(encoding.phones, encoding);
+          results.put(encoding.getPhones(), encoding);
         }
       }
       // add these if they aren't alreaday present
       for (PhoneticEncoder.Encoding emittedEncoding : emitted) {
-        if (!results.containsKey(emittedEncoding.phones)) {
-          results.put(emittedEncoding.phones, emittedEncoding);
+        if (!results.containsKey(emittedEncoding.getPhones())) {
+          results.put(emittedEncoding.getPhones(), emittedEncoding);
         }
       }
     }
@@ -91,8 +91,8 @@ public class VowelReplacer {
     // find the first vowel or second vowel -- that is in the replacement list and return that
     int vowelCount = 0;
     List<PhoneticEncoder.Encoding> results = null;
-    for (int i = 0; i < input.phones.size(); i++) {
-      String p = input.phones.get(i);
+    for (int i = 0; i < input.getPhones().size(); i++) {
+      String p = input.getPhones().get(i);
       if (Phonemes.isVowel(p)) {
         vowelCount += 1;
         if (vowelCount > 2) {

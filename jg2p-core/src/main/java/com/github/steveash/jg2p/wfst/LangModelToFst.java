@@ -24,6 +24,7 @@ import com.google.common.primitives.Doubles;
 
 import com.github.steveash.jopenfst.ImmutableFst;
 import com.github.steveash.jopenfst.MutableFst;
+import com.github.steveash.jopenfst.WriteableSymbolTable;
 import com.github.steveash.jopenfst.operations.ArcSort;
 import com.github.steveash.jopenfst.semiring.TropicalSemiring;
 import com.github.steveash.kylm.model.ngram.NgramLM;
@@ -47,6 +48,9 @@ import static org.codehaus.groovy.runtime.DefaultGroovyMethods.last;
  * @author Steve Ash
  */
 public class LangModelToFst {
+
+  public static final double REALLY_HIGH = 999.0;
+  public static final double PRETTY_HIGH = 99.0;
 
   private final Splitter graphoneSplitter = Splitter.on(SeqTransducer.GRAPHONE_DELIM).trimResults().limit(2);
   private final Joiner commaJoin = Joiner.on(',');
@@ -133,9 +137,36 @@ public class LangModelToFst {
         );
       }
     });
+
+    patchSymbols(fst.getInputSymbols(), true);
+    patchSymbols(fst.getOutputSymbols(), false);
+
     ArcSort.sortByInput(fst);
     fst.dropStateSymbols(); // we dont need these for test time
     return new SeqTransducer(new ImmutableFst(fst), this.maxOrder);
+  }
+
+  // psaurus does this...but for the O-labels i dont really get this ...
+  private void patchSymbols(WriteableSymbolTable symbols, boolean isInput) {
+    for (int i = 0; i < symbols.size(); i++) {
+      if (!symbols.invert().containsKey(i)) {
+        continue;
+      }
+      String symbol = symbols.invert().keyForId(i);
+      if (symbol.contains(SeqTransducer.GRAPHONE_DELIM)) {
+        for (String unigram : graphoneSplitter.split(symbol)) {
+          if (symbols.contains(unigram)) {
+            continue;
+          }
+          // this unigram doesn't exist so add a backoff edge to the start
+          if (isInput) {
+            fst.addArc(SeqTransducer.START, unigram, SeqTransducer.SKIP, SeqTransducer.START_STATE, PRETTY_HIGH);
+          } else {
+            fst.addArc(SeqTransducer.START, SeqTransducer.SKIP, unigram, SeqTransducer.START_STATE, PRETTY_HIGH);
+          }
+        }
+      }
+    }
   }
 
   private void addArc(String thisStateSymbol, String nextStateSymbol, String inLabel, String outLabel, double weight) {
@@ -160,7 +191,7 @@ public class LangModelToFst {
   private static double tropicalWeight(double inWeight) {
     double val = Math.log(10.0) * inWeight * -1.0;
     if (!Doubles.isFinite(val)) {
-      val = 99.0;
+      val = REALLY_HIGH;
     }
     return val;
   }

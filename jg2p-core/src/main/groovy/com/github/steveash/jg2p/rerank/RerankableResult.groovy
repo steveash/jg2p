@@ -16,7 +16,6 @@
 
 package com.github.steveash.jg2p.rerank
 
-import com.github.steveash.jg2p.Encoder
 import com.github.steveash.jg2p.PhoneticEncoder.Encoding
 import com.github.steveash.jg2p.PhoneticEncoder.Result
 import com.github.steveash.jg2p.lm.LangModel

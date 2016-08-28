@@ -117,7 +117,7 @@ public class EncoderEval {
       PhoneticEncoder.Encoding encoding = encodings.get(0);
 
       List<String> expected = input.yWord.getValue();
-      int phonesDiff = ListEditDistance.editDistance(encoding.phones, expected, 100);
+      int phonesDiff = ListEditDistance.editDistance(encoding.getPhones(), expected, 100);
       totalPhones += expected.size();
       totalRightPhones += (expected.size() - phonesDiff);
       phoneEditHisto.add(phonesDiff);
@@ -129,7 +129,7 @@ public class EncoderEval {
         // find out if the right encoding is in the top-k results
         for (int i = 1; i < encodings.size(); i++) {
           PhoneticEncoder.Encoding attempt = encodings.get(i);
-          if (attempt.phones.equals(input.yWord.getValue())) {
+          if (attempt.getPhones().equals(input.yWord.getValue())) {
             rightAnswerInTop.add(i);
             break;
           }

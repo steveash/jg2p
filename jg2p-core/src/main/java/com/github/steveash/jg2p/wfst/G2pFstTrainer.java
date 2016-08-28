@@ -24,7 +24,7 @@ import com.github.steveash.jg2p.align.AlignModel;
 import com.github.steveash.jg2p.align.Alignment;
 import com.github.steveash.jg2p.align.InputRecord;
 import com.github.steveash.kylm.model.ngram.NgramLM;
-import com.github.steveash.kylm.model.ngram.smoother.KNSmoother;
+import com.github.steveash.kylm.model.ngram.smoother.MKNSmoother;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -67,7 +67,7 @@ public class G2pFstTrainer {
 
   public SeqTransducer trainWithSentences(List<String[]> sentences, int order) {
     log.info("Training LM on " + sentences.size() + " training examples");
-    KNSmoother smoother = new KNSmoother();
+    MKNSmoother smoother = new MKNSmoother();
     smoother.setSmoothUnigrams(true);
     NgramLM lm = new NgramLM(order, smoother);
     lm.trainModel(sentences);

@@ -29,7 +29,7 @@ public class ShapePrefixPipe implements RerankFeature {
   @Override
   public void emitFeatures(RerankFeatureBag data) {
     String wordShape = WordShape.graphShape(data.getExample().getWordGraphs(), false);
-    String ansShape = WordShape.phoneShape(data.getExample().getEncoding().phones, false);
+    String ansShape = WordShape.phoneShape(data.getExample().getEncoding().getPhones(), false);
     for (int i = Rerank3Model.minGoodShape; i <= Rerank3Model.maxGoodShape; i++) {
       if (wordShape.length() < i || ansShape.length() < i) {
         continue;

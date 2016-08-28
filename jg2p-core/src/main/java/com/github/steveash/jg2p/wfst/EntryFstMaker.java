@@ -40,6 +40,7 @@ import static com.github.steveash.jg2p.wfst.SeqTransducer.START;
 public class EntryFstMaker {
 
   private static final Splitter sepSplit = Splitter.on(SEP);
+  private static final TropicalSemiring RING = TropicalSemiring.INSTANCE;
   private final ListAcceptor<String> clusterAcceptor;
 
   public EntryFstMaker(Iterable<String> symbols) {
@@ -63,23 +64,23 @@ public class EntryFstMaker {
 
   public MutableFst inputToFst(Word inputWord, SymbolTable inputSymbols) {
 
-    MutableFst efst = new MutableFst(TropicalSemiring.INSTANCE);
+    MutableFst efst = new MutableFst(RING);
     efst.setInputSymbolsAsCopy(inputSymbols);
     efst.setOutputSymbolsAsCopy(inputSymbols);
     MutableState prevState = efst.newStartState();
     MutableState sentStartState = efst.newState();
     MutableState nextState = sentStartState;
-    efst.addArc(prevState, START, START, nextState, 0);
+    efst.addArc(prevState, START, START, nextState, RING.one());
     // make single arcs for each letter in the input work
     for (String letter : inputWord) {
       prevState = nextState;
       nextState = efst.newState(); // the state ending in letter
-      efst.addArc(prevState, letter, letter, nextState, 0);
+      efst.addArc(prevState, letter, letter, nextState, RING.one());
     }
     // add the arc going to the </s> symbol
     MutableState endSentState = efst.newState();
-    efst.addArc(nextState, END, END, endSentState, 0);
-    endSentState.setFinalWeight(0);
+    efst.addArc(nextState, END, END, endSentState, RING.one());
+    endSentState.setFinalWeight(RING.one());
 
     // go through and make a jump arc for each cluster that this input matches
     for (int i = 0; i < inputWord.unigramCount(); i++) {
@@ -93,7 +94,7 @@ public class EntryFstMaker {
         // so the cluster should consume (match.size) letters and end in the state that would be the final state
         // after the equivalent number of unigram consumptions
         nextState = efst.getState(sentStartState.getId() + i + match.getKey().size());
-        efst.addArc(prevState, match.getValue(), match.getValue(), nextState, 0);
+        efst.addArc(prevState, match.getValue(), match.getValue(), nextState, RING.one());
       }
     }
     return efst;

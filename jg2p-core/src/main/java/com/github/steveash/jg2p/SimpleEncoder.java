@@ -39,11 +39,11 @@ public class SimpleEncoder {
   }
 
   public List<String> encodeBest(String word) {
-    List<PhoneticEncoder.Encoding> results = encoder.encode(Word.fromNormalString(word));
+    List<? extends EncodingResult> results = encoder.encode(Word.fromNormalString(word));
     if (results.isEmpty()) {
       return ImmutableList.of();
     }
-    return results.get(0).phones;
+    return results.get(0).getPhones();
   }
 
   public String encodeBestAsSpaceString(String word) {
@@ -51,28 +51,28 @@ public class SimpleEncoder {
   }
 
   public List<String> encodeAsSpaceString(String word, int topKResults) {
-    List<PhoneticEncoder.Encoding> results = encoder.encode(Word.fromNormalString(word));
+    List<? extends EncodingResult> results = encoder.encode(Word.fromNormalString(word));
     if (results.isEmpty()) {
       return ImmutableList.of();
     }
     int size = Math.min(topKResults, results.size());
     ArrayList<String> phoneList = Lists.newArrayListWithCapacity(size);
     for (int i = 0; i < size; i++) {
-      phoneList.add(joiner.join(results.get(i).phones));
+      phoneList.add(joiner.join(results.get(i).getPhones()));
     }
     return phoneList;
   }
 
   public List<List<String>> encode(String word, int topKResults) {
     // TODO when switched to java 8 then replace this dup with lambda xform
-    List<PhoneticEncoder.Encoding> results = encoder.encode(Word.fromNormalString(word));
+    List<? extends EncodingResult> results = encoder.encode(Word.fromNormalString(word));
     if (results.isEmpty()) {
       return ImmutableList.of();
     }
     int size = Math.min(topKResults, results.size());
     ArrayList<List<String>> phoneList = Lists.newArrayListWithCapacity(size);
     for (int i = 0; i < size; i++) {
-      phoneList.add(results.get(i).phones);
+      phoneList.add(results.get(i).getPhones());
     }
     return phoneList;
   }

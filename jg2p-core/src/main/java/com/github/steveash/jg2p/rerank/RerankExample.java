@@ -127,12 +127,12 @@ public class RerankExample {
     for (int i = 0; i < rrResult.overallResultCount(); i++) {
       RerankableEntry entry = rrResult.entryAtOverallIndex(i);
 
-      if (entry.getEncoding().phones == null || entry.getEncoding().phones.isEmpty()) {
+      if (entry.getEncoding().getPhones() == null || entry.getEncoding().getPhones().isEmpty()) {
         log.warn("Got bad cand for " + xWord.getAsSpaceString());
         continue;
       }
       if (!Doubles.isFinite(entry.getLangModelScore())) {
-        log.warn("Got bad lm score from " + entry.getEncoding().phones + " for " + xWord.getAsSpaceString());
+        log.warn("Got bad lm score from " + entry.getEncoding().getPhones() + " for " + xWord.getAsSpaceString());
         continue;
       }
 
@@ -144,7 +144,7 @@ public class RerankExample {
       rr.setWordGraphs(xWord.getValue());
       rr.setSequence(sequence);
       if (goodPhones != null) {
-        rr.setRelevant(goodPhones.contains(entry.getEncoding().phones));
+        rr.setRelevant(goodPhones.contains(entry.getEncoding().getPhones()));
       }
       outs.add(rr);
     }

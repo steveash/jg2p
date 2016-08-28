@@ -18,7 +18,7 @@ package com.github.steveash.jg2p.eval
 
 import com.github.steveash.jg2p.DuplicateStrippingEncoder
 import com.github.steveash.jg2p.Encoder
-import com.github.steveash.jg2p.PhoneticEncoder
+import com.github.steveash.jg2p.EncodingResult
 import com.github.steveash.jg2p.align.InputRecord
 import com.github.steveash.jg2p.util.Percent
 import com.google.common.base.Preconditions
@@ -46,13 +46,18 @@ class BulkEval {
 
   public EvalStats groupAndEval(Iterable<InputRecord> ungrouped) {
     // group the inputs into Candidate instances that have all acceptable answers
+    ArrayList inputGroups = groupInputRecords(ungrouped)
+
+    return eval(inputGroups)
+  }
+
+  public static List<InputRecordGroup> groupInputRecords(Iterable<InputRecord> ungrouped) {
     def groupedInput = ungrouped.groupBy { it.left }
     def inputGroups = Lists.newArrayListWithCapacity(groupedInput.size())
     groupedInput.values().each { grp ->
       inputGroups << new InputRecordGroup(grp[0].left, grp.collect { it.right }.toSet())
     }
-
-    return eval(inputGroups)
+    inputGroups
   }
 
   public EvalStats eval(Collection<InputRecordGroup> groups) {
@@ -84,7 +89,7 @@ class BulkEval {
     return stats
   }
 
-  private def updateIrs(List<PhoneticEncoder.Encoding> encodings, InputRecordGroup group, EvalStats stats) {
+  private def updateIrs(List<? extends EncodingResult> encodings, InputRecordGroup group, EvalStats stats) {
     // updates the IR stats for different configurations
     def good = group.acceptableYWords.size()
     def ranks = calcRanks(encodings, group)
@@ -116,7 +121,7 @@ class BulkEval {
     return count;
   }
 
-  private calcRanks(List<PhoneticEncoder.Encoding> encodings, InputRecordGroup group) {
+  private calcRanks(List<? extends EncodingResult> encodings, InputRecordGroup group) {
     Revelant[] ranks = new Revelant[this.considerTopK];
     for (int i = 0; i < this.considerTopK; i++) {
       if (i >= encodings.size()) {
@@ -132,7 +137,7 @@ class BulkEval {
     return ranks;
   }
 
-  private int updateTopK(List<PhoneticEncoder.Encoding> results, InputRecordGroup group, EvalStats stats) {
+  private int updateTopK(List<? extends EncodingResult> results, InputRecordGroup group, EvalStats stats) {
     // try to find what rank is the matching
     for (int i = 0; i < results.size(); i++) {
       if (group.isMatching(results[i].phones)) {

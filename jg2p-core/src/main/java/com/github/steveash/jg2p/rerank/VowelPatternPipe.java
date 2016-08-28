@@ -32,7 +32,7 @@ public class VowelPatternPipe implements RerankFeature {
 
   @Override
   public void emitFeatures(RerankFeatureBag data) {
-    Iterator<String> vowels = Iterables.filter(data.getExample().getEncoding().phones, Phonemes.whereOnlyVowels).iterator();
+    Iterator<String> vowels = Iterables.filter(data.getExample().getEncoding().getPhones(), Phonemes.whereOnlyVowels).iterator();
     if (!vowels.hasNext()) return;
     String last = vowels.next();
     while (vowels.hasNext()) {

@@ -19,28 +19,17 @@ import com.github.steveash.jg2p.util.Percent
 import groovyx.gpars.GParsConfig
 import groovyx.gpars.dataflow.DataflowQueue
 import groovyx.gpars.dataflow.operator.PoisonPill
-import groovyx.gpars.group.PGroup
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics
-
-import java.util.concurrent.atomic.AtomicBoolean
 
 import static groovyx.gpars.dataflow.Dataflow.task
 
 import com.github.steveash.jg2p.PhoneticEncoder
-import com.github.steveash.jg2p.PhoneticEncoder.Encoding
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.InputRecord
-import com.github.steveash.jg2p.aligntag.AlignTagModel
-import com.github.steveash.jg2p.util.ListEditDistance
 import com.github.steveash.jg2p.util.ReadWrite
 import com.google.common.base.Stopwatch
-import com.google.common.collect.HashMultiset
-import groovy.transform.Field
-import groovy.transform.ToString
 import groovyx.gpars.GParsPool
-import groovyx.gpars.dataflow.SyncDataflowQueue
 
-import java.util.concurrent.ThreadLocalRandom
 import java.util.concurrent.atomic.AtomicInteger
 
 /**

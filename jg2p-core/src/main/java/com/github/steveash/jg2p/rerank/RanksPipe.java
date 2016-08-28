@@ -18,10 +18,6 @@ package com.github.steveash.jg2p.rerank;
 
 import com.github.steveash.jg2p.PhoneticEncoder;
 
-import cc.mallet.pipe.Pipe;
-import cc.mallet.types.Alphabet;
-import cc.mallet.types.Instance;
-
 /**
  * @author Steve Ash
  */
@@ -34,7 +30,7 @@ public class RanksPipe implements RerankFeature {
 //    data.setFeature(prefix + "all", (Scaler.scaleLog(encoding.rank, RANK_SCALE_BASE)));
 //    data.setFeature(prefix + "alg", (Scaler.scaleLog(encoding.alignRank, RANK_SCALE_BASE)));
 
-    data.setFeature("all", encoding.rank);
+    data.setFeature("all", encoding.getRank());
     data.setFeature("alg", encoding.alignRank);
   }
 

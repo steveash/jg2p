@@ -18,11 +18,9 @@ import com.github.steveash.jg2p.PhoneticEncoder
 import com.github.steveash.jg2p.PhoneticEncoder.Encoding
 import com.github.steveash.jg2p.align.InputReader
 import com.github.steveash.jg2p.align.InputRecord
-import com.github.steveash.jg2p.aligntag.AlignTagModel
 import com.github.steveash.jg2p.util.ReadWrite
 import com.github.steveash.jg2p.util.GroovyLogger
 import groovy.transform.Field
-import java.io.File
 
 out = new GroovyLogger()
 println "Starting compare two..."

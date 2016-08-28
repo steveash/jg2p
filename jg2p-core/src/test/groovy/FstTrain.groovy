@@ -29,13 +29,10 @@ import groovyx.gpars.GParsPool
  * Trains the WFST approach to tranduction
  * @author Steve Ash
  */
-//def inputFile = "g014b2b.train.syll"
+//def inputFile = "g014b2b.train"
 def inputFile = "cmu7b.train"
-def testFile = "cmu7b.test"
 def inFile = "../resources/pipe_43sy_cmu7_fixsg_1.dat"
 def outFile = new File("../resources/fsttran_1.dat")
-//def inputFile = "cmudict.2kA.txt"
-//def inputFile = "g014b2b.test"
 def inputsO = InputReader.makePSaurusReader().readFromClasspath(inputFile)
 List<InputRecord> inputs = []
 def seenWords = [].toSet()
@@ -61,9 +58,9 @@ println "training..."
 def seqtran = trainer.trainWithAligned(aligns, 6)
 ReadWrite.writeTo(seqtran, outFile)
 println "done writing"
-new ArpaNgramWriter().write(trainer.lastLm, "langmodel.arpa")
-println "wrote lm arpa"
+//new ArpaNgramWriter().write(trainer.lastLm, "langmodel.arpa")
+//println "wrote lm arpa"
 ReadWrite.readFromFile(SeqTransducer, outFile)
 println "check reading good!"
-Convert.export(seqtran.fst, "g2pfst")
-println "wrote fst text file"
+//Convert.export(seqtran.fst, "g2pfst")
+//println "wrote fst text file"

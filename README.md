@@ -26,7 +26,7 @@ To use the phonetic encoder out of the box, you need to add the maven dependency
 <dependency>
     <groupId>com.github.steveash.jg2p</groupId>
     <artifactId>jg2p-pipe-cmu</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -65,7 +65,7 @@ To use the syllabifier out of the box, you need to add the maven dependency:
 <dependency>
     <groupId>com.github.steveash.jg2p</groupId>
     <artifactId>jg2p-syllg-cmu</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -126,7 +126,7 @@ versions.
 <dependency>
     <groupId>com.github.steveash.kylm</groupId>
     <artifactId>kylm</artifactId>
-    <version>1.1.2</version>
+    <version>1.1.4</version>
 </dependency>
 ```
 
@@ -139,7 +139,7 @@ substantially by shaving off hundreds of LBFGS iterations.
 <dependency>
     <groupId>com.github.steveash.mallet</groupId>
     <artifactId>mallet</artifactId>
-    <version>2.0.10</version>
+    <version>2.0.11</version>
 </dependency>
 ```
 

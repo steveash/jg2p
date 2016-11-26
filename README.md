@@ -7,6 +7,8 @@ joint "graphone" language model.
 Out of the box you get:
 * Phonetic Encoder for English words (trained using CMUDict 0.7b)
 * Syllabifier to split English words into syllables (trained using CMUDict 0.7b)
+* Syllabifier to split phoneme strings into syllables (trained using CMUDict 0.7b)
+* CMUDict 0.7b with syllable boundaries for the words and the phonemes (tagged using the above syllabifiers; see jg2p-core/src/test/resources/cmu7b.test|train)
 * Toolkit for building your own CRF Pipeline based transducers
 * Port of the Phonetasaurus WFST implementation of G2P transduction in Java (see SeqTransducer)
 

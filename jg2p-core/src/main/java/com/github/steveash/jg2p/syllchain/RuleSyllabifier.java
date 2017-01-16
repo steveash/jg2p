@@ -16,8 +16,6 @@
 
 package com.github.steveash.jg2p.syllchain;
 
-import sun.org.mozilla.javascript.internal.ast.ForInLoop;
-
 import java.util.regex.Pattern;
 
 /**

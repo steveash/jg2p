@@ -3,7 +3,7 @@
   <parent>
     <artifactId>jg2p-parent</artifactId>
     <groupId>com.github.steveash.jg2p</groupId>
-    <version>1.1.1-SNAPSHOT</version>
+    <version>1.1.2</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 

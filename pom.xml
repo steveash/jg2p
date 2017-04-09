@@ -4,7 +4,7 @@
 
   <groupId>com.github.steveash.jg2p</groupId>
   <artifactId>jg2p-parent</artifactId>
-  <version>1.1.2-SNAPSHOT</version>
+  <version>1.1.2</version>
   <description>Java grapheme to phoneme encoder using joint-modelling and CRFs</description>
   <modules>
     <module>jg2p-core</module>

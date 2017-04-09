@@ -34,8 +34,7 @@ def modelFile = "../resources/pipe_43sy_cmu7_fixsg_3.dat"
 //def test = InputReader.makeDefaultFormatReader().readFromClasspath(testFile)
 def test = InputReader.makePSaurusReader().readFromClasspath(testFile)
 
-def log = LoggerFactory.getLogger("psaurus")
-out = new GroovyLogger(log)
+
 def watch = Stopwatch.createStarted()
 log.info("Starting eval of with $testFile with $modelFile")
 

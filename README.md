@@ -76,7 +76,7 @@ on the full CMU 0.7b dataset (which is ~7MB compressed).  Here is a code example
 
 ```java
 import com.github.steveash.jg2p.model.CmuSyllabifierFactory;
-import com.github.steveash.jg2p.Syllabifier;
+import com.github.steveash.jg2p.syllchain.Syllabifier
 
 // ...
 
